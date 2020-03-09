@@ -172,6 +172,26 @@ https://www.artima.com/articles/dci_vision.html[Оригинальная ста�
 
 = Проектирование
 
+[quote,]
+[quote, IEEE1471 2007]
+____
+... The fundamental organiztion of a system embodien in its components, their relationships to each oterh, and to the environment and the principles guiding its design and evolution
+____
+
+[quote, Booch 2006]
+____
+Architecture represents the significant design decisioins that shape a system, where significiant is measured by cost of change
+____
+[quote, Coplien, Lean Architecture]
+____
+the form of a system, where the word form has a special meainign that we'll explore a bit later. (p. 2)
+____
+
+[quote, Uncle Bob]
+____
+(#todo:#)
+____
+
 == Анатомия системы? (#todo#)
 
 == Анатомия приложения (#todo#)
