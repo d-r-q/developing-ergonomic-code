@@ -3,6 +3,7 @@
 Версия 0.0.1, 2020-02-29
 :doctype: book
 :toc:
+:source-highlighter: pygments
 
 toc::[]
 
@@ -359,7 +360,566 @@ To do
 
 === Удобно (#todo#)
 
-=== Болоболы (#todo#)
+=== Курилка (#todo#)
+"Курилка - это бизнес чат.
+Это реальный проприетарный проект, поэтому все не значащие в контексте данной книги части закупюрины либо изменены.
+Суть проекта - есть фронт сайт, которым пользуются клиенты компании, на фронт сайте есть виджет чата, с другой стороны есть бэк сайт, которым пользуются операторы.
+Есть бэк, который связывает виджет на фронт сайте и бэк сайт.
+Есть бэк фронт сайта, который реализует основной бизнес компании.
+
+Система реализована на Java/Spring/JPA, с типовой слоёной архитектурой.
+Между бэк сайтом и бэком установлено веб-сокетное соединение.
+
+У "Курилки", есть АПИ, позволяющее выполнять некоторые действия напрямую, в обход бэк сайта.
+
+==== Юз кейс: КПИ операторов
+Одной из фич "Курилки" является подсчёт КПИ операторов, среди которых есть длительность текущей схемы.
+Это значение сохраняется при перерыве в работе менее часа.
+
+В реальной системе фича реализована так:
+
+. Доменному классу юзера добавили поле со временем начала работы.
+. Переиспользовали существующую таблицу таймаутов, куда начали складывать, момент сброса времени начала работы оператора.
+. При логине (подключении по веб сокету), проверялось наличие таймаута сброса,
+.. если он был, то подсчитывался обновлённый КПИ и отправлялся на фронт
+.. в противном случае, обновлялось значение времени начала работы
+. При логауте (отключении от веб сокета), заводился таймер сброса времени начала работы.
+
+В этой функциональности зарылся неожиданный баг.
+Некоторые новые (ни разу не логинвшиеся) операторы не могли подключиться, потому что каким-то образом у них был заведён таймаут на сброс времени начала работы (что происходит только при логауте), но при этом не было времени начала работы.
+Позже выяснилось, что одно из вспомогательных приложений, через АПИ звало логаут этим юзерам, что заводило им таймаут, но из-за того что они ни разу не логинились, им ни разу не простовлялось время начала работы и логика подсчёта КПИ крэшилась, из-за чего ломался логин (п. 3а).
+
+Теперь давайте реализуем этот юз кейс в эргономичном стиле и увидим, как он помог бы избежать этой проблемы и какие дополнительные преимущества принёс бы.
+
+Начнём с того, что сформулируем сам юз кейс (#todo: разботанить как составлять толковые юз кейсы#).
+
+*Цель:* Я как оператор хочу видеть длительность своей рабочей смены.
+
+*Рабочая смена*: Один или более подряд идущих периодов времени нахождения оператора онлайн, с перерывами не более 60 минут.
+
+*События*:
+
+. Логин оператора
+. Запрос КПИ
+. Логаут оператора
+. Разрыв соединения
+
+*Эффекты*:
+
+. Отображение текущих показателей оператора в браузере по запросу и при начале нового периода в рамках одной смены.
+
+*Технические эффекты*: #todo: оно надо?#
+
+. Пачка всякий загрузок из БД
+. Отправление сообщения по сокету
+. Сохранение чего-то в БД?
+
+*Алгоритм*:
+
+. При логине оператора
+.. Если нет существующей смены (первый логин оператора в системе), то начать рабочую смену, и зафиксировать время её начала
+.. Если существующая смена есть и время логаута менее часа назад (возврат оператора с обеда), то отправить агенту его текщие показатели КПИ.
+.. Если существующая смена есть, и время логаута более часа назад (начало новой смены), то зафиксировать начало новой смены
+. При логауте и разрыве соединения, зафиксировать время события
+. При запросе КПИ оператора, вычислить текущие показатели КПИ и отправить в браузер.
+
+Глядя на этот юз кейс, лично у меня появляется одно желание - завести класс рабочей смены. Давайте так и поступим:
+.WorkShift.java
+[source,java]
+----
+public class WorkShift {
+
+    private final @Nonnull UserApiService userApiService;
+
+    private final @Nonnull User user;
+
+    private final @Nonnull Duration maxInterruptionLen;
+
+    private Instant @Nonnull startTime;
+
+    private Instant finishTime;
+
+    public WorkShift(@Nonnull KWebSocket kWebSocket, @Nonnull User user, @Nonnull Instant startTime, @Nonnull Duration maxInterruptionLen) {
+        this.userApiService = userApiService;
+        this.user = user;
+        this.startTime = startTime;
+        this.maxInterruptionLen = maxInterruptionLen;
+    }
+
+    public void onLogin() {
+        if (finishTime == null) {
+            // Первый логин, ничего не делаем
+            return;
+        }
+        final Duration interruptionLen = Duration.between(finishTime, Instant.now());
+        if (interruptionLen.toMillis() < maxInterruptionLen.toMillis()) {
+            // Продолжение смены
+            userApiService.sendKpi(user);
+        } else {
+            // Начало новой смены
+            startTime = Instant.now();
+        }
+    }
+
+    public void sendKpi() {
+        userApiService.sendKpi(user);
+    }
+
+    public void onLogout() {
+        finishTime = Instant.now();
+    }
+
+}
+----
+
+Этот класс является добротным объектом в классическом ООП - у него есть настоящее состояние и поведение.
+К тому же теперь есть место где можно заэнфорсить инвариант, что время начала смены не налл.
+Но у него есть и ряд проблем:
+
+. Этот объект мутабельный и может быть использован в разных тредах, поэтому его надо синхронизировать.
+. У него нет однозначной идентичности - это объект текущей рабочей смены и в разные моменты времени он соотвествует разным объектам реального мира.
+. В него зашита логика определённого юз кейса.
+Если появятся новые требования, связанные с рабочей сменой, например ограничение длительности рабочей смены, то эту логику также придётся добавить в этот объект, что снизит его связность (cohesion).
+. Он нарушает принцип трёх зависимостей.
+
+Для решения этих проблем воспользуемся принципами DCI и неизменяемости:
+
+. Оставим WorkShift простым доменным объектом и сделаем его неизменяемым
+. Логику вынесем в роль KpiTracker
+.
+[Note]
+====
+Удивительно, как DCI всё ставит на свои места. Я долгое время руководствовался эвристикой, что класс с именем заканчивающимся на *er (все возможные Controllers, Managers, Drivers, Updaters и т.д.) указывает на проблемы в дизайне, потому что как правило это были пакеты процедур управляющие структурами данных.
+
+Роль же с именем *er является вполне логичной и является одним из аспектов поведения объекта, который манипулирует состоянием того же объекта.
+====
+
+.WorkShift.java
+[source,java]
+----
+public class WorkShift {
+
+    @Nonnull Instant startTime;
+
+    @Nullable Instant finishTime;
+
+    public WorkShift(@Nonnull Instant startTime) {
+        this.startTime = startTime;
+    }
+
+    public WorkShift(@Nonnull Instant startTime, @Nonnull Instant finishTime) {
+        this.startTime = startTime;
+        this.finishTime = finishTime;
+    }
+
+    public WorkShift finish(Instant finishTime) {
+        return new WorkShift(startTime, finishTime);
+    }
+
+}
+----
+
+.KpiTracker.java
+[source,java]
+----
+public class KpiTracker {
+
+    private final User user;
+
+    private final KWebSocket kWebSocket;
+
+    private final Duration maxInterruptionLen;
+
+    private WorkShift workShift;
+
+    public KpiTracker(User user, WorkShift prev, KWebSocket kWebSocket, Duration maxInterruptionLen) {
+        this.user = user;
+        this.workShift = prev;
+        this.kWebSocket = kWebSocket;
+        this.maxInterruptionLen = maxInterruptionLen;
+    }
+
+    public void onLogin() {
+        if (workShift == null) {
+            // Первый логин оператора, ничего не делаем
+            workShift = new WorkShift(user, Instant.now());
+            return;
+        }
+
+        if (workShift.finishTime == null) {
+            // Ошибка - повторынй логин после начала смены, без предварительного логаута
+            workShift = new WorkShift(user, Instant.now());
+            return;
+        }
+
+        final Duration interruptionLen = Duration.between(workShift.finishTime, Instant.now());
+        if (interruptionLen.toMillis() < maxInterruptionLen.toMillis()) {
+            // Продолжение смены
+            kWebSocket.sendKpi(user);
+        } else {
+            // Начало новой смены
+            workShift = new WorkShift(user, Instant.now());
+        }
+    }
+
+    public void sendKpi() {
+        kWebSocket.sendKpi(user);
+    }
+
+    public void onLogout() {
+        workShift = workShift.finish(Instant.now());
+    }
+
+}
+----
+
+Рассмотрим, как новая версия решает обозначенные выше проблемы:
+
+. Синхрозицаия: теперь WorkShift иммутабельный, а KpiTracker создаётся для каждого треда по отдельности
+. Идентичность: рабочая смена стала вэлью объектом и больше не имеет идентичности.
+Эта версия кода подсветила новый объект - рабочая смена оператора.
+У него уже вполне понятная идентичность, которая определяется ключём (user, workShift.startTime).
+Следующим шагом выделим этот класс.
+. Теперь логика юз кейса находится в отдельном классе.
+Если потребуется добавить логику ограничения смены, то она пойдёт в отдельный класс TimeShiftLimiter.
+Каждый из этих классов будет описывать отдельный юз кейс и будет иметь высокую связность (cohesion).
+. Принцип трёх зависимостей остался нарушен, но мы это исправим, создав класс `UserWorkShift`.
+
+Кроме того, в новой версии стала Очевидна вероятность возникновения ошибочной ситуации повторного логина без предварительного логаута - в первой версии они была скрыта обработкой первого логина оператора в системе.
+
+Теперь давайте выделим `UserWorkShift`:
+.UserWorkShift.java
+[source,java]
+----
+public class UserWorkShift {
+
+    @Nonnull public final User user;
+
+    @Nullable public final WorkShift workShift;
+
+    public UserWorkShift(@Nonnull User user, @Nullable WorkShift workShift) {
+        this.user = user;
+        this.workShift = workShift;
+    }
+
+    public UserWorkShift startNewWorkShift() {
+        return new UserWorkShift(user, new WorkShift(Instant.now()));
+    }
+
+    public UserWorkShift finish(Instant finishTime) {
+        if (workShift == null) {
+            throw new IllegalStateException("Cannot finish work shift for user, who doesn't start any yet");
+        }
+        return new UserWorkShift(user, new WorkShift(workShift.startTime, finishTime));
+    }
+
+}
+----
+
+.KpiTracker.java
+[source,java]
+----
+public class KpiTracker {
+
+    private final KWebSocket kWebSocket;
+
+    private final Duration maxInterruptionLen;
+
+    private UserWorkShift userWorkShift;
+
+    public KpiTracker(UserWorkShift prevWorkShift, KWebSocket kWebSocket, Duration maxInterruptionLen) {
+        this.userWorkShift = prevWorkShift;
+        this.kWebSocket = kWebSocket;
+        this.maxInterruptionLen = maxInterruptionLen;
+    }
+
+    public void onLogin() {
+        if (userWorkShift.workShift == null) {
+            // Первый логин оператора, ничего не делаем
+            userWorkShift = userWorkShift.startNewWorkShift();
+            return;
+        }
+
+        if (userWorkShift.workShift.finishTime == null) {
+            // Ошибка - повторынй логин после начала смены, без предварительного логаута
+            userWorkShift = userWorkShift.startNewWorkShift();
+            return;
+        }
+
+        final Duration interruptionLen = Duration.between(userWorkShift.workShift.finishTime, Instant.now());
+        if (interruptionLen.toMillis() < maxInterruptionLen.toMillis()) {
+            // Продолжение смены
+            kWebSocket.sendKpi(userWorkShift.user);
+        } else {
+            // Начало новой смены
+            userWorkShift = userWorkShift.startNewWorkShift();
+        }
+    }
+
+    public void sendKpi() {
+        kWebSocket.sendKpi(userWorkShift.user);
+    }
+
+    public void onLogout() {
+        if (userWorkShift.workShift == null) {
+            return;
+        }
+        userWorkShift = userWorkShift.finish(Instant.now());
+    }
+
+}
+----
+
+Этот рефакторинг, по мимо решения проблем с идентичностью и зависимостями, сделал Очевидным то, что в нашей системе есть потенциальная возможность позвать логин юзеру, который ни разу не логинился.
+Так же он подсветил дублирование кода начала рабочей смены и создал место куда естественным образом ложится код начала рабочей смены.
+Замена вызова конструктора на метод `UserWorkShigt.start()` сделала интерфейс симметричным, а по моему опыту симметрия обычно говорит о движении в правильном направлении.
+Теперь форма кода мне кажется достаточно хорошей и мы готовы двинуться дальше.
+
+Сейчас неочевидно, где хранится информация о рабочих сменах.
+Переживёт ли она перезапуск приложения?
+А должна.
+И, если честно, информация ещё не хранится ни где - ведь у нас не порта, который бы создавал юз кейс.
+Давайте создадим репозиторий рабочих расписаний и сделаем эффекты по загрузке и сохранению рабочих расписаний очевидными:
+
+.UserWorkShiftRepository.java
+[source,java]
+----
+// Т.к. реализация репозитория не имеет особого значения, привожу только интерфейс
+public class UserWorkShiftRepository {
+
+    public UserWorkShift getByUserId(Long userId) {
+        // ...
+    }
+
+    public UserWorkShift save(@Nonnull UserWorkShift userWorkShift) {
+        // ...
+    }
+
+}
+----
+
+.KpiTracker.java
+[source,java]
+----
+public class KpiTracker {
+
+    private final KWebSocket kWebSocket;
+
+    private final UserWorkShiftRepository userWorkShiftRepository;
+
+    private final Duration maxInterruptionLen;
+
+    private UserWorkShift userWorkShift;
+
+    public KpiTracker(Long userId, UserWorkShiftRepository userWorkShiftRepository, KWebSocket kWebSocket, Duration maxInterruptionLen) {
+        this.userWorkShiftRepository = userWorkShiftRepository;
+        this.userWorkShift = userWorkShiftRepository.getByUserId(userId);
+        this.kWebSocket = kWebSocket;
+        this.maxInterruptionLen = maxInterruptionLen;
+    }
+
+    public void onLogin() {
+        if (userWorkShift.workShift == null) {
+            // Первый логин оператора, ничего не делаем
+            userWorkShift = userWorkShift.startNewWorkShift();
+            userWorkShiftRepository.save(userWorkShift);
+            return;
+        }
+
+        if (userWorkShift.workShift.finishTime == null) {
+            // Ошибка - повторынй логин после начала смены, без предварительного логаута
+            userWorkShift = userWorkShift.startNewWorkShift();
+            userWorkShiftRepository.save(userWorkShift);
+            return;
+        }
+
+        final Duration interruptionLen = Duration.between(userWorkShift.workShift.finishTime, Instant.now());
+        if (interruptionLen.toMillis() < maxInterruptionLen.toMillis()) {
+            // Продолжение смены
+            kWebSocket.sendKpi(userWorkShift.user);
+        } else {
+            // Начало новой смены
+            userWorkShift = userWorkShift.startNewWorkShift();
+            userWorkShiftRepository.save(userWorkShift);
+        }
+    }
+
+    public void sendKpi() {
+        kWebSocket.sendKpi(userWorkShift.user);
+    }
+
+    public void onLogout() {
+        if (userWorkShift.workShift == null) {
+            return;
+        }
+        userWorkShift = userWorkShift.finish(Instant.now());
+        userWorkShiftRepository.save(userWorkShift);
+    }
+
+}
+----
+
+В этой реализации есть три проблемы:
+. Она снова нарушает принцип трёх зависимостей
+. При логине сохранение рабочей смены встречается 3 раза
+. Метод логина начал нарушать правило логики или эффектов
+
+Для решения первой проблемы воспользуемся Шлюзами из чистой архитектуры, а для решения двух других вынесем бизнес правило определения начала рабочей смены в чистую функцию в `UserWorkShift`.
+
+.KpiGateway.java
+[source,java]
+----
+public class KpiGateway {
+
+    private final KWebSocket kWebSocket;
+
+    private final UserWorkShiftRepository userWorkShiftRepository;
+
+    private final Duration maxInterruptionLen;
+
+    public KpiGateway(KWebSocket kWebSocket, UserWorkShiftRepository userWorkShiftRepository, Duration maxInterruptionLen) {
+        this.kWebSocket = kWebSocket;
+        this.userWorkShiftRepository = userWorkShiftRepository;
+        this.maxInterruptionLen = maxInterruptionLen;
+    }
+
+    public UserWorkShift getByUserId(Long userId) {
+        return userWorkShiftRepository.getByUserId(userId);
+    }
+
+    public UserWorkShift save(UserWorkShift userWorkShift) {
+        return userWorkShiftRepository.save(userWorkShift);
+    }
+
+    public void sendKpi(UserWorkShift userWorkShift) {
+        kWebSocket.sendKpi(userWorkShift.user);
+    }
+
+    public Duration getMaxInterruptionLen() {
+        return maxInterruptionLen;
+    }
+
+}
+----
+.KpiRules.java
+[source,java]
+----
+public class KpiRules {
+
+    public boolean shouldStartNewWorkShift(UserWorkShift currentWorkShift, Duration maxInterruptionLen, Instant now) {
+        if (currentWorkShift.workShift == null) {
+            // Первый логин оператора, ничего не делаем
+            return true;
+        }
+
+        if (currentWorkShift.workShift.finishTime == null) {
+            // Ошибка - повторынй логин после начала смены, без предварительного логаута
+            return true;
+        }
+
+        final Duration interruptionLen = Duration.between(currentWorkShift.workShift.finishTime, now);
+        return interruptionLen.toMillis() >= maxInterruptionLen.toMillis();
+    }
+
+}
+----
+.KpiTracker.java
+[source,java]
+----
+public class KpiTracker {
+
+    @Nonnull private final KpiGateway kpiGateway;
+
+    @Nonnull private final KpiRules kpiRules;
+
+    @Nonnull private UserWorkShift userWorkShift;
+
+    public KpiTracker(@Nonnull Long userId, @Nonnull KpiGateway kpiGateway, @Nonnull KpiRules kpiRules) {
+        this.kpiGateway = kpiGateway;
+        this.kpiRules = kpiRules;
+        this.userWorkShift = kpiGateway.getByUserId(userId);
+    }
+
+    public void onLogin() {
+        boolean shouldStartNewWorkShift = kpiRules.shouldStartNewWorkShift(userWorkShift, kpiGateway.getMaxInterruptionLen(), Instant.now());
+        if (shouldStartNewWorkShift) {
+            userWorkShift = userWorkShift.startNewWorkShift();
+            kpiGateway.save(userWorkShift);
+        } else {
+            kpiGateway.sendKpi(userWorkShift);
+        }
+    }
+
+    public void sendKpi() {
+        kpiGateway.sendKpi(userWorkShift);
+    }
+
+    public void onLogout() {
+        if (userWorkShift.workShift == null) {
+            return;
+        }
+
+        userWorkShift = userWorkShift.finish(Instant.now());
+        kpiGateway.save(userWorkShift);
+    }
+
+}
+----
+
+Отлично, нам не хватает только лишь Порта, для того чтобы получить канонический эргономичный юз кейс, давайте добавим его:
+.KpiTracker.java
+[source,java]
+----
+@RestController
+public class KpiPort {
+
+    private final AuthService authService;
+
+    private final KpiGateway kpiGateway;
+
+    public KpiPort(AuthService authService, KpiGateway kpiGateway) {
+        this.authService = authService;
+        this.kpiGateway = kpiGateway;
+    }
+
+    @EventListener
+    public void onLogin(UserLoginEvent e) {
+        final KpiTracker kpiTracker = new KpiTracker(e.userId, kpiGateway, new KpiRules());
+        kpiTracker.onLogin();
+    }
+
+    @PutMapping(value = "/kpi")
+    public void sendKpi() {
+        final KpiTracker kpiTracker = new KpiTracker(authService.getCurrentUser().getId(), kpiGateway, new KpiRules());
+        kpiTracker.sendKpi();
+    }
+
+    @EventListener
+    public void onDisconnect(UserDisconnectEvent e) {
+        final KpiTracker kpiTracker = new KpiTracker(e.userId, kpiGateway, new KpiRules());
+        kpiTracker.onLogout();
+    }
+
+    @EventListener
+    public void onLogout(UserLogoutEvent e) {
+        final KpiTracker kpiTracker = new KpiTracker(e.userId, kpiGateway, new KpiRules());
+        kpiTracker.onLogout();
+    }
+
+}
+----
+
+Порт вышел тривиальным - таким каким и должен быть.
+
+
+(#todo: бизенс правило определения рабочей схемы стало очевидным#)
+(#todo: пакадж протектед#)
+
+Теперь у нас есть класс рабочей смены, но нам нужен объект.
+Этот объект нам нужен в портах логина, запроса КПИ, логаут и дисконнекта.
+И задним числом легко говорить, но я думаю, что если бы в оригинальной реализации был объект рабочей смены, то возник бы вопрос: "что делать, если при запросе кпи/логауте/дисконнекте нет текущего расписания?", на этот вопрос был бы дан какой-то адекватный ответ.
+Более того, сама ошибка послужившая источником этого примера, просто невозможна в эргономичной версии.
+
 ==== Модель состояний оператора (#todo#)
 
 === Todos (#todo#)
