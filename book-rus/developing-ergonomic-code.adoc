@@ -43,6 +43,11 @@ toc::[]
 . Временные таблицы (таблицы с данными не входящими в доменную модель и из которых данные постоянно удаляются) - потенциально скрытые юз кейсы
 . Юз кейсы - настоящие объекты, с настоящим состоянием и настоящей логикой и настоящей инкапсуляцией.
 . Коплейн <<apx_peop_coplien>>: юнит тесты снижают качество кода
+. Изучение домена: <<apx_peop_coplien>>, <<apx_book_ddd>>, <<apx_book_object_thinking>>
+. Большинство ошибок находятся во взаимо действии <<apx_artc_seg>>
+. "Чем раньше обнаружена ошибка, тем дешевле её исправить" - миф? <<apx_artc_seg>>
+. "A proper book isn't just a collection of facts, it reflects cause and mission" <<apx_book_lean_arch>>
+. "If we reflect the end user mental model in the code, we are more likely to have working software" <<apx_book_lean_arch>>
 
 = Введение
 
@@ -291,7 +296,12 @@ To do
 == Избегайте интерфейсов с единственной реализацией (#todo#)
 Потому что они создают только видимость барьера и усложняют код. Невозможно сделать настоящий интерфейс по единственной реализации. Интерфейсы в АПИ лучше делать абстракными классами с закрытой реализацией, чтобы клиенты не могли их реализовывать. Интерфейсы в SPI - норм.
 
+== Иммутабельность по дефолту (#todo:#)
+
 == Domain Specific Languages (#todo#)
+
+== Типизированные ИДы (#todo:#)
+Типобезопасность и проще грепать логи
 
 = Тестирование (#todo#)
 
@@ -330,6 +340,7 @@ To do
 === Удобно (#todo#)
 
 === Болоболы (#todo#)
+==== Модель состояний оператора (#todo#)
 
 === Todos (#todo#)
 
@@ -346,9 +357,23 @@ To do
 [#apx_peop_coplien]
 ==== Джеймс Коплейн (James Coplien)
 
+=== Книги
+
+[#apx_book_ddd]
+==== DDD (#todo#)
+
+[#apx_book_object_thinking]
+==== Object Thinking (#todo#)
+
+[#apx_book_lean_arch]
+==== Lean Architecture for Agile Software Development
+
 === Научные статьи
 
 === Публицистические статьи
+
+[#apx_artc_seg]
+Segue
 
 === Доклады
 
