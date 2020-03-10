@@ -49,6 +49,12 @@ toc::[]
 . "Чем раньше обнаружена ошибка, тем дешевле её исправить" - миф? <<apx_artc_seg>>
 . "A proper book isn't just a collection of facts, it reflects cause and mission" <<apx_book_lean_arch>>
 . "If we reflect the end user mental model in the code, we are more likely to have working software" <<apx_book_lean_arch>>
+. Высокое качество достигается в первую очередь Очевидностью эффектов кода и во вторую покрытием тестами
+. Динамическая вс статическая типизация
+.. Типы Очевидны
+.. Код проще исследовать
+.. Типы исключат целый пласт ошибок
+.. Юнит тесты не могут исключить те ошибки, которые исключают типы
 
 = Введение
 
@@ -327,6 +333,10 @@ To do
 = Тестирование (#todo#)
 
 == TDD? (#todo#)
+
+== Ассерты (#todo:#)
+
+== Контракты (#todo:#)
 
 = Заключение
 
