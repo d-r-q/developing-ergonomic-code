@@ -32,11 +32,11 @@ toc::[]
 .. Возврат экшена в onXXX. Но что делать, если требуется возаимодействие - onDelete -> askConfirmation -> delete. Отдельные эвенты? Корутины?
 ... Примерно туда же - где должна быть логика запроса подтверждения удаления? В принципе её можно целиком во вью оставить, дёргая юз кейс только при подтверждении. Но Очевидно ли это?
 . threads#bd5d4a4e, MessageServiceImpl#setMessageChannel
-. Эвент != юз кейс. Эвент - атомарное действие вызываемое обычным событием (сообщением в традиционном ООП), юз кейс - сценарий достижения определённой цели, продвигаемый одним или более событием <<apx_talks_dci>>
-. Habits <<apx_talks_dci>>
-. Инклуды юз кейсов вредные, потому что теряют цель <<apx_talks_dci>>
-. Дизайн - разделение стабильных и изменяющихся частей <<apx_talks_dci>>, <<apx_peop_uncle_bob>>
-. Доменная модель должна быть стабильной <<apx_talks_dci>>, <<apx_peop_uncle_bob>>
+. Эвент != юз кейс. Эвент - атомарное действие вызываемое обычным событием (сообщением в традиционном ООП), юз кейс - сценарий достижения определённой цели, продвигаемый одним или более событием <<apx_talk_dci>>
+. Habits <<apx_talk_dci>>
+. Инклуды юз кейсов вредные, потому что теряют цель <<apx_talk_dci>>
+. Дизайн - разделение стабильных и изменяющихся частей <<apx_talk_dci>>, <<apx_peop_uncle_bob>>
+. Доменная модель должна быть стабильной <<apx_talk_dci>>, <<apx_peop_uncle_bob>>
 . Традиционные сервисы - жирные DCI Roles?
 . Peter Coad, object modelling in code (https://www.infoq.com/articles/domain-color-modeling/)
 . Юз кейсы - идеально место для осмысленных комментов. Сейчас стандартный бэк - это в основном набор структур данных и пакетов процедур для манипуляции ими и логику описывать не где. Юз кейсы же кодом описывают связанные куски логики и этот код можно сдобрить хорошим комментом.
@@ -55,7 +55,7 @@ toc::[]
 .. Код проще исследовать
 .. Типы исключат целый пласт ошибок
 .. Юнит тесты не могут исключить те ошибки, которые исключают типы
-. Архитекутра ОО-сиситема - протоптанные пути сообщений между объектами, <<apx_talks_dci_glimpse_of_rygve>>, 12:00
+. Архитекутра ОО-сиситема - протоптанные пути сообщений между объектами, <<apx_talk_dci_glimpse_of_rygve>>, 12:00
 . Архитектура - результат дизайна. Дизайн - акт решения проблемы Проблема - разници между имеющимся положением дел и желаемым <<apx_book_lean_arch>>
 . Сервисы в ДДД - это роли в ДэЦэИ. "Some of these are intrinsically activities or actions, not things, but since our modeling paradigm is objects, we try to fit them into objects anyway..." <<apx_book_ddd>>
 . Инфраструктурные, доменные и прикладные сервисы из ддд - это адаптеры, бизнес-логика и юзкейсы из эрго.
@@ -63,6 +63,23 @@ toc::[]
 . http://se.ethz.ch/~meyer/publications/functional/meyer_functional_oo.pdf
 . https://github.com/jcoplien/trygve
 . http://fulloo.info/Documents/trygve/trygve1.html
+. Определение хорошейго описания проблемы <<apx_book_lean_arch>>, p. 70
+. Добавить вставки с техниками как в <<apx_book_lean_arch>>?
+. "Localizing change lowers cost and makes programming more fun", <<apx_book_lean_arch>>, p. 102
+. "while modules have a necessary relationship to business semantics", <<apx_book_lean_arch>>, p. xxx
+. "Architecture is more art than sience", <<apx_book_lean_arch>>, p. 117
+. https://www.amazon.com/Pattern-Oriented-Software-Architecture-System-Patterns/dp/0471958697
+. https://www.youtube.com/watch?v=Nsjsiz2A9mg
+.. Arch is about intent, 10:30
+. Софт общего назначения не должен зависить от софта спец назначения <<apx_book_lean_arch>>, p. 176
+. Habits из <<apx_book_lean_arch>> - юз кейсы подсистем?
+.. "Habits tend to be partial orderings of steps, and can represent business rules, algorithms, or steps in a use case" <<apx_book_lean_arch>>, p. 184
+.. "Habits should not have variations" <<apx_book_lean_arch>>, p. 184
+. "It's common to separate out business rules and other supporting details from use case descriptions", <<apx_book_lean_arch>>, p. 183
+. Эффекты можно описывать пост-условиями
+. if considered harmful
+. В случае гуя юз кесйы должны быть в гуе? Что делать с многопользовательскими юзкейсами (Запрос/апрув блокировки)?
+
 
 = Введение
 
@@ -290,6 +307,7 @@ ____
 ____
 (#todo:#)
 ____
+(#todo: <<apx_book_lean_arch>>, p. 80#)
 
 == Анатомия системы? (#todo#)
 
@@ -376,7 +394,13 @@ To do
 . Скрывает описание архитектуры за деталями реализации
 . Изменения одной фичи, как правило затрагивают несколько модулей
 . #todo: сложнее рулить логами через стандартные тулы#
-. Все више перечисленное - это мелкие не приятности. Действительным же аргументом против такого стиля пакетирования, является то, что он исключает использование ограниченных модификаторов доступа (package private в Java, internal в Kotlin) и вынуждает весь код делать публичным. В итоге границы отсутсвуют в принципе - есть только соглашение о том что из более низких слоёв нельзя обращаться к более высоким. А внутри слоёв и от более высоких к более низким слоям даже никаких соглашений о границах нет. В итоге получается мегамесиво, слегка напоминающие очертаниями снеговик. Это ещё больше усугубляется при использовании спригового компонент скана и иньекции зависимостей на полях.
+. #todo: проблемы с вайлдкард импортами apx_talk_clean_coders_hate, apx_books_clean_code:Chapter 17, J1#
+. Все выше перечисленное - это мелкие не приятности.
+  Действительным же аргументом против такого стиля пакетирования, является то, что он исключает использование ограниченных модификаторов доступа (package private в Java, internal в Kotlin) и вынуждает весь код делать публичным.
+  В итоге границы отсутсвуют в принципе - есть только соглашение о том что из более низких слоёв нельзя обращаться к более высоким.
+  А внутри слоёв и от более высоких к более низким слоям даже никаких соглашений о границах нет.
+  В итоге получается мегамесиво, слегка напоминающие очертаниями снеговик.
+  Это ещё больше усугубляется при использовании спригового компонент скана и иньекции зависимостей на полях.
 
 === Другие идеи к разбиению классов
 
@@ -416,6 +440,8 @@ To do
 Потому что они создают только видимость барьера и усложняют код. Невозможно сделать настоящий интерфейс по единственной реализации. Интерфейсы в АПИ лучше делать абстракными классами с закрытой реализацией, чтобы клиенты не могли их реализовывать. Интерфейсы в SPI - норм.
 
 == Иммутабельность по дефолту (#todo:#)
+
+Защита от случайного внесения эффекта
 
 == Domain Specific Languages (#todo#)
 
@@ -1088,6 +1114,9 @@ public class KpiPort {
 [#apx_book_lean_arch]
 ==== Lean Architecture for Agile Software Development
 
+[#apx_book_clean_code]
+==== Clean Code
+
 === Научные статьи
 
 === Публицистические статьи
@@ -1097,15 +1126,20 @@ Segue
 
 === Доклады
 
-[#apx_talks_dci]
+[#apx_talk_dci]
 ==== DCI: Practical Tips and Lessons for Nerds
 
 Ссылка: https://www.youtube.com/watch?v=SxHqhDT9WGI
 
-[#apx_talks_dci_glimpse_of_rygve]
+[#apx_talk_dci_glimpse_of_rygve]
 ==== A Glimpse of Trygve: From Class-oriented Programming to Real OO
 
 Ссылка: https://www.youtube.com/watch?v=lQQ_CahFVzw
+
+[#apx_talk_clean_coders_hate]
+==== Clean Coders Hate What Happens to Your Code When You Use These Enterprise Programming Tricks
+
+Ссылка: https://www.youtube.com/watch?v=FyCYva9DhsI
 
 [appendix]
 = Spring
