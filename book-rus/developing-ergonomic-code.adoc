@@ -348,6 +348,8 @@ https://fsharpforfunandprofit.com/rop/[Оригинальная статья]
 
 = Проектирование
 
+(#todo: алгоритмы + структуры данных = программы. В том числе на уровне модулей, контейнеров и систем#)
+
 [quote,]
 [quote, IEEE1471 2007]
 ____
@@ -368,6 +370,8 @@ ____
 (#todo:#)
 ____
 (#todo: <<apx_book_lean_arch>>, p. 80#)
+
+(#todo: In software, an architectural style describes a set of constraints that — if followed — lead to certain traits of a system, http://olivergierke.de/2016/10/evolving-distributed-systems/#)
 
 == Принципы проектирования
 
@@ -637,7 +641,14 @@ DCI в свою очередь выделяет три других, но оче
 
 == Модель системы? (Stub)
 
+(#todo: he hardest part of splitting a program into modules is just deciding on what the module boundaries should be. There's no easy guidelines to follow for this, indeed a major theme of my life's work is to try and understand what good module boundaries will look like, https://martinfowler.com/articles/refactoring-dependencies.html#)
+Perhaps the most important part of drawing good module boundaries is paying attention to the changes you make and refactoring your code so that code that changes together is in the same or nearby modules.0
+As a result I favor using this approach in smaller scopes, but larger applications need high level modules to be developed along different lines.
+(#todo:  This illustrates the advantage of keeping a program factored into small pieces - it allows substitution of those pieces, even if the original writer didn't have any substitutions in mind. It enables unforeseen customization. #)
+
 == Модель приложения
+
+(#todo: эффекты операции - это публичное АПИ#)
 
 В функциональном подходе иногда рассматривают программу как функцию (#todo: prooflink#):
 [source]
@@ -1035,6 +1046,8 @@ To do
 - https://blog.cleancoder.com/uncle-bob/2011/09/30/Screaming-Architecture.html[статье "Screaming architecture"]
 - и к главе "34 THE MISSING CHAPTER" из книги "Clean Architecture".
 - пакетирование по объектам-блокам из <<apx_book_oose>>
+- https://phauer.com/2020/package-by-feature/
+- глава 10 "Modules", <<apx_book_impl_ddd>>
 
 === Мой подход к разбиению классов
 
@@ -1087,6 +1100,10 @@ To do
 
 = Тестирование (#todo#)
 
+(#todo: #)
+
+поэтому я всё-таки за компромисс и по самому свежаку, начал выделять тесты 4ёх типов:
+
 == Моки (#todo#)
 Использование моков для подсовывание входных данных - зло.
 Моки можно использовать для верификации эффектов юз кейсов, но по возможности лучше всё-таки отдавать предпочтение аксептанс/интеграционным тестам.
@@ -1096,6 +1113,10 @@ To do
 == Ассерты (#todo:#)
 
 == Контракты (#todo:#)
+
+== Find Usages колонок БД (#todo: #)
+
+Для того чтобы код был очевиден, необходимо чтобы была возможность быстро найти все использования определённой колонки БД хотя бы внутри приложения.
 
 = Заключение
 
@@ -1805,7 +1826,6 @@ public class KpiPort {
 [#apx_book_oose]
 ==== Object-Oriented Software Engineering: Use Case Drive Approach
 
-
 [#apx_book_ooram]
 ==== Working with objects: The OOram Software Engineering Method
 
@@ -1815,6 +1835,9 @@ https://leanpub.com/functional-design-and-architecture
 
 [#apx_book_gof]
 ==== Design Patterns: Elements of Reusable Object-Oriented Software
+
+[#apx_book_impl_ddd]
+==== Object-Oriented Software Engineering: Use Case Drive Approach
 
 === Научные статьи
 
