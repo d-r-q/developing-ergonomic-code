@@ -4,3 +4,4 @@ https://medium.com/@mateuszroth/why-the-test-pyramid-is-a-bullshit-guide-to-test
 
 
 тестовая пирамида игнорит специфику приложения - нафига юнит тесты в круде?
+тестирование на границах - чувак с книгой по дизайну, fsharp for fun and profit?
