@@ -1,0 +1,82 @@
+:source-highlighter: pygments
+
+В последнее вермя несколько раз писал примерно такой код для сериализации объекта в json https://github.com/FasterXML/jackson[Jackson-ом]:
+
+image::jackson-write-value-as-string.png[Генерация json-строки с использованием Jackson-а]
+[source,java]
+----
+public String renderToJson(Object dto) {
+    try {
+        return objectMapper.writeValueAsString(dto);
+    } catch (IOException e) {
+        throw new AssertionError("Unexpected IOException while converting object to json string");
+    }
+}
+----
+
+И мне это глаз резало - я генерирую строку в памяти, какой нафик IO???
+Но задуматься времени не было.
+
+А тут за чтением https://softwareengineering.stackexchange.com/questions/147059/the-modern-way-to-perform-error-handling[The modern way to perform error handling] из глубин подсознания внезапно всплыл ответ:)
+И знаете что я вам скажу?
+Это всё в тот же топик смеси политик/алгоритмов и эффектов и проблем вызываемых этим.
+
+Если заглянуть в кишочки `writeValueAsString`, то этот https://telegra.ph/CHistye-i-gryaznye-funkcii-ehffekty-i-obrabotka-signalov-sajdehffekty-chistye-funkcii-01-12[чистый] по сути метод является обёрткой вокруг `_writeValueAndClose(JsonGenerator g, Object value)`.
+g - это обёртка вокруг `java.io.Writer`.
+Writer выбрасывает `java.io.IOException`.
+И привет IOException при генерации строки в памяти.
+
+Эта проблема обусловлена смешанием в одной функции (_writeValueAndClose) политики (правил формирования json-а по ява-объекту) и эффекта (записи результата формирования в абстрактный приёмник).
+
+Для того чтобы этот код сделать https://github.com/d-r-q/developing-ergonomic-code/blob/master/book-rus/developing-ergonomic-code.adoc[эргономичиным], надо растащить две эти "штуки":
+
+image::ergo-write-value-as-string.png[Ergo-way]
+[source,kotlin]
+----
+fun transform(value: Any): Sequence<Char> = весь этот адовый, но чистый алгоритм по ренедренду json-а
+
+fun writeValueAsString(value: Any) = transform(value).joinToString()
+
+@Throws(IOException::class)
+fun writeValue(value: Any, w: Writer) = transform(value).forEach { w.append(it) }
+----
+
+Это всё тот же https://github.com/d-r-q/developing-ergonomic-code/blob/master/book-rus/developing-ergonomic-code.adoc#%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C-%D1%8E%D0%B7-%D0%BA%D0%B5%D0%B9%D1%81%D0%B0[эргономичный]
+(ака https://fsharpforfunandprofit.com/rop/[ROP], ака https://www.youtube.com/watch?v=yTkzNHF6rMs[Functional Core/Imperative Shell]) паттерн (до которого я ещё не дошёл в этом канале):
+
+. отдельно чистая бизнес-логика (transform);
+. отдельно эффективный порт (Writer);
+. и юзкейс/воркфлов (writeValueAsString, writeValue) их связывающий.
+
+Разделение логики и эффектов даёт юзерам кубики из которых каждый юзер может собрать нужный именно ему юз кейс.
+А юз кейсы которые кажутся наиболее востребованными можно сразу включить в поставку.
+
+Я не то чтобы пинаю авторов Jackson-а, и вижу как минимум три причины сделать так как есть:
+
+. Я не уверен, что вариант с сиквенсами можно сделать таким же быстрым как и запись сразу в выходной поток, и для них это критично;
+. Скорее всего, когда они писали этот код, ещё не было моды на функциональщину и в яве просто не было https://docs.oracle.com/javase/8/docs/api/java/util/stream/package-summary.html[Stream API];
+. Сделать сразу хороший дизайн сложно, а если ты автор популярной библиотеки и уважаешь своих юзеров, то твои "ошибки молодости" с тобой на вечно, из-за обратной совместимости.
+
+Но мы, вооружённые знаниями об эргономичном подходе, опытом чужих ошибок и либой сиквенсов, можем сразу проектировать своё приложение эргономичным. Если требования по перформансу позволяют:)
+
+Этот пост написано преимущественно в контексте разработки библиотек (Jackson), но применим и к разработке прикладных программ.
+Ядро/домен системы [line-through]#следует# можно рассматривать как стандартную библиотеку, которой пользуется ваша прикладная программа.
+Основное преимущество такого подхода заключается в том, что хорошую библиотеку могут использовать много приложений, а у вас их должно быть как минимум два - собственно боевое приложение и тесты.
+Но вообще "Модуль домена как библиотека" - это тема отдельного поста, поэтому подробности как-нить в другой раз:)
+
+---
+
+P.s. возможно вы скажете, что ленивый Sequence != энергичный Writer и его писать [line-through]#сложнее# непривычнее, но благодоря корутинам даже это не так:
+
+image::imperative-sequence.png[Императивная генерация последовательности на корутинах]
+[source,kotlin]
+----
+val obj = ""
+val seq = sequence<Char> {
+    yield('{')
+    obj::class.memberProperties.forEach {
+        yieldAll("\"${it.name}\": ${it.call()}".asSequence())
+    }
+    yield('{')
+}
+----
