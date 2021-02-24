@@ -33,6 +33,9 @@ jobs:
         with:
           hugo-version: 'latest'
 
+      - name: cd
+        run: cd azhidkov.pro
+        
       # Runs a single command using the runners shell
       - name: Hugo Asciidoctor Action
         uses: gaol/hugo-gh-action@v1.2
