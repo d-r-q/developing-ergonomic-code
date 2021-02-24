@@ -35,7 +35,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Hugo Asciidoctor Action
-      - uses: gaol/hugo-gh-action@v1.2
+        uses: gaol/hugo-gh-action@v1.2
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
