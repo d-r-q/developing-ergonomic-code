@@ -1,0 +1,51 @@
+baseURL = "https://azhidkov.pro/"
+languageCode = "en-us"
+title = "Разработка эргономичного кода"
+theme = "coder-portfolio"
+
+[params]
+    author = "Алексей Жидков"
+    info = "Независимый консультант"
+    info1 = "Делаю качественный софт и учу других этому, помогаю решать проблемы с некачественным софтом."
+    email = "me@azhidkov.pro"
+    avatarurl = "images/190811-2-square-1mb.jpg"
+    custom_css = ["https://use.fontawesome.com/releases/v5.2.0/css/all.css", "css/custom.css", "css/github.css" ]
+
+    description = "Разработка эргономичного кода"
+    thumbnail = "images/logo.png"
+
+[[params.social]]
+    name = "Github"
+    icon = "fab fa-github"
+    weight = 1
+    url = "https://github.com/d-r-q/"
+[[params.social]]
+    name = "Twitter"
+    icon = "fab fa-twitter"
+    weight = 2
+    url = "https://twitter.com/d__r_q/"
+[[params.social]]
+    name = "Vk"
+    icon = "fab fa-vk"
+    weight = 3
+    url = "https://vk.com/d_r_q"
+
+[[menu.main]]
+    name = "Эрго-Книга"
+    weight = 1
+    url ="book/developing-ergonomic-code"
+
+[[menu.main]]
+    name = "Эрго-Блог"
+    weight = 2
+    url ="posts"
+
+[[menu.main]]
+    name = "Услуги"
+    weight = 3
+    url ="services"
+
+[[menu.main]]
+    name = "Контакты"
+    weight = 4
+    url ="/"

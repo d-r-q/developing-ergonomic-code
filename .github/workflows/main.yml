@@ -1,0 +1,50 @@
+name: publish
+
+on:
+  push:
+    branches:
+    - github-pages
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: check out
+      uses: actions/checkout@v1
+      with:
+        submodules: true  # Fetch Hugo themes (true OR recursive)
+        fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
+
+    - name: Setup ruby
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: '2.x'
+
+    - name: Setup Asciidoctor
+      run: |
+        gem install asciidoctor
+        gem install asciidoctor-html5s
+        gem install asciidoctor-diagram
+        gem install rouge
+        . ./wrap_asciidoc.sh
+        asciidoctor --version
+
+    - name: Setup Hugo
+      uses: peaceiris/actions-hugo@v2
+      with:
+        hugo-version: '0.80.0'
+
+    - name: Build
+      run: |
+        export PATH=$PWD/bin:$PATH
+        which asciidoctor
+        cd azhidkov.pro
+        hugo --minify
+        
+  
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./azhidkov.pro/public

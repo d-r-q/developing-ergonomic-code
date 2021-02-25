@@ -1,0 +1,3 @@
+[submodule "azhidkov.pro/themes/coder-portfolio"]
+	path = azhidkov.pro/themes/coder-portfolio
+	url = https://github.com/naro143/hugo-coder-portfolio
