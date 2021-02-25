@@ -108,7 +108,7 @@ img.logo {
     padding-right: 0.5rem;
 }
 
-.logo span img {
+.logo img {
     display: inline-flex;
     height: 1em;
     vertical-align: middle;
