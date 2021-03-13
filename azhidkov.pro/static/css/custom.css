@@ -70,15 +70,17 @@ html, body
     display: table-cell;
     vertical-align: middle
     padding-bottom: 100px;
+    font-family: Open Sans;
+}
+
+div.content a {
+    font-weight: normal !important;
+    text-decoration: underline !important;
 }
 
 .navigation a {
     font-size: .9em!important;
     font-family: Fira Mono;
-}
-
-.about {
-    font-family: roboto;
 }
 
 a:after {
@@ -92,10 +94,6 @@ a:before {
     transition: none !important;
     content: none !important;
     display: inline !important;
-}
-
-a.email {
-    font-weight: 300;
 }
 
 .line-through {
@@ -131,4 +129,8 @@ div.about h2 {
     text-transform: none;
     font-family: Merriweather,Georgia,serif !important;
     font-weight: 400;
+}
+
+hr {
+    margin: 4em 0rem;
 }

@@ -6,8 +6,10 @@ theme = "coder-portfolio"
 [params]
     author = "Алексей Жидков"
     info = "Независимый консультант"
-    info1 = "Делаю качественный софт и учу других этому, помогаю решать проблемы с некачественным софтом."
+    info1 = "Разработка и реинжиниринг ПО"
     email = "me@azhidkov.pro"
+    telegram_channel_link = "https://t.me/ergonomic_code"
+    telegram_channel_name = "Эргономичный код"
     avatarurl = "images/190811-2-square-1mb.jpg"
     custom_css = ["https://use.fontawesome.com/releases/v5.2.0/css/all.css", "css/custom.css", "css/github.css" ]
 
@@ -15,20 +17,25 @@ theme = "coder-portfolio"
     thumbnail = "images/logo.png"
 
 [[params.social]]
+    name = "Telegram"
+    icon = "fab fa-telegram"
+    weight = 1
+    url = "https://t.me/d_r_q"
+[[params.social]]
     name = "Github"
     icon = "fab fa-github"
-    weight = 1
-    url = "https://github.com/d-r-q/"
-[[params.social]]
-    name = "Twitter"
-    icon = "fab fa-twitter"
     weight = 2
-    url = "https://twitter.com/d__r_q/"
+    url = "https://github.com/d-r-q/"
 [[params.social]]
     name = "Vk"
     icon = "fab fa-vk"
     weight = 3
     url = "https://vk.com/d_r_q"
+[[params.social]]
+    name = "Twitter"
+    icon = "fab fa-twitter"
+    weight = 4
+    url = "https://twitter.com/d__r_q/"
 
 [[menu.main]]
     name = "Эрго-Книга"
@@ -40,10 +47,10 @@ theme = "coder-portfolio"
     weight = 2
     url ="posts"
 
-[[menu.main]]
-    name = "Услуги"
-    weight = 3
-    url ="services"
+# [[menu.main]]
+#     name = "Услуги"
+#     weight = 3
+#     url ="services"
 
 [[menu.main]]
     name = "Контакты"
