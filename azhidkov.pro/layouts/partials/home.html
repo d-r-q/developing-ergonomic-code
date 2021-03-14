@@ -12,7 +12,7 @@
     </div>
     <br/>
     Email: <a class="email" href="mailto:{{ .Site.Params.email }}">{{ .Site.Params.email }}</a><br/>
-    Телеграм-канал: <a class="telegram-channel" href="mailto:{{ .Site.Params.telegram_channel_link }}">{{ .Site.Params.telegram_channel_name }}</a>
+    Телеграм-канал: <a class="telegram-channel" href="{{ .Site.Params.telegram_channel_link }}">{{ .Site.Params.telegram_channel_name }}</a>
     {{ with .Site.Params.social }}
     <ul class="social-list">
       {{ range sort . "weight"}}

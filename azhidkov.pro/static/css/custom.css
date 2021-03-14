@@ -134,3 +134,22 @@ div.about h2 {
 hr {
     margin: 4em 0rem;
 }
+
+.attribution {
+    text-align: right;
+}
+
+table caption {
+    text-align: left;
+}
+.stretch {
+    width: 100% !important;
+}
+
+td.halign-right p {
+    text-align: right;
+}
+
+td.valign-top {
+    vertical-align: top;
+}
