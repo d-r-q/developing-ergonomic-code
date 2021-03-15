@@ -11,7 +11,7 @@ theme = "coder-portfolio"
     telegram_channel_link = "https://t.me/ergonomic_code"
     telegram_channel_name = "Эргономичный код"
     avatarurl = "images/190811-2-square-1mb.jpg"
-    custom_css = ["https://use.fontawesome.com/releases/v5.2.0/css/all.css", "css/custom.css", "css/github.css" ]
+    custom_css = ["https://use.fontawesome.com/releases/v5.2.0/css/all.css", "css/custom.css", "css/github.css", "css/JetBrains-Mono.css" ]
 
     description = "Разработка эргономичного кода"
     thumbnail = "images/logo.png"
