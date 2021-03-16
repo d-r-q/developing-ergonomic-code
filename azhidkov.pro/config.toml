@@ -40,7 +40,7 @@ theme = "coder-portfolio"
 [[menu.main]]
     name = "Эрго-Книга"
     weight = 1
-    url ="book/developing-ergonomic-code"
+    url ="book/ergo"
 
 [[menu.main]]
     name = "Эрго-Блог"
