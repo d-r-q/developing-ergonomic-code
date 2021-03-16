@@ -1,6 +1,6 @@
 baseURL = "https://azhidkov.pro/"
-languageCode = "en-us"
-title = "Разработка эргономичного кода"
+languageCode = "ru-ru"
+title = "Алексей Жидков"
 theme = "coder-portfolio"
 
 [params]
@@ -12,8 +12,8 @@ theme = "coder-portfolio"
     telegram_channel_name = "Эргономичный код"
     avatarurl = "images/190811-2-square-1mb.jpg"
     custom_css = ["https://use.fontawesome.com/releases/v5.2.0/css/all.css", "css/custom.css", "css/github.css", "css/JetBrains-Mono.css" ]
+    description = "Разработка и реинжиниринг ПО"
 
-    description = "Разработка эргономичного кода"
     thumbnail = "images/logo.png"
 
 [[params.social]]
