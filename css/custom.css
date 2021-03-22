@@ -153,3 +153,7 @@ td.halign-right p {
 td.valign-top {
     vertical-align: top;
 }
+
+.hdlist1 {
+    font-weight: bold;
+}
