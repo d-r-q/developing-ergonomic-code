@@ -157,3 +157,27 @@ td.valign-top {
 .hdlist1 {
     font-weight: bold;
 }
+
+table.ergo-table {
+    border: 1px solid rgb(222, 222, 222) !important;
+}
+
+table.ergo-table th {
+    background: #f7f8f7;
+    border: 1px solid rgb(222, 222, 222) !important;
+    font-weight: bold;
+}
+
+table.ergo-table td {
+    border: 1px solid rgb(222, 222, 222) !important;
+}
+
+table.ergo-table tr:nth-of-type(2n) {
+    background: #f8f8f7;
+}
+
+.sidebarblock {
+    background: #f7f8f7;
+    padding-left: 2em;
+    font-style: italic;
+}
