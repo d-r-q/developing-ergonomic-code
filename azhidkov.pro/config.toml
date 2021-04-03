@@ -47,10 +47,10 @@ theme = "coder-portfolio"
     weight = 2
     url ="posts"
 
-# [[menu.main]]
-#     name = "Услуги"
-#     weight = 3
-#     url ="services"
+[[menu.main]]
+    name = "Портфолио"
+    weight = 3
+    url ="portfolio"
 
 [[menu.main]]
     name = "Контакты"
