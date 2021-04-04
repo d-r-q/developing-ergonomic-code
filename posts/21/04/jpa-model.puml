@@ -1,0 +1,27 @@
+@startuml
+
+skinparam Arrow {
+    Color 3b3b40
+}
+
+skinparam rectangle {
+    shadowing false
+    backgroundColor E7F0F9
+    borderColor E7F0F9
+}
+
+rectangle "Application" as App
+rectangle "PersistenceContext"  as PC
+rectangle "Transaction" as Trx
+rectangle "EntityManager"  as EM
+rectangle "ORM" as orm
+rectangle "JDBC" as JDBC
+
+App -r-> EM : использует \n для работы с БД
+EM -r-> Trx : управляет
+EM -d-> PC : создаёт для каждой транзакции
+EM -u-> JDBC : использует для загрузки данных
+EM -r-> orm : использует для \n маппинга объектов
+PC --> Trx : привязан к
+
+@enduml
