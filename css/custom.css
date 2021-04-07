@@ -56,6 +56,7 @@ pre code {
 html, body
 {
     height: 100%;
+    line-height: 1.6em;
 }
 
 .highlight {
@@ -112,9 +113,14 @@ img.logo {
     vertical-align: middle;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1, h2 {
     text-transform: none;
     letter-spacing: normal;
+    line-height: 1.6em;
+}
+
+h3, h4, h5, h6 {
+    line-height: 1.6em;
 }
 
 div.about h1 {
@@ -132,11 +138,29 @@ div.about h2 {
 }
 
 hr {
-    margin: 4em 0rem;
+    margin: 2em 0rem;
 }
 
 .attribution {
     text-align: right;
+}
+
+@media
+only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px)  {
+
+    body {
+        font-size: 1.6em;
+    }
+
+	/* Force table to not be like tables anymore */
+	table, thead, tbody, th, td, tr {
+		display: block;
+	}
+
+    td {
+        padding: 0px 0em;
+    }
+
 }
 
 table caption {
