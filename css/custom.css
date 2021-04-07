@@ -137,6 +137,22 @@ div.about h2 {
     font-weight: 400;
 }
 
+ul, ol {
+    padding-left: 20px
+}
+
+li {
+    margin: 1.05em 0px ;
+}
+
+figcaption {
+    font-weight: bold;
+}
+
+figure {
+    margin-left: 0px;
+}
+
 hr {
     margin: 2em 0rem;
 }
@@ -157,8 +173,9 @@ only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-wi
 		display: block;
 	}
 
+
     td {
-        padding: 0px 0em;
+        padding: 0px 1.2em;
     }
 
 }
