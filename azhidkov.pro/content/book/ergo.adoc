@@ -705,6 +705,19 @@ As a result I favor using this approach in smaller scopes, but larger applicatio
 
 (#todo: эффекты операции - это публичное АПИ#)
 
+[NOTE]
+====
+Уже после того, как я написал этот раздел, мне попалось две научных статьи от немецко-израильской исследовательской группы на эту же тему:
+
+. https://www.researchgate.net/publication/283566310_Improving_Design_Decomposition[Improving Design Decomposition].
+. https://www.researchgate.net/publication/326260296_Functional_Decomposition_for_Software_Architecture_Evolution[Functional Decomposition for Software Architecture Evolution];
+
+По сути, они предлагают то же самое, но у них есть ряд отличительных черт:
+
+. Самое интересное, что я перенесу в таблицу эффектов - делить и размечать разными весами операции чтения и записи;
+. У них более простая таблица - строки это операции, а столбцы - это отдельные переменные состояния;
+====
+
 В функциональном подходе иногда рассматривают программу как функцию (#todo: prooflink#):
 [source]
 ----
