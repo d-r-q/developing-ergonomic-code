@@ -91,6 +91,19 @@ override suspend fun update(trxLog: TrxLog, newLog: TrxLog, newDb: InternalDb) {
 
 Для того чтобы не подкладывать самому себе бомбы в своём коде у меня всё тот же набивший оскомину рецепт - разделять эффекты и логику.
 
+https://www.amazon.com/Just-Enough-Software-Architecture-Risk-Driven/dp/0984618104[Автор лучшей книге по архитектуре] причисляет функции-жулики к анти-паттернам и предостерегает от "захоронения сокровищ не подходящих местах":
+[quote, George Fairbanks, Just Enough Software Architecture]
+____
+Anti-pattern: Buried treasure.
+While most of the other advice is on what you should do, this is advice on what to avoid.
+It is easy to subvert the other good practices by burying treasure in inappropriate places.
+Responsibility-driven design asks you to allocate responsibilities to parts of your design, but you should avoid hinting at one thing while doing another (Wirfs-Brock, Wilkerson and Wiener, 1990).
+For example, most developers reading source code will assume that a getX() method will have no side effects and a method named launchSpaceShuttle() will do the obvious thing.
+If you signal to the reader that you have allocated a responsibility, you should follow through in the details.
+____
+
+И это единственный анти-паттерн в своём разделе (о стиле кодирования, раскрывающем архитектуру приложения).
+
 == "Честный бизнес"
 
 "Честный бизнес" - это функции которые одновременно:
