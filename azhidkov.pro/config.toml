@@ -38,12 +38,12 @@ theme = "coder-portfolio"
     url = "https://twitter.com/d__r_q/"
 
 [[menu.main]]
-    name = "Эрго-Книга"
+    name = "Книга"
     weight = 1
     url ="book/ergo"
 
 [[menu.main]]
-    name = "Эрго-Блог"
+    name = "Блог"
     weight = 2
     url ="posts"
 
