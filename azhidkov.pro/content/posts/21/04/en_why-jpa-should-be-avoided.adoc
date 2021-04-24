@@ -224,7 +224,7 @@ There are two ways to do this in JPA.
 The first way seems questionable from the efficiency standpoint.
 The second one looks like you're fighting the framework. Wasn't it supposed to make your life easier?
 
-In theory, you could also store your entities in a HTTP session. However, in the horizontal scaling era, we'd better consider this option in theory.
+In theory, you could also store your entities in a HTTP session. However, in the horizontal scaling era, this option is better left in theory.
 
 === You need an extra query to reference an entity
 
@@ -354,6 +354,6 @@ That means using JPA makes sense if:
 . you need to come up a quick prototype, or
 . you need to develop a small-scale internal system that's meant for just a few dozen tables and users.
 
-In these cases, <<You need an extra query to reference an entity,saving entities into HTTP session>> would make practical sense.
+In these cases, <<You need an extra query to reference an entity,saving entities into the HTTP session>> would make practical sense.
 
 I'd recommend against JPA if your project will be facing a higher load or feature a more complex domain model. Here, you'd be much better off using one of the alternative technologies instead.
