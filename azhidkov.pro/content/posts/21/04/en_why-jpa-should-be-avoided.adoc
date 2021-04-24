@@ -38,7 +38,7 @@ So in this article, I'm using JPA and Hibernate almost interchangeably.
 However, JPA's main problems all stem from modifiable entities and lazy loading. These are inherent to its specification, so I doubt it's possible to completely avoid them.
 --
 
-Here's my loose take on JPA's philosophy: 'Forget the database–just declare your own object model. Work with it as if it's already in the memory in full. We'll take care about getting all objects saved in the database.'
+Here's my loose take on JPA's philosophy: "Forget the database–just declare your own object model. Work with it as if it's already in the memory in full. We'll take care about getting all objects saved in the database."
 
 Perhaps the actual philosophy behind JPA is different–I couldn't find anything in my quick search. However, that's certainly what the folk version of it sounds like.
 
@@ -98,7 +98,7 @@ The root of all JPA's problems is paradigmatic, not technical.
 JPA attempts to make it as if there's no database at all. Particularly, it tries to take the developer's mind off the fact that all changes must be reflected in the database.
 Databases are meant for managing state mutations. Therefore, JPA has no other choice but use the imperative programming model.
 That's the only way you can pass a POJO to the app and keep track of its state mutations.
-So while pursuing this, JPA excludes the more friendly declarative model.
+So while pursuing this, JPA excludes the more programmer-friendly declarative model.
 
 
 JPA undermines both design and performance.
@@ -127,7 +127,7 @@ ____
 The entity class must not be final
 ____
 However, you must either design and document your classes for inheritance or prohibit it.
-I'll reference the classics here: https://www.amazon.com/Effective-Java-Joshua-Bloch/dp/0134685997[Effective Java], chapter "Item 19:  Design and document for inheritance or else prohibit it."
+I'll quote the classics here: https://www.amazon.com/Effective-Java-Joshua-Bloch/dp/0134685997[Effective Java], chapter "Item 19:  Design and document for inheritance or else prohibit it."
 
 It would take much more effort to design a class for inheritance than to define a data structure with a bunch of fields, as well as setters and getters for these.
 
@@ -184,7 +184,7 @@ Time and time again, I'd greatly improve on the performance of JPA-based system'
 . Throw all your code away. Write a bunch of queries manually. Write new code based off these.
 . Voila.
 
-I can only assume here, but I believe here's what's usually happening behind the curtains.
+I can only assume here, but I believe that's what's usually happening behind the curtains.
 
 . The developer needs to implement a new function ASAP.
 . In that part of the code where the new function is supposed to be, there already is an object with a getter returning a list that comprises all the necessary data.
@@ -229,17 +229,17 @@ In theory, you could also store your entities in a HTTP session. However, in the
 === You need an extra query to reference an entity
 
 Here's the third problem that stems from the very same root.
-If you need to create a new entity that references an existing one with a known ID, you'll have to ways to to that in JPA.
-You can either run an extra query–thus sacrificing performance–or fight JPA.
+Let's say you need to create a new entity that references an existing one with a known ID. 
+There are two ways to do that in JPA: you can either run an extra query–thus sacrificing performance–or fight JPA.
 
 === Caching
 
 Basically, you can’t cache JPA entities.
 
-If your entities have setters, they'll be uncacheable just because you won't be able to synchronize the concurrent access to them.
+If your entities have setters, they'll be uncacheable, just because you won't be able to synchronize the concurrent access to them.
 
 Even if your immutable JPA entity is cached, it'll turn useless once the transaction it was loaded into gets closed.
-You'll still be able to access its data, but you won't be able to reference it.
+You'll still be able to access the data within it, but you won't be able to reference it.
 
 Finally, for an entity with lazy fields, you'll eventually get the LazyInitializationException.
 
@@ -253,7 +253,7 @@ You'll need to abandon writing idiomatic code, though, which eliminates all the 
 This approach barely gets talked about, if ever, so learning materials are scarce. Virtually all developers aren't familiar with it, and maintenance can get tricky.
 
 So naturally, we come to the question whether it's worth it if we're prioritizing design and performance for our system.
-If the answer's 'no,' what could be the possible alternatives?
+If the answer's "no," what could be the possible alternatives?
 
 == JPA Alternatives
 
@@ -274,7 +274,7 @@ This technology can tick some of the boxes that are commonly thought to be uniqu
 . It's still the good old Spring Data tech that can automagically generate methods such as `findByName(name: String)`.
 . It's a 'reliable solution from a trusted vendor,' which makes it easier to sell to your client or CTO than other alternatives.
 
-Nonetheless, SDJ's design philosophy is quite user-friendly:
+Nonetheless, SDJ's design philosophy is quite programmer-friendly:
 [quote, Spring Data JDBC Reference Documentation, https://docs.spring.io/spring-data/jdbc/docs/2.1.7/reference/html/#jdbc.why]
 ____
 Spring Data JDBC aims to be much simpler conceptually, by embracing the following design decisions:
@@ -307,7 +307,7 @@ It seems like the team behind SJD is of the same opinion:
 > These are possibly even more important for Spring Data JDBC, because they are, to some extent, contrary to normal practice when working with relational databases.
 > -- Spring Data JDBC Reference Documentation
 
-This so-called 'normal practice' is a disastrous nightmare from design, maintenance, and performance standpoints. It can provide you with a quick temporary solution, though.
+This so-called "normal practice" is a disastrous nightmare from design, maintenance, and performance standpoints. It can provide you with a quick temporary solution, though.
 
 Since SDJ doesn't have lazy loading, you won't get away with this 'normal practice.' The team will have to go through with designing the data model and breaking it down into aggregates.
 
