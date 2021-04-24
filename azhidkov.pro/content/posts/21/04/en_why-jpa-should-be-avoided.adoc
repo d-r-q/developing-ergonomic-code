@@ -47,7 +47,7 @@ Perhaps the actual philosophy behind JPA is different–I couldn't find anything
 .Hibernate’s Simplified Model
 image::/posts/21/04/en_jpa-model.svg[]
 
-To make the 'Just think all your objects to already be in the memory' premise come true, that's how Hibernate works:
+To make the 'Just think all your objects to already be in the memory' promise come true, that's how Hibernate works:
 
 . The app initiates a transaction via `entityManager.getTransaction().begin()` (https://en.wikipedia.org/wiki/Software_transactional_memory[transactions can be stored in memory as well], which doesn't contradict JPA's philosophy);
 . The app loads the data via entityManager:
