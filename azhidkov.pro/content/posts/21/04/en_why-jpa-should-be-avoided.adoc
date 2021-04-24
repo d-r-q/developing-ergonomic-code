@@ -351,7 +351,7 @@ In my opinion, JPA comes in handy when you need a fast, cheap, and poor delivery
 
 That means using JPA makes sense if:
 
-. you need to come up a quick prototype, or
+. you need to come up with a quick prototype, or
 . you need to develop a small-scale internal system that's meant for just a few dozen tables and users.
 
 In these cases, <<You need an extra query to reference an entity,saving entities into the HTTP session>> would make practical sense.
