@@ -107,7 +107,7 @@ First, let’s take a look at how JPA can jeopardize software design.
 === Default constructors
 
 JPA requires that all entity classes include constructors by default:
-[quote, JSR 338: JavaTM Persistence API; Version 2.2; "2.1 The Entity Class", https://github.com/javaee/jpa-spec/blob/master/jsr338-MR/JavaPersistence.pdf]
+[quote, JSR 338: JavaTM Persistence API; Version 2.2; "2.1 The Entity Class," https://github.com/javaee/jpa-spec/blob/master/jsr338-MR/JavaPersistence.pdf]
 ____
 The entity class must have a no-arg constructor.
 ____
@@ -117,7 +117,7 @@ Look https://blog.ploeh.dk/2011/05/30/DesignSmellDefaultConstructor/[here] for m
 
 You can partly avoid this problem by making the default constructor package private and marking it as @Deprecated.
 
-I haven't seen anyone but me adhere to this practice, though.
+I've never seen anyone but me adhere to this practice, though.
 
 === Classes must be open for inheritance
 
@@ -127,7 +127,7 @@ ____
 The entity class must not be final
 ____
 However, you must either design and document your classes for inheritance or prohibit it.
-I'll reference the classics here: https://www.amazon.com/Effective-Java-Joshua-Bloch/dp/0134685997[Effective Java], chapter "Item 19:  Design and document for inheritance or else prohibit it".
+I'll reference the classics here: https://www.amazon.com/Effective-Java-Joshua-Bloch/dp/0134685997[Effective Java], chapter "Item 19:  Design and document for inheritance or else prohibit it."
 
 It would take much more effort to design a class for inheritance than to define a data structure with a bunch of fields, as well as setters and getters for these.
 
@@ -137,7 +137,7 @@ Although JPA's entity inheritability can cause potential problems, I've never en
 
 === Objects must be mutable
 
-JPA can't work with immutable objects "By Design", and mutability is inherent to its specification:
+JPA can't work with immutable objects "By Design," and mutability is inherent to its specification:
 [quote, JSR 338: JavaTM Persistence API; Version 2.2; "3.2.4 Synchronization to the Database"]
 ____
 An update to the state of an entity includes both the assignment of a new value to a persistent property or field of the entity as well as the modification of a mutable value of a persistent property or field
@@ -172,7 +172,7 @@ Let's now take a look at some performance issues JPA can bring.
 === Lazy loading
 
 JPA is big on lazy loading.
-It's the default option for OneToMany and ManyToMany relations. Also, in the JPA world, lazy loading is considered https://thorben-janssen.com/hibernate-best-practices/#10_Don8217t_use_FetchTypeEAGER["the best practice]".
+It's the default option for OneToMany and ManyToMany relations. Also, in the JPA world, lazy loading is considered https://thorben-janssen.com/hibernate-best-practices/#10_Don8217t_use_FetchTypeEAGER["the best practice]."
 
 I wouldn't be surprised if lazy loading was responsible for 1 percent of global energy consumption.
 Lazy loading was the reason behind 90% of performance issues I've had to deal with in JPA-based projects.
