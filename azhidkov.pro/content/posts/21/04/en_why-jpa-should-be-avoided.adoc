@@ -96,7 +96,7 @@ There are downsides to everything as well, though, and JPA has quite a lot of th
 
 The root of all JPA's problems is paradigmatic, not technical.
 JPA attempts to make it as if there's no database at all. Particularly, it tries to take the developer's mind off the fact that all changes must be reflected in the database.
-Databases are meant for managing state mutations. Therefore, JPA has no other choice but use the imperative programming model.
+Databases are meant for managing state mutations. Therefore, JPA has no other choice but to use the imperative programming model.
 That's the only way you can pass a POJO to the app and keep track of its state mutations.
 So while pursuing this, JPA excludes the more programmer-friendly declarative model.
 
