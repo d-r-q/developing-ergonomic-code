@@ -149,8 +149,8 @@ If your entire model is mutable, though, you get all the issues with:
 . link:++{{<ref "/posts/21/01/210119-effects#_конкурентное_программирование">}}++[concurrent development].
 
 To minimize its abstraction https://en.wikipedia.org/wiki/Leaky_abstraction[leaks], JPA needs to make sure an object in memory only corresponds to just one row in the table.
-So if instead of mutating an object you'll create a yet another instance of it with an updated state, JPA will treat it as a new object. Consequently, it'll also correspond to a new table row.
-If you try to save this new instance, JPA will attempt to insert it. This will throw a violation of uniqueness in primary key error.
+So if instead of mutating an object you create a new instance of it with an updated state, JPA will treat it as a new object. Naturally, it'll also connect it to a new table row.
+If you try to save this new instance, JPA will attempt to insert it. This will cause a unique primary key violation.
 
 You can partly avoid this by making your entities immutable and limiting updates to UPDATE queries.
 However, this will only work as long as you have to update just one object.
@@ -177,17 +177,17 @@ It's the default option for OneToMany and ManyToMany relations. Also, in the JPA
 I wouldn't be surprised if lazy loading was responsible for 1 percent of global energy consumption.
 Lazy loading was the reason behind 90% of performance issues I've had to deal with in JPA-based projects.
 
-Time and time again, I'd greatly improve on the performance of JPA-based system's parts following this algorithm.
+Time and time again, I'd greatly improve on the performance of JPA-based system's parts with this algorithm.
 
 . Count the number of queries run by the code.
 . Your heart will miss a beat once you see a few hundred queries instead of just a few. Get it back in rhythm.
 . Throw all your code away. Write a bunch of queries manually. Write new code based off these.
 . Voila.
 
-I can only assume here, but I believe the recipe of such issues goes like this.
+I can only assume here, but I believe here's what's usually happening behind the curtains.
 
 . The developer needs to implement a new function ASAP.
-. In that part of the code where the new function is supposed to be, there already is an object with a getter returning the list with all the necessary data.
+. In that part of the code where the new function is supposed to be, there already is an object with a getter returning a list that comprises all the necessary data.
 . The developer invokes that getter and loops through it.
 . In ca. 60% of the time, the developer doesn't realize that they're adding a new request by invoking the getter.
 By looping through it, they're adding N more.
@@ -198,12 +198,12 @@ In 7% of the time they add a new task to the technical debt graveyard.
 +
 Finally, in just 3% of the time they take full responsibility, get the deadline extended, and come up with an effective solution.
 +
-In my experience, I have it rougly the same way in JPA projects. In the best-case scenario, I end up with a corresponding 60/0/30/10 percent distribution.
+In my experience, I usually have it rougly the same way in JPA projects. In the best-case scenario, I end up with a corresponding 60/0/30/10 percent distribution.
 . The developer repeats Step no. 3 a few times. Bonus points for using a bunch of nested loops with lazy loading. This way, the number of queries will show exponential growth.
-. The developer runs some tests using demo data with a couple of rows in the table. No problems arise.
+. The developer runs some tests using demo data with just a couple of rows in the table. No problems arise.
 . Voila! You're now free to hire me so that I can fix all these performance issues.
 
-You must always be on the lookout with lazy loading.
+With lazy loading, you must always be on the lookout.
 Every time you write something like `entity.getXXXs`, ask yourself whether this may cause a https://stackoverflow.com/questions/97197/what-is-the-n1-selects-problem-in-orm-object-relational-mapping[N+1 request] to pop up there.
 Personally, I lack the self-discipline for that.
 
@@ -241,7 +241,7 @@ If your entities have setters, they'll be uncacheable just because you won't be 
 Even if your immutable JPA entity is cached, it'll turn useless once the transaction it was loaded into gets closed.
 You'll still be able to access its data, but you won't be able to reference it.
 
-Finally, for an entity with lazy fields, you'll eventually get LazyInitializationException.
+Finally, for an entity with lazy fields, you'll eventually get the LazyInitializationException.
 
 ---
 
@@ -309,9 +309,9 @@ It seems like the team behind SJD is of the same opinion:
 
 This so-called 'normal practice' is a disastrous nightmare from design, maintenance, and performance standpoints. It can provide you with a quick temporary solution, though.
 
-Since SDJ doesn't have lazy loading, you won't get away with this 'normal practice.' The team will have to go through with designing the data model and breaking down it into aggregates.
+Since SDJ doesn't have lazy loading, you won't get away with this 'normal practice.' The team will have to go through with designing the data model and breaking it down into aggregates.
 
-For now, I've only tried these technologies (that is, JDBC and R2DBC) in two small-scale projects only, but I've been quite happy with the results so far.
+So far, I've only tried these technologies (that is, JDBC and R2DBC) in two small-scale projects, but I've been quite happy with the results.
 
 === jooq
 
