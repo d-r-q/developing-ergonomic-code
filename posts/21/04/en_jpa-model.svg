@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.0.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 626 388" style="enable-background:new 0 0 626 388;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#E7F0F9;stroke:#E7F0F9;stroke-width:1.5;}
+	.st1{fill:none;}
+	.st2{font-family:'Roboto-Regular';}
+	.st3{font-size:13px;}
+	.st4{font-size:14px;}
+	.st5{enable-background:new    ;}
+	.st6{letter-spacing:1;}
+	.st7{fill:none;stroke:#3B3B40;}
+	.st8{fill:#3B3B40;stroke:#3B3B40;}
+	.st9{font-size:12px;}
+	.st10{font-size:11px;}
+</style>
+<g>
+	<rect x="7" y="120" class="st0" width="95" height="36.3"/>
+	<rect x="17" y="131" class="st1" width="75" height="17"/>
+	<text transform="matrix(1 0 0 1 21.8794 142.0898)" class="st2 st3">Application</text>
+	<rect x="365.5" y="233" class="st0" width="156" height="36.3"/>
+	<rect x="375.5" y="244" class="st1" width="136" height="17"/>
+	<text transform="matrix(1 0 0 1 382.6978 255.9453)" class="st2 st4">PersistenceContext</text>
+	<rect x="235" y="346" class="st0" width="101" height="36.3"/>
+	<rect x="245" y="357" class="st1" width="81" height="17"/>
+	<text transform="matrix(1 0 0 1 248.3638 368.9453)" class="st2 st4">Transaction</text>
+	<rect x="258.5" y="120" class="st0" width="118" height="36.3"/>
+	<rect x="268.5" y="131" class="st1" width="98" height="17"/>
+	<text transform="matrix(1 0 0 1 272.4819 142.9453)" class="st2 st4">EntityManager</text>
+	<rect x="552" y="120" class="st0" width="53" height="36.3"/>
+	<rect x="562" y="131" class="st1" width="33" height="17"/>
+	<text transform="matrix(1 0 0 1 562 142.9453)" class="st5"><tspan x="0" y="0" class="st2 st4 st6">OR</tspan><tspan x="20.8" y="0" class="st2 st4">M</tspan></text>
+	<rect x="290.5" y="7" class="st0" width="54" height="36.3"/>
+	<text transform="matrix(1 0 0 1 300.1333 29.9951)" class="st2 st4">JDBC</text>
+	<path id="App-to-EM" class="st7" d="M102.1,138c42.3,0,104.4,0,151.1,0"/>
+	<polygon class="st8" points="258.2,138 249.2,134 253.2,138 249.2,142 	"/>
+	<path id="EM-to-Trx" class="st7" d="M306.6,156.2c-10.9,18.2-26.8,48.3-33.1,76.8c-8.3,37.3-0.5,81.9,5.9,108"/>
+	<polygon class="st8" points="280.6,346 282.3,336.3 279.4,341.1 274.5,338.2 	"/>
+	<rect x="190.1" y="243.3" class="st1" width="72" height="15.8"/>
+	<text transform="matrix(1 0 0 1 199.2931 254.3784)" class="st2 st3">manages</text>
+	<path id="EM-to-PC" class="st7" d="M336.9,156.1c22.3,19.7,58.9,51.9,82.9,73"/>
+	<polygon class="st8" points="423.9,232.7 419.7,223.8 420.1,229.4 414.5,229.8 	"/>
+	<rect x="392.8" y="187.9" class="st1" width="206.5" height="15.8"/>
+	<text transform="matrix(1 0 0 1 402.4824 199.021)" class="st2 st3">creates one for each transaction</text>
+	<path id="JDBC-backto-EM" class="st7" d="M317.5,48.5c0,21.1,0,52.1,0,71.3"/>
+	<polygon class="st8" points="317.5,43.3 313.5,52.3 317.5,48.3 321.5,52.3 	"/>
+	<rect x="326.8" y="72.1" class="st1" width="154.1" height="15.8"/>
+	<text transform="matrix(1 0 0 1 338.1043 83.1818)" class="st2 st3">uses it to load the data</text>
+	<path id="EM-to-orm" class="st7" d="M376.7,138c52.6,0,127.6,0,169.8,0"/>
+	<polygon class="st8" points="551.7,138 542.7,134 546.7,138 542.7,142 	"/>
+	<rect x="408.2" y="104.9" class="st1" width="108" height="15.8"/>
+	<rect x="380.5" y="120.3" class="st1" width="163.5" height="13.7"/>
+	<text transform="matrix(1 0 0 1 392.7961 130.5452)" class="st2 st9">uses it for object mapping</text>
+	<path id="PC-to-Trx" class="st7" d="M419.2,269.1c-28.3,19.9-75,52.7-105,73.8"/>
+	<polygon class="st8" points="309.9,345.9 319.5,344 314,343 314.9,337.4 	"/>
+	<rect x="375.5" y="300.9" class="st1" width="128" height="15.8"/>
+	<text transform="matrix(1 0 0 1 407.333 312.0215)" class="st2 st3">is bound to</text>
+	<rect x="107.6" y="109.9" class="st1" width="146.2" height="24.1"/>
+	<text transform="matrix(1 0 0 1 164.5523 118.1326)"><tspan x="0" y="0" class="st2 st10">uses it</tspan><tspan x="-46.9" y="13.2" class="st2 st10">to work with the database</tspan></text>
+</g>
+</svg>
