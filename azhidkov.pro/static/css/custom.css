@@ -181,6 +181,17 @@ only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-wi
 
 }
 
+.mobile-menu-lang-separator-full  {
+     display: none;
+}
+
+@media only screen and (min-device-width:320px) and (max-device-width:768px) {
+    .mobile-menu-lang-separator-full  {
+         display: block !important;
+    }
+}
+
+
 table caption {
     text-align: left;
 }
@@ -228,11 +239,12 @@ aside h6 {
     display: none;
 }
 
-aside p {
+aside {
     font-style: italic;
     padding-left: 1em;
     margin-left: 2em;
     margin-top: 0em;
+    margin-bottom: 0em;
     border-left: 1px solid rgb(222, 222, 222);
     background-color: rgb(250, 250, 250);
 }
