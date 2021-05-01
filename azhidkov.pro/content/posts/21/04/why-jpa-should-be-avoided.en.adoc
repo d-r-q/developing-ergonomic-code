@@ -11,7 +11,7 @@ draft: false
 
 [NOTE]
 --
-Следить за обновлениями блога можно в моём канале: https://t.me/ergonomic_code[Эргономичный код]
+You can follow the blog updates in my channel: https://t.me/ergonomic_code[Ergonomic Code (rus)]
 --
 
 == Disclaimer: I passionately hate JPA and Hibernate.
