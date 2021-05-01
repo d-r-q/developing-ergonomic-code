@@ -1,58 +1,101 @@
-baseURL = "https://azhidkov.pro/"
-languageCode = "ru-ru"
-title = "Алексей Жидков"
 theme = "coder-portfolio"
+DefaultContentLanguage = "ru"
 
 [params]
-    author = "Алексей Жидков"
-    info = "Независимый консультант"
-    info1 = "Разработка и реинжиниринг ПО"
-    email = "me@azhidkov.pro"
-    telegram_channel_link = "https://t.me/ergonomic_code"
-    telegram_channel_name = "Эргономичный код"
-    avatarurl = "images/190811-2-square-1mb.jpg"
-    custom_css = ["https://use.fontawesome.com/releases/v5.2.0/css/all.css", "css/custom.css", "css/github.css", "css/JetBrains-Mono.css" ]
-    description = "Разработка и реинжиниринг ПО"
+    langseparator = "|"
 
-    thumbnail = "images/logo.png"
+[languages]
 
-[[params.social]]
-    name = "Telegram"
-    icon = "fab fa-telegram"
-    weight = 1
-    url = "https://t.me/d_r_q"
-[[params.social]]
-    name = "Github"
-    icon = "fab fa-github"
-    weight = 2
-    url = "https://github.com/d-r-q/"
-[[params.social]]
-    name = "Vk"
-    icon = "fab fa-vk"
-    weight = 3
-    url = "https://vk.com/d_r_q"
-[[params.social]]
-    name = "Twitter"
-    icon = "fab fa-twitter"
-    weight = 4
-    url = "https://twitter.com/d__r_q/"
+    [[params.social]]
+        name = "Telegram"
+        icon = "fab fa-telegram"
+        weight = 1
+        url = "https://t.me/d_r_q"
+    [[params.social]]
+        name = "Github"
+        icon = "fab fa-github"
+        weight = 2
+        url = "https://github.com/d-r-q/"
+    [[params.social]]
+        name = "Vk"
+        icon = "fab fa-vk"
+        weight = 3
+        url = "https://vk.com/d_r_q"
+    [[params.social]]
+        name = "Twitter"
+        icon = "fab fa-twitter"
+        weight = 4
+        url = "https://twitter.com/d__r_q/"
 
-[[menu.main]]
-    name = "Книга"
-    weight = 1
-    url ="book/ergo"
+    [languages.ru]
+        languagecode = "ru"
+        languagename = "Ru"
+        baseURL = "https://azhidkov.pro/"
+        languageCode = "ru-ru"
+        title = "Алексей Жидков"
+        [languages.ru.params]
+            author = "Алексей Жидков"
+            info = "Независимый консультант"
+            info1 = "Разработка и реинжиниринг ПО"
+            email = "me@azhidkov.pro"
+            telegram_channel_link = "https://t.me/ergonomic_code"
+            telegram_channel_name = "Эргономичный код"
+            avatarurl = "images/190811-2-square-1mb.jpg"
+            custom_css = ["https://use.fontawesome.com/releases/v5.2.0/css/all.css", "css/custom.css", "css/github.css", "css/JetBrains-Mono.css" ]
+            description = "Разработка и реинжиниринг ПО"
 
-[[menu.main]]
-    name = "Блог"
-    weight = 2
-    url ="posts"
+            thumbnail = "images/logo.png"
 
-[[menu.main]]
-    name = "Портфолио"
-    weight = 3
-    url ="portfolio"
+        [[languages.ru.menu.main]]
+            name = "Книга"
+            weight = 1
+            url ="book/ergo"
 
-[[menu.main]]
-    name = "Контакты"
-    weight = 4
-    url ="/"
+        [[languages.ru.menu.main]]
+            name = "Блог"
+            weight = 2
+            url ="posts"
+
+        [[languages.ru.menu.main]]
+            name = "Портфолио"
+            weight = 3
+            url ="portfolio"
+
+        [[languages.ru.menu.main]]
+            name = "Контакты"
+            weight = 4
+            url ="/"
+
+    [languages.en]
+        languagecode = "en"
+        languagename = "En"
+        baseURL = "https://azhidkov.pro"
+        languageCode = "en-en"
+        title = "Aleksey Zhidkov"
+        [languages.en.params]
+            author = "Aleksey Zhidkov"
+            info = "Independend Consultant"
+            info1 = "Software development and reengeneering"
+            email = "me@azhidkov.pro"
+            telegram_channel_link = "https://t.me/ergonomic_code"
+            telegram_channel_name = "Ergonomic code (rus)"
+            avatarurl = "images/190811-2-square-1mb.jpg"
+            custom_css = ["https://use.fontawesome.com/releases/v5.2.0/css/all.css", "css/custom.css", "css/github.css", "css/JetBrains-Mono.css" ]
+            description = "Software development and reengeneering"
+
+            thumbnail = "images/logo.png"
+
+        [[languages.en.menu.main]]
+            name = "Blog"
+            weight = 1
+            url ="posts"
+
+        # [[languages.en.menu.main]]
+        #     name = "Portfolio"
+        #     weight = 3
+        #     url ="portfolio"
+
+        [[languages.en.menu.main]]
+            name = "Contacts"
+            weight = 4
+            url ="/"

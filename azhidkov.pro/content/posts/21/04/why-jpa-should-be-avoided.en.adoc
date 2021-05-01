@@ -123,7 +123,7 @@ The entity class must have a no-arg constructor.
 ____
 
 Note that default constructors are an antipattern and a ticking bomb, as they allow for invariant-violating objects.
-They also cause link:++{{<ref "/posts/21/01/210119-effects#_временная_связность">}}++[temporal coupling].
+They also cause link:++{{<relref path="/posts/21/01/210119-effects#_временная_связность" lang="ru">}}++[temporal coupling].
 Look https://blog.ploeh.dk/2011/05/30/DesignSmellDefaultConstructor/[here] for more details.
 
 You can partly avoid this problem by making the default constructor package private and marking it as @Deprecated.
@@ -155,9 +155,9 @@ An update to the state of an entity includes both the assignment of a new value 
 ____
 If your entire model is mutable, though, you get all the issues with:
 
-. link:++{{<ref "/posts/21/01/210119-effects#_временная_связность">}}++[temporal coupling (rus)];
-. link:++{{<ref "/posts/21/01/210119-effects#_нелокальность_рассуждений">}}++[locality of reasoning (rus)];
-. link:++{{<ref "/posts/21/01/210119-effects#_конкурентное_программирование">}}++[concurrent development (rus)].
+. link:++{{<relref path="/posts/21/01/210119-effects#_временная_связность" lang="ru">}}++[temporal coupling (rus)];
+. link:++{{<relref path="/posts/21/01/210119-effects#_нелокальность_рассуждений" lang="ru">}}++[locality of reasoning (rus)];
+. link:++{{<relref path="/posts/21/01/210119-effects#_конкурентное_программирование" lang="ru">}}++[concurrent development (rus)].
 
 To minimize its abstraction https://en.wikipedia.org/wiki/Leaky_abstraction[leaks], JPA needs to make sure an object in memory only corresponds to just one row in the table.
 So if instead of mutating an object you create a new instance of it with an updated state, JPA will treat it as a new object. Naturally, it'll also link it to a new table row.
@@ -174,7 +174,7 @@ JPA transforms virtually all of your code into side effects code.
 Every getter can get the query executed or start doing so tomorrow.
 Every function call can mutate your object and add a new UPDATE request to a transaction.
 
-You can read more about all the issues that come with side effect code link:++{{<ref "/posts/21/01/210126-fraud-functions">}}++[here (rus)].
+You can read more about all the issues that come with side effect code link:++{{<relref "path"="/posts/21/01/210126-fraud-functions" "lang"="ru">}}++[here (rus)].
 
 ---
 
