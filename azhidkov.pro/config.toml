@@ -1,5 +1,6 @@
 theme = "coder-portfolio"
 DefaultContentLanguage = "ru"
+baseURL = "https://azhidkov.pro/"
 
 [params]
     langseparator = "|"
@@ -30,7 +31,6 @@ DefaultContentLanguage = "ru"
     [languages.ru]
         languagecode = "ru"
         languagename = "Ru"
-        baseURL = "https://azhidkov.pro/"
         languageCode = "ru-ru"
         title = "Алексей Жидков"
         [languages.ru.params]
@@ -69,7 +69,6 @@ DefaultContentLanguage = "ru"
     [languages.en]
         languagecode = "en"
         languagename = "En"
-        baseURL = "https://azhidkov.pro"
         languageCode = "en-en"
         title = "Aleksey Zhidkov"
         [languages.en.params]
