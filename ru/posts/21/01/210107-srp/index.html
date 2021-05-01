@@ -1,0 +1,51 @@
+<!doctype html><html lang=ru-ru><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="Алексей Жидков"><meta name=description content="https://azhidkov.pro/"><meta property="og:site_name" content="Алексей Жидков"><meta property="og:title" content="Single Responsibility Principle considered harmful - Алексей Жидков"><meta property="og:description" content><meta property="og:type" content="website"><meta property="og:url" content="https://azhidkov.pro/posts/21/01/210107-srp/"><meta property="og:image" content="https://azhidkov.pro/"><meta name=twitter:card content="summary"><meta name=twitter:site content="https://azhidkov.pro/posts/21/01/210107-srp/"><meta name=twitter:image content="https://azhidkov.pro/"><base href=https://azhidkov.pro/posts/21/01/210107-srp/><title>Single Responsibility Principle considered harmful - Алексей Жидков</title><link rel=canonical href=https://azhidkov.pro/posts/21/01/210107-srp/><link rel=stylesheet href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700"><link rel=stylesheet href=/css/normalize.min.css><link rel=stylesheet href=/css/style.min.css><link rel=stylesheet href=https://use.fontawesome.com/releases/v5.2.0/css/all.css><link rel=stylesheet href=https://azhidkov.pro/css/custom.css><link rel=stylesheet href=https://azhidkov.pro/css/github.css><link rel=stylesheet href=https://azhidkov.pro/css/JetBrains-Mono.css><link rel=icon type=image/png href=/images/favicon-32x32.png sizes=32x32><link rel=icon type=image/png href=/images/favicon-16x16.png sizes=16x16><link rel=alternate href=https://azhidkov.pro/index.xml type=application/rss+xml title="Алексей Жидков"><link href=https://azhidkov.pro/index.xml rel=feed type=application/rss+xml title="Алексей Жидков"><meta name=generator content="Hugo 0.80.0"></head><body><main class=wrapper><link rel=apple-touch-icon sizes=180x180 href=apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://azhidkov.pro/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://azhidkov.pro/favicon-16x16.png><link rel=manifest href=site.webmanifest><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><link href="https://fonts.googleapis.com/css?family=Roboto" rel=stylesheet type=text/css><nav class=navigation><section class=container style=height:100%><img src=https://azhidkov.pro/images/logo.svg class=logo>
+<a class=navigation-title href=/>Алексей Жидков</a>
+<input type=checkbox id=menu-control>
+<label class="menu-mobile float-right" for=menu-control><span class="btn-mobile float-right">&#9776;</span><ul class=navigation-list><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/book/ergo>Книга</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/posts>Блог</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/portfolio>Портфолио</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/>Контакты</a></li><li class=mobile-menu-lang-separator-full><hr></li><li class=multilingual-separator><p>|</p></li><li class="navigation-item align-left"><a href=https://azhidkov.pro/>En</a></li></ul></label></section></nav><div class=content><section class="container post"><article><header><h1 class=title>Single Responsibility Principle considered harmful</h1><h2 class=date>January 7, 2021</h2></header><p><strong>Статья не отредактирована после переезда с маркдауна</strong></p><p>Привет!</p><p>Наткнулся тут на <a href=https://tommcfarlin.com/programming-side-effects/>эту
+статью</a> и чёт меня малёха бомбануло.</p><p>Теоретически, принцип (Single Responsibility Principle ) возможно
+хороший и правильный, ток с ним есть одна проблема - анкл Боб 20
+(двадцать) лет его объясняет и ни как объяснить не может.</p><p>Мне удалось отследить следующую историю формулировок этого принципа
+самим Мартином: - 19xx: чёт мне припоминается, что где-то он писал о то,
+что изначально публиковал эти принципы в каком-то журнале, но ссылок
+побырому я не нашёл - 2003: <code>A class should have only one reason to
+change'' -
+<a href=https://www.amazon.com/Software-Development-Principles-Patterns-Practices/dp/0135974445>Agile
+Software Development, Principles, Patterns, and Practices</a> - 2008: </code>The
+Single Responsibility Principle (SRP) states that a class or module
+should have one, and only one, reason to change'' -
+<a href=https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882>Clean
+Code</a> - 2014: <code>Gather together the things that change for the same
+reasons. Separate those things that change for different reasons.'' -
+<a href=https://blog.cleancoder.com/uncle-bob/2014/05/08/SingleReponsibilityPrinciple.html>The
+Single Responsibility Principle</a> - 2018: </code>A module should be
+responsible to one, and only one, actor'' -
+<a href="https://www.amazon.com/Clean-Architecture-Craftsmans-Software-Structure/dp/0134494164/ref=pd_bxgy_img_2/147-8271342-0171521?_encoding=UTF8&pd_rd_i=0134494164&pd_rd_r=90e2cb95-6f04-4c0c-9c7b-66c2d960039a&pd_rd_w=iwjpt&pd_rd_wg=0JqHc&pf_rd_p=f325d01c-4658-4593-be83-3e12ca663f0e&pf_rd_r=1HX5JTT8AYRP3ABYS91W&psc=1&refRID=1HX5JTT8AYRP3ABYS91W">Clean
+Architecture</a></p><p>И тем не менее, в статье с которой меня бомбануло написано: <code>That class
+itself should do one thing''. По моим ощущениям </code>one thing'' - это
+самая распространённая интерпретация SRP.</p><p>Всё бы ничего, но ``thing'' - понятие растяжимое. Сортировка, например -
+одна вещь? А если <a href=https://en.wikipedia.org/wiki/Timsort>один метод</a> в
+зависимости от размера входных данных использует разные алгоритмы? Это
+всё ещё одна вещь или несколько? А если
+<a href="https://www.freebsd.org/cgi/man.cgi?query=sort&apropos=0&sektion=0&manpath=2.9.1+BSD&arch=default&format=html">код</a>
+поддерживает сортировку массивов превышающих размер памяти и работает с
+диском соотвественно? О размере вещей можно спорить бесконечно. На
+небесах программисты только и говорят о том, сколько вещей делает тот
+или иной кусок кода.</p><p>Но даже чёрт с ней с вещью. Сам анкл Боб путается в показаниях. В одной
+из
+<a href=https://blog.cleancoder.com/uncle-bob/2020/10/18/Solid-Relevance.html>статей</a>
+он пишет: > ``We do not mix business rules with GUI code''.</p><p>Так-то всё правильно пишет - действительно не мешаем и это хорошо. Ток
+изменения в требованиях от одного источника зачастую требует изменений и
+в гуе, и в правилах и в БД. Т.е. эти штуки (для одной фичи) должны быть
+в одном месте.</p><p>В общем имхо, SRP - это хороший лозунг, который полезно знать и о
+котором стоит вспоминать, в третью очередь при анализе дизайна, но никак
+не основополагающий принцип дизайна.</p><p>И ещё не много хейта SOLID-а в целом: 1)
+<a class=bare href="https://www.youtube.com/watch?v=tMW08JkFrBA">https://www.youtube.com/watch?v=tMW08JkFrBA</a> - доклад от крутого во всех
+смыслах мужика. Можно его прям по имени по ютубить и смотреть всё
+подряд. Настоятельно рекомендую. 2)
+<a class=bare href=https://www.tedinski.com/2019/04/02/solid-critique.html>https://www.tedinski.com/2019/04/02/solid-critique.html</a> - пост от
+другого крутого мужика, который начал (и не осилил, похоже :( ) писать
+книгу примерно о том же, о чём пишу я:) Но он осилил сильно больше чем я
+пока что, так что настоятельно рекомендую:) 3)
+<a class=bare href=https://speakerdeck.com/tastapod/why-every-element-of-solid-is-wrong>https://speakerdeck.com/tastapod/why-every-element-of-solid-is-wrong</a> -
+просто слайды от неизвестного мужика, случайно попавшиеся под руку</p><p>И ответа Мартина на слайды из п. 3:
+<a class=bare href=https://blog.cleancoder.com/uncle-bob/2020/10/18/Solid-Relevance.html>https://blog.cleancoder.com/uncle-bob/2020/10/18/Solid-Relevance.html</a></p></article><br></section></div></main><script src=/js/app.js></script></body></html>
