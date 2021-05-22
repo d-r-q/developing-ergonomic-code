@@ -7,7 +7,7 @@ draft: false
 :!table-caption:
 
 == Aleksey Zhidkov
-*Architect, Technical Lead* +
+*Architect, Tech Lead* +
 https://azhidkov.pro +
 https://github.com/d-r-q
 
