@@ -7,7 +7,7 @@ draft: false
 :!table-caption:
 
 == Aleksey Zhidkov
-*Architect, Tech Lead* +
+*Architect, Technical Lead* +
 https://azhidkov.pro +
 https://github.com/d-r-q
 
@@ -41,7 +41,7 @@ Since 2020, I've also been writing my own https://t.me/ergonomic_code[Telegram c
 ** The paradigm of the programming language powering the project is orthogonal to the project's development paradigm.
 ** Right now, procedural programming is the generally preferred development paradigm.
 ** Both OOP and FP are syntactic sugar.
-** OOD and FD aren't mutually exclusive. On the contrary, they can only produce a good design when used together.
+** OOD and FD aren't mutually exclusive—on the contrary, they can only produce a good design when used together.
 * Programming languages:
 ** Kotlin, Java: I've been working with both on a professional level since 2012 and 2002, respectively.
 ** JavaScript, Python, C: I have some successful commercial experience.
