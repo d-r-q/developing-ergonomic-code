@@ -6,8 +6,8 @@ draft: false
 ---
 :!table-caption:
 
-== Zhidkov Alexey Pavlovich
-*Architect, Technical Lead* +
+== Aleksey Zhidkov
+*Architect, Tech Lead* +
 https://azhidkov.pro +
 https://github.com/d-r-q
 
