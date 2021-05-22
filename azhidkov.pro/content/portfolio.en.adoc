@@ -1,6 +1,6 @@
 ---
 title: "Portfolio"
-description: Software development and reingeneering
+description: Software development and reengineering
 date: 2021-03-13T13:25:37+07:00
 draft: false
 ---
