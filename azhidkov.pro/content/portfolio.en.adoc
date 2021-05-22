@@ -14,7 +14,8 @@ https://github.com/d-r-q
 {empty} +
 
 I specialize in developing information systems (link:++{{< ref "portfolio#lobby">}}++[[1]],link:++{{< ref "portfolio#tcs">}}++[[2]],link:++{{< ref "portfolio#threads">}}++[[3]]) powered by the Java platform.
-However, I'm quite versatile thanks to having nineteen years of experience, loving what I do, and reading English fluently. All of these allow me to dabble in developing link:++{{< ref "portfolio#yts_bot" >}}++[Python desktop apps], link:++{{< ref "portfolio#lpx">}}++[low-level video capture software with C], and link:++{{< ref "portfolio#udobno">}}++[Kotlin Multiplatform Mobile apps].
+However, I'm quite versatile thanks to having nineteen years of experience, loving what I do, and reading English fluently.
+All of these allow me to dabble in developing link:++{{< ref "portfolio#yts_bot" >}}++[Python desktop apps], link:++{{< ref "portfolio#lpx">}}++[low-level video capture software with C], and link:++{{< ref "portfolio#udobno">}}++[Kotlin Multiplatform Mobile apps].
 
 I've been working as a software engineer since 2005, and as an independent consultant since 2017.
 
@@ -26,7 +27,10 @@ Since 2020, I've also been writing my own https://t.me/ergonomic_code[Telegram c
 
 === Education
 
-* Ph.D. candidate at the Federal Research Center for Information and Computational Technologies, 2018-2019. My research was focused on conflict resolution for asynchronous data replication. It was based on a prototype of an https://github.com/d-r-q/qbit[embedded multi-version DBMS] I devised myself. I had to take a temporary break from my studies in connection with my child's birth.
+* Ph.D. candidate at the Federal Research Center for Information and Computational Technologies, 2018-2019.
+My research was focused on conflict resolution for asynchronous data replication.
+It was based on a prototype of an https://github.com/d-r-q/qbit[embedded multi-version DBMS] I devised myself.
+I had to take a temporary break from my studies in connection with my child's birth.
 * Computer Science, Novosibirsk State University, 2009.
 * Higher College of Informatics, Novosibirsk State University, 2006.
 
@@ -142,7 +146,8 @@ For the pilot project, they chose to make a prototype of a video capture system 
 
 This project turned out to be one of the most fascinating and complex ones I've ever worked on.
 First, it was the first–and so far the last–commercial experience I've had with C.
-Second, I got the chance to do some work with hardware directly. That's a whole different experience :)
+Second, I got the chance to do some work with hardware directly.
+That's a whole different experience :)
 Finally, I tried my hand at multithreaded and network programming with a language that has no synchronized block or garbage collector.
 
 The system's workflow was supposed to look like this:
@@ -205,7 +210,7 @@ Docker/Docker compose
 |===
 
 [#lobby]
-===== Company "X", project "L". A server for a business hypothesis validation app.
+===== Company "X", project "L": a server for a business hypothesis validation app
 In winter 2021, Siberian.Pro started working on a new project for Company "X", a gambling provider.
 The client wanted the back-end system to be powered by the Java platform.
 Siberian.Pro reached out to me again.
@@ -254,7 +259,8 @@ Github Actions;
 ===== A system to protect & license a cryptocurrency trading algorithm
 
 Trading Club has developed a unique Python-powered algorithm for crypto exchange trading.
-In winter 2019, they reached out to me to have 3 things done. I was to:
+In winter 2019, they reached out to me to have 3 things done.
+I was to:
 
 . protect the algorithm itself from reverse-engineering;
 . develop a licensing system for accessing the algorithm; and
@@ -266,7 +272,8 @@ Things get much harder if we're talking native code generated from a code snippe
 
 For licensing, I developed a license server and added a license check into the algorithm.
 
-Finally, I developed a GUI with QT. To keep the user from bothering with installing a Python interpreter, I packed the app with pyinstaller.
+Finally, I developed a GUI with QT.
+To keep the user from bothering with installing a Python interpreter, I packed the app with pyinstaller.
 
 For now, this is my only commercial project written with Python.
 
@@ -291,7 +298,8 @@ Docker/Docker compose
 ===== Data Transfer server
 
 Once they were done with the app, Trading Club switched to developing a mobile app that could keep track of their bot's work.
-In summer 2020, Trading Club decided they want to arrange all the disparate parts of the app into a solid whole. That's why they reached out to me again.
+In summer 2020, Trading Club decided they want to arrange all the disparate parts of the app into a solid whole.
+That's why they reached out to me again.
 
 The project consisted of developing a server that would provide three APIs:
 
@@ -381,7 +389,8 @@ iOS
 ===== Reingeneering the reporting module
 
 One of Burma's products is Threads, an end-to-end solution for handling customer communication via chats and messengers.
-In spring 2019, Bruma wanted Threads' report module reingeneered. They didn't have enough hands in-house for that back then, which is why they reached out to me.
+In spring 2019, Bruma wanted Threads' report module reingeneered.
+They didn't have enough hands in-house for that back then, which is why they reached out to me.
 
 Originally, the module had about 20 caching-related issues that were hard to diagnose.
 It would consume too much memory when running, which was causing the main app to fail.
@@ -407,7 +416,8 @@ Over the development years, the module had accumulated much technical debt, whic
 This has taken its toll on one of Bruma's strategic clients who noticed a significant drop in their service quality.
 
 In two weeks, I brought the first reengineered version of this module in full accordance with link:++{{< ref "book/ergo" >}}++[the ergonomic approach's principles].
-This allowed for quite impressive 300x growth in the system's output with no functional losses. Naturally, this in turn helped Bruma to retain their strategic client.
+This allowed for quite impressive 300x growth in the system's output with no functional losses.
+Naturally, this in turn helped Bruma to retain their strategic client.
 
 .Technologies
 [cols="3"]
