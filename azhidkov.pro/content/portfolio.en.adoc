@@ -142,7 +142,7 @@ Tomcat 8.5, 9
 The Siberian Center of Transport Technologies is the company developing high-tech tools for the Russian Railways.
 Their flagship products were based on Windows, but in spring 2018, they decided to also give Linux a try.
 That's why they went to me.
-For the pilot project, they chose to make a prototype of a video capture system for a custom camera that would receive signals from one of their existing device.
+For the pilot project, they chose to make a prototype of a video capture system for a custom camera that would receive signals from one of their existing devices.
 
 This project turned out to be one of the most fascinating and complex ones I've ever worked on.
 First, it was the first–and so far the last–commercial experience I've had with C.
