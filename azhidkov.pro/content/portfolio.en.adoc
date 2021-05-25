@@ -303,7 +303,7 @@ That's why they reached out to me again.
 
 The project consisted of developing a server that would provide three APIs:
 
-. an API for the bot to save the data;
+. an API for the bot to share the data;
 . an API for the mobile app to receive the data; and
 . an API for the bot to sent push notifications in the mobile app.
 
