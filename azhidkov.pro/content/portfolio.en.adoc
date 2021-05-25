@@ -15,7 +15,7 @@ https://github.com/d-r-q
 
 I specialize in developing information systems (link:++{{< ref "portfolio#lobby">}}++[[1]],link:++{{< ref "portfolio#tcs">}}++[[2]],link:++{{< ref "portfolio#threads">}}++[[3]]) powered by the Java platform.
 However, I'm quite versatile thanks to having nineteen years of experience, loving what I do, and reading English fluently.
-All of these allow me to dabble in developing link:++{{< ref "portfolio#yts_bot" >}}++[Python desktop apps], link:++{{< ref "portfolio#lpx">}}++[low-level video capture software with C], and link:++{{< ref "portfolio#udobno">}}++[Kotlin Multiplatform Mobile apps].
+That's why my background also includes working on link:++{{< ref "portfolio#yts_bot" >}}++[Python desktop apps], link:++{{< ref "portfolio#lpx">}}++[low-level video capture software with C], and link:++{{< ref "portfolio#udobno">}}++[Kotlin Multiplatform Mobile apps].
 
 I've been working as a software engineer since 2005, and as an independent consultant since 2017.
 
@@ -38,8 +38,8 @@ I had to take a temporary break from my studies in connection with my child's bi
 
 === Key skills and competencies
 
-* I take an ergonomic approach to developing fast, reliable, and easily maintainable software (https://azhidkov.pro/book/ergo).
-* I know of and apply in my work some design principles other than SOLID.
+* I take an ergonomic approach to developing fast, reliable, and easily maintainable software (link:++{{< ref "book/ergo">}}++).
+* I know of and apply in my work more design principles other than SOLID.
 * I can design a better architecture than "A Layered Big Ball of Mud."
 * I'm familiar with OOP, FP, PP, OOD, and FD on a good enough level to know that:
 ** The paradigm of the programming language powering the project is orthogonal to the project's development paradigm.
@@ -69,7 +69,7 @@ It involved developing a server for data collection from electric meters.
 Here are some interesting highlights:
 
 . I had to deliver a flexible system for scheduling electric meters polling.
-. The polling was to be conducted via binary closed protocols, which I had to develop myself.
+. The polling was to be conducted via binary closed protocols, which I had to implement myself.
 . Some electric meter connection channels were quite unstable, so it was paramount to make both separate polling sessions and the system overall highly resilient.
 
 .Technologies:
@@ -96,7 +96,7 @@ Excelsior became my last employer and one of my first private clients :)
 Back in 2016 when I was still working at Excelsior, I found and fixed a memory leak in the SWING interface of mobile lidars produced by Teledyne Optech, one of Excelsior's clients.
 So when in summer 2017 Teledyne Optech reached out to Excelsior again with some issues in that app, the job was handed over to me on a subcontract basis.
 
-The app was initially developed by an intern who hasn't been able to find a perfect implementation of flow synchronization.
+The app was initially developed by an intern who hasn't been able to find a sound implementation of thread synchronization.
 This was causing the app to be extremely unstable.
 
 Because of the large-sized code base, I decided it would be more efficient to develop a Kotlin-powered tool based on the Java Debug Interface.
@@ -120,7 +120,7 @@ Java Debug Interface
 
 One of my last tasks before leaving Excelsior was to provide support for Tomcat 8 in Excelsior JET.
 So when in October 2017 they had to add support for Tomcat 8.5 and 9, Excelsior handed this job over to me on a contract basis.
-For this task, I had to reverse-engineer the web apps class loader in Tomcat and the way it plays out in the compiler and Excelsior JET's runtime.
+For this task, I had to reverse-engineer the web apps class loader in Tomcat and replicate its work the compiler and Excelsior JET's runtime.
 
 This project had me work with the code of Java Virtual Machine's certified implementation.
 What's more, I got the chance to dive deeply into all the minutiae of JVM's and Tomcat's class loaders.
@@ -142,7 +142,7 @@ Tomcat 8.5, 9
 The Siberian Center of Transport Technologies is the company developing high-tech tools for the Russian Railways.
 Their flagship products were based on Windows, but in spring 2018, they decided to also give Linux a try.
 That's why they went to me.
-For the pilot project, they chose to make a prototype of a video capture system for a custom camera that would receive signals from an already existing tool.
+For the pilot project, they chose to make a prototype of a video capture system for a custom camera that would receive signals from one of their existing device.
 
 This project turned out to be one of the most fascinating and complex ones I've ever worked on.
 First, it was the first–and so far the last–commercial experience I've had with C.
@@ -154,7 +154,7 @@ The system's workflow was supposed to look like this:
 
 . The system would listen for requests from a custom device connected to it via USB (we switched to a simple GPIO switcher later on);
 . Once it receives a command, the system beings to capture the video stream from a custom camera connected to it via CSI and save it to the drive.
-. There also was a separate HTTP server that would, on request, make screenshots within a specified time interval and pack them into a zip archive.
+. There also was a separate HTTP server that would, on request, collect frames within a specified time interval and pack them into a zip archive.
 +
 The client asked for the server to be powered by C.
 This was the only HTTP server in my entire career that would start up in microseconds :)
@@ -331,12 +331,12 @@ APNS
 
 ---
 
-==== Gaymon Production
+==== GameOn Production
 
 [#udobno]
 ===== Android and iOS app prototypes for validating a business hypothesis
 
-In spring 2019, Gaymon Production asked me to develop a prototype of an Android app that was to validate a business hypothesis.
+In spring 2019, GameOn Production asked me to develop a prototype of an Android app that was to validate a business hypothesis.
 
 The app's idea was to store specific user data and use it to autofill similar web forms on various websites.
 
@@ -384,12 +384,12 @@ iOS
 ---
 
 [#threads]
-==== Bruma Service
+==== Brooma Service
 
 ===== Reingeneering the reporting module
 
-One of Burma's products is Threads, an end-to-end solution for handling customer communication via chats and messengers.
-In spring 2019, Bruma wanted Threads' report module reingeneered.
+One of Brooma's products is Threads, an end-to-end solution for handling customer communication via chats and messengers.
+In spring 2019, Brooma wanted Threads' report module reingeneered.
 They didn't have enough hands in-house for that back then, which is why they reached out to me.
 
 Originally, the module had about 20 caching-related issues that were hard to diagnose.
@@ -408,16 +408,16 @@ Nonetheless, we continued to work together on an outstaff basis and kept it goin
 
 ===== Reengineering the routing module
 
-In summer 2020, I promptly reengineered the routing module for Bruma.
+In summer 2020, I promptly reengineered the routing module for Brooma.
 The routing module is the system's 'heart' acting as an intermediary between the clients and the operators.
 If it's down, the entire system is as well.
 
 Over the development years, the module had accumulated much technical debt, which eventually led to some serious performance issues.
-This has taken its toll on one of Bruma's strategic clients who noticed a significant drop in their service quality.
+This has taken its toll on one of Brooma's strategic clients who noticed a significant drop in their service quality.
 
 In two weeks, I brought the first reengineered version of this module in full accordance with link:++{{< ref "book/ergo" >}}++[the ergonomic approach's principles].
-This allowed for quite impressive 300x growth in the system's output with no functional losses.
-Naturally, this in turn helped Bruma to retain their strategic client.
+This allowed for quite impressive 300x growth in the system's throughput with no functional losses.
+Naturally, this in turn helped Brooma to retain their strategic client.
 
 .Technologies
 [cols="3"]
@@ -494,7 +494,7 @@ I was working on an automated system for the commercial account of electric powe
 
 {empty} +
 
-*Company and position:* TrendSV, Junior Engineer +
+*Company and position:* TrendSW, Junior Engineer +
 *Time of employment:* May 2005 – October 2005 +
 I was working on a SaaS project for US estate agents.
 
