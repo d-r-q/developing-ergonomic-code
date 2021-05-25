@@ -224,7 +224,7 @@ Here are some interesting spotlights:
 . The project is quite demanding performance-wise, which is why I've picked the reactive stack.
 . I'm using Kotlin Coroutines to make working with the reactive stack as simple and straightforward as with the synchronized one.
 . Because of the app's nature, I have to be constantly looking to balance between the system's response time and data consistency.
-. link:++{{< ref "posts/21/03/210321-project-l-testing">}}++[Automated testing is set up] in such a way that the client has only seen 1 (one) bug and 0 (zero) regressions over two months.
+. link:++{{< ref "posts/21/03/210321-project-l-testing">}}++[Automated testing is set up] in such a way that the client has only seen 3 (three) bugs and 1 (one) regressions over four months, with 11K slocs and two major changes in requirements understanding.
 
 .Technologies
 [cols="3"]
