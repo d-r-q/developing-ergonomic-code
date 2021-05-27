@@ -21,7 +21,7 @@ I've been working as a software engineer since 2005, and as an independent consu
 
 Apart from creating software, I've been working as a lecturer and thesis advisor at Novosibirsk State University across two departments since 2007.
 
-Since 2020, I've also been writing my own https://t.me/ergonomic_code[Telegram channel (rus)], a link:++{{ref "posts">}}++[blog (rus)], and link:++{{< ref "book/ergo">}}++[a book (rus)] about my approach to software design and engineering.
+Since 2020, I've also been writing my own https://t.me/ergonomic_code[Telegram channel (rus)], a blog (link:++{{<relref path="/posts" lang="ru">}}++[rus], link:++{{<relref path="/posts" lang="en">}}++[en]), and link:++{{<relref path="/book/ergo" lang="ru">}}++[a book (rus)] about my approach to software design and engineering.
 
 {empty} +
 
@@ -38,7 +38,7 @@ I had to take a temporary break from my studies in connection with my child's bi
 
 === Key skills and competencies
 
-* I take an ergonomic approach to developing fast, reliable, and easily maintainable software (link:++{{< ref "book/ergo">}}++).
+* I take an ergonomic approach to developing fast, reliable, and easily maintainable software.
 * I know of and apply in my work more design principles other than SOLID.
 * I can design a better architecture than "A Layered Big Ball of Mud."
 * I'm familiar with OOP, FP, PP, OOD, and FD on a good enough level to know that:
@@ -224,7 +224,7 @@ Here are some interesting spotlights:
 . The project is quite demanding performance-wise, which is why I've picked the reactive stack.
 . I'm using Kotlin Coroutines to make working with the reactive stack as simple and straightforward as with the synchronized one.
 . Because of the app's nature, I have to be constantly looking to balance between the system's response time and data consistency.
-. link:++{{< ref "posts/21/03/210321-project-l-testing">}}++[Automated testing is set up] in such a way that the client has only seen 3 (three) bugs and 1 (one) regressions over four months, with 11K slocs and two major changes in requirements understanding.
+. link:++{{<relref path="posts/21/03/210321-project-l-testing" lang="ru">}}++[Automated testing is set up (rus)] in such a way that the client has only seen 3 (three) bugs and 1 (one) regressions over four months, with 11K slocs and two major changes in requirements understanding.
 
 .Technologies
 [cols="3"]
@@ -415,7 +415,7 @@ If it's down, the entire system is as well.
 Over the development years, the module had accumulated much technical debt, which eventually led to some serious performance issues.
 This has taken its toll on one of Brooma's strategic clients who noticed a significant drop in their service quality.
 
-In two weeks, I brought the first reengineered version of this module in full accordance with link:++{{< ref "book/ergo" >}}++[the ergonomic approach's principles].
+In two weeks, I brought the first reengineered version of this module in full accordance with link:++{{<relref path="/book/ergo" lang="ru">}}++[the ergonomic approach's principles].
 This allowed for quite impressive 300x growth in the system's throughput with no functional losses.
 Naturally, this in turn helped Brooma to retain their strategic client.
 
