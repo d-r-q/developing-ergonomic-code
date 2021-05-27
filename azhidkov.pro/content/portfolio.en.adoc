@@ -1,77 +1,78 @@
 ---
 title: "Portfolio"
-description: Software development and reengenering
+description: Software development and reengineering
 date: 2021-03-13T13:25:37+07:00
 draft: false
 ---
 :!table-caption:
 
 == Aleksey Zhidkov
-*Architector, TechLead* +
+*Architect, Tech Lead* +
 https://azhidkov.pro +
 https://github.com/d-r-q
 
 {empty} +
 
-Специализируюсь на разработке информационных систем (link:++{{< relref path="portfolio#lobby" lang="ru">}}++[[1]],link:++{{< relref path="portfolio#tcs" lang="ru">}}++[[2]],link:++{{< relref path="portfolio#threads" lang="ru">}}++[[3]]) на платформе Java.
-Но девятнадцать лет опыта, любовь к профессии и свободное чтение на английском позволяют мне успешно делать и link:++{{< relref path="portfolio#yts_bot" lang="ru">}}++[десктопные приложения на Python]
-и link:++{{< relref path="portfolio#lpx" lang="ru">}}++[низкоуровневые системы захвата видео на C]
-и link:++{{< relref path="portfolio#udobno" lang="ru">}}++[мобильные приложения на Kotlin Multiplatform Mobile].
+I specialize in developing information systems (link:++{{< ref "portfolio#lobby">}}++[[1]],link:++{{< ref "portfolio#tcs">}}++[[2]],link:++{{< ref "portfolio#threads">}}++[[3]]) powered by the Java platform.
+However, I'm quite versatile thanks to having nineteen years of experience, loving what I do, and reading English fluently.
+That's why my background also includes working on link:++{{< ref "portfolio#yts_bot" >}}++[Python desktop apps], link:++{{< ref "portfolio#lpx">}}++[low-level video capture software with C], and link:++{{< ref "portfolio#udobno">}}++[Kotlin Multiplatform Mobile apps].
 
-Занимаюсь коммерческим программированием с 2005 года.
-С 2017 года работаю независимым консультантом.
+I've been working as a software engineer since 2005, and as an independent consultant since 2017.
 
-Помимо разработки ПО, преподаю и веду дипломников в ВКИ НГУ и НГУ с 2007 года.
+Apart from creating software, I've been working as a lecturer and thesis advisor at Novosibirsk State University across two departments since 2007.
 
-С 2020 года веду https://t.me/ergonomic_code[Телеграм-канал] и пишу link:++{{relref path="posts">}}++[блог] lang="ru"и link:++{{< relref path="book/ergo" lang="ru">}}++[книгу], о своём подходе к дизайну и разработке ПО.
+Since 2020, I've also been writing my own https://t.me/ergonomic_code[Telegram channel (rus)], a blog (link:++{{<relref path="/posts" lang="ru">}}++[rus], link:++{{<relref path="/posts" lang="en">}}++[en]), and link:++{{<relref path="/book/ergo" lang="ru">}}++[a book (rus)] about my approach to software design and engineering.
 
 {empty} +
 
-=== Образование
+=== Education
 
-* Аспирант ИВТ СО РАН, 2018-2019, занимался исследованиями в области разрешения конфликтов асинхронной репликации данных на основе прототипа встраиваемой многоверсионной https://github.com/d-r-q/qbit[СУБД собственной разработки].
-  Временно забрал документы в связи с рождением ребёнка;
-* ФИТ НГУ, 2009г;
-* ВКИ НГУ, 2006г.
+* Ph.D. candidate at the Federal Research Center for Information and Computational Technologies, 2018-2019.
+My research was focused on conflict resolution for asynchronous data replication.
+It was based on a prototype of an https://github.com/d-r-q/qbit[embedded multi-version DBMS] I devised myself.
+I had to take a temporary break from my studies in connection with my child's birth.
+* Computer Science, Novosibirsk State University, 2009.
+* Higher College of Informatics, Novosibirsk State University, 2006.
 
 {empty} +
 
-=== Ключевые навыки и компетенции
+=== Key skills and competencies
 
-* Эргономичный подход к разработке быстрого, надёжного и поддерживаемого ПО (https://azhidkov.pro/book/ergo).
-* Знаю и применяю в работе принципы проектирования помимо SOLID.
-* Могу сделать архитектуру лучше, чем "Layered Big Ball of Mud".
-* Знаю ООП, ФП, ПП, ООД и ФД достаточно, чтобы понимать что:
-** парадигма языка программирования проекта ортогональна парадигме разработки проекта;
-** сейчас самая распространённая парадигма разработки - процедурное программирование;
-** ООП и ФП - синтаксический сахар;
-** ООД и ФД - не взаимоисключают друг друга, а наоборот только вместе дают хороший дизайн.
-* Языки программирования:
-** Kotlin, Java - профессионально, с 2012 и 2002 года соотвественно;
-** JavaScript, Python, C - есть успешный коммерческий опыт;
-** Rust, Clojure, Scala, OCaml, Groovy, Eiffel - изучил из любопытства, но не применял.
-* Реляционная модель и SQL.
-  Из СУБД предпочитаю PostgreSQL.
+* I take an ergonomic approach to developing fast, reliable, and easily maintainable software.
+* I know of and apply in my work more design principles other than SOLID.
+* I can design a better architecture than "A Layered Big Ball of Mud."
+* I'm familiar with OOP, FP, PP, OOD, and FD on a good enough level to know that:
+** The paradigm of the programming language powering the project is orthogonal to the project's development paradigm.
+** Right now, procedural programming is the generally preferred development paradigm.
+** Both OOP and FP are syntactic sugar.
+** OOD and FD aren't mutually exclusive—on the contrary, they can only produce a good design when used together.
+* Programming languages:
+** Kotlin, Java: I've been working with both on a professional level since 2012 and 2002, respectively.
+** JavaScript, Python, C: I have some successful commercial experience.
+** Rust, Clojure, Scala, OCaml, Groovy, Eiffel: I have studied these out of sheer curiosity but never got the chance to apply any in my work.
+* The relational model and SQL.
+With DBMSes, I prefer PostgreSQL.
 * Spring Boot + Web MVC/Flux, Ktor.
 * Spring Data (JDBC, R2DBC), jooq, Ebean.
-* Автоматизация тестирования — xUnit, testcontainers, mutational testing, property testing.
+* Testing automation: xUnit, testcontainers, mutational testing, property testing.
 * Git, Gradle.
 
 {empty} +
 
-=== Портфолио
+=== Portfolio
 
-==== ООО "Завод Программно-Технических Комплексов"
+==== I&C Systems Company
 
-Свою работу в качестве независимого консультанта я начал с разработки сервер сбора данных со счётчиков электроэнергии для АИИС КУЭ летом 2017 года.
+I started out as an independent consultant back in summer 2017 with this project.
+It involved developing a server for data collection from electric meters.
 
-Проект был интересен тремя аспектами:
+Here are some interesting highlights:
 
-. Необходимо было обеспечить гибкую систему определения расписания опросов счётчиков;
-. Опрос счётчиков выполнялся по бинарным закрытым протоколам, которые пришлось реализовать самостоятельно;
-. Часть каналов связи со счётчиками была крайне нестабильной, поэтому требовалось высокая отказоустойчивость как отдельной сессии опроса счётчика, так и всей системы в целом.
+. I had to deliver a flexible system for scheduling electric meters polling.
+. The polling was to be conducted via binary closed protocols, which I had to implement myself.
+. Some electric meter connection channels were quite unstable, so it was paramount to make both separate polling sessions and the system overall highly resilient.
 
-.Технологии:
+.Technologies:
 [cols="3"]
 |===
 |
@@ -86,20 +87,22 @@ JDBC
 
 ---
 
-==== ООО "Эксельсиор" (сейчас Excelsior at Huawei)
+==== Excelsior (Excelsior at Huawei now)
 
-Эксельсиор стал моим последним работодателем и одним из двух первых клиентов:)
+Excelsior became my last employer and one of my first private clients :)
 
-===== Исправление ошибок синхронизации в SWING-интерфейсе портативного лидара для Teledyne Optech
+===== Fixing sync issues in the SWING interface of a Teledyne Optech mobile lidar
 
-В 2016 году, когда я ещё работал в Эксельсиоре, я нашёл и устранил утечку памяти в SWING-интерфейсе портативного лидара Teledyne Optech, заказчика Эксельсиора.
-Поэтому когда летом 2017 года Teledyne Optech снова обратилась к Эксельсиору с проблемами в этом приложении, они отдали мне эту работу на субподряд.
+Back in 2016 when I was still working at Excelsior, I found and fixed a memory leak in the SWING interface of mobile lidars produced by Teledyne Optech, one of Excelsior's clients.
+So when in summer 2017 Teledyne Optech reached out to Excelsior again with some issues in that app, the job was handed over to me on a subcontract basis.
 
-Приложение было написано стажёром, которому не удалось обеспечить корректную синхронизацию потоков, из-за чего приложение работало крайне нестабильно.
-Ввиду большого объёма кодовой базы, я решил, что эффективнее будет разработать инструмент (на Kotlin) на базе Java Debug Interface,
-который выявил все места требующие синхронизации, а так же все обращения к GUI вне Main-потока.
+The app was initially developed by an intern who hasn't been able to find a sound implementation of thread synchronization.
+This was causing the app to be extremely unstable.
 
-.Технологии
+Because of the large-sized code base, I decided it would be more efficient to develop a Kotlin-powered tool based on the Java Debug Interface.
+The tool would detect all the spots that need to be synchronized, as well as all GUI requests coming outside the Main flow.
+
+.Technologies
 [cols="3"]
 |===
 |
@@ -113,15 +116,16 @@ Java Debug Interface
 |
 |===
 
-===== Поддержка Тomcat 8.5 и 9 в Excelsior JET
+===== Tomcat 8.5 and 9 support in Excelsior JET
 
-Одной из моих последних задач перед увольнением из Эксельсиор была поддержка Tomcat 8 в Excelsior JET.
-Поэтому, когда осенью 2017 года пришло время поддержки Tomcat 8.5 и 9, Эксельсиор отдал эту работу мне на подряд.
-Поддержка новой версии Tomcat заключалась в реверс-инжиниринге работы загрузчика классов веб-приложений в Tomcat и его воспроизведение в компиляторе и рантайме Excelsior JET.
+One of my last tasks before leaving Excelsior was to provide support for Tomcat 8 in Excelsior JET.
+So when in October 2017 they had to add support for Tomcat 8.5 and 9, Excelsior handed this job over to me on a contract basis.
+For this task, I had to reverse-engineer the web apps class loader in Tomcat and replicate its work the compiler and Excelsior JET's runtime.
 
-Проект был интересен работой с кодом сертифицированной реализации Java Virtual Machine, а так же глубоким погружением в механизм загрузки классов в JVM и загрузчик классов Tomcat.
+This project had me work with the code of Java Virtual Machine's certified implementation.
+What's more, I got the chance to dive deeply into all the minutiae of JVM's and Tomcat's class loaders.
 
-.Технологии
+.Technologies
 [cols="3"]
 |===
 |
@@ -133,26 +137,29 @@ Tomcat 8.5, 9
 |===
 
 [#lpx]
-===== НИОКР системы захвата видео с кастомной камеры для ООО "Сибирский центр транспортных технологий"
+===== R&D of a video capture system for custom camera, The Siberian Center of Transport Technologies
 
-Сибирский центр транспортных технологий является разработчиком высокотехнологичных инструментов для РЖД.
-Их флагманские продукты базировались на платформе Windows, но весной 2018 года они решили так же освоить и Linux и обратились ко мне.
-В качестве пилотного проекта был выбран прототип системы захвата видео с кастмной камеры по сигналу одного из существующих инструментов.
+The Siberian Center of Transport Technologies is the company developing high-tech tools for the Russian Railways.
+Their flagship products were based on Windows, but in spring 2018, they decided to also give Linux a try.
+That's why they went to me.
+For the pilot project, they chose to make a prototype of a video capture system for a custom camera that would receive signals from one of their existing devices.
 
-Это был один из самых интересных и сложных проектов в моей жизни.
-В-первых, это был первый и пока что последний мой коммерческий опыт на С.
-Во-вторых, мне повезло напрямую поработать с девайсами, и это совсем другие ощущения:)
-В-третьих, я поработал с многопоточным и сетевым программированием на языке без synchronized-блока и сборщика мусора.
+This project turned out to be one of the most fascinating and complex ones I've ever worked on.
+First, it was the first–and so far the last–commercial experience I've had with C.
+Second, I got the chance to do some work with hardware directly.
+That's a whole different experience :)
+Finally, I tried my hand at multithreaded and network programming with a language that has no synchronized block or garbage collector.
 
-Стояла задача разработать систему, которая:
+The system's workflow was supposed to look like this:
 
-. Слушает команды кастомного устройства подключенного по USB (потом перешли на простой выключатель на GPIO);
-. Получив команду, начинает захватывать видеопоток с кастомной камеры подключенной по CSI и сохранять его на диск;
-. Отдельно работает HTTP-сервер, который по запросу на лету собирал кадры за запрошенный интервал и выдавал их zip-архивом.
+. The system would listen for requests from a custom device connected to it via USB (we switched to a simple GPIO switcher later on);
+. Once it receives a command, the system beings to capture the video stream from a custom camera connected to it via CSI and save it to the drive.
+. There also was a separate HTTP server that would, on request, collect frames within a specified time interval and pack them into a zip archive.
 +
-Заказчик попросил сделать сервер так же на С, и это единственный HTTP-сервер в моей карьере, который стартовал за микросекунды:)
+The client asked for the server to be powered by C.
+This was the only HTTP server in my entire career that would start up in microseconds :)
 
-.Технологии
+.Technologies
 [cols="3"]
 |===
 |
@@ -173,19 +180,20 @@ CSI
 
 ---
 
-==== ООО "Сибериан.Про"
+==== Siberian.Pro
 
-===== Динамически настраиваемый прокси-сервер для ООО "Обоз"
+===== Dynamically configuring proxy server for Oboz
 
-Зимой 2019 года Сибериан.Про делали мобильное приложение для Обоза.
-В этом проекте по требованиям заказчика надо было реализовать на Spring Boot небольшую прокси между мобильным приложением и системой заказчика.
-Основной задачей прокси было динамическое получение конфигурации из Consul.
+Back in winter 2019, Siberian.Pro was developing a mobile app for Oboz.
+In this project, the client wanted to have a small proxy powered by Spring Boot that would act as a liaison between the mobile app and the client's system.
+The proxy's main task was to dynamically receive the configuration from Consul.
 
-На тот момент у Сибериан.Про не было свободных Java-разработчиков, поэтому они отдали эту мне работу на субподряд.
+Siberian.Pro's Java engineers were all busy working on other tasks, which is why they handed this job over to me on a subcontract basis.
 
-Качество и скорость работы устроили Сибериан.Про, поэтому когда у них снова появилась потребность в Java-разработчике, они обратились ко мне.
+Siberian.Pro was satisfied with the quality and pace of my work.
+So once they needed a Java developer again, they reached out to me.
 
-.Технологии
+.Technologies
 [cols="3"]
 |===
 |
@@ -202,22 +210,23 @@ Docker/Docker compose
 |===
 
 [#lobby]
-===== Сервер приложения для проверки бизнес-гипотезы для "Компании Х" ("Проект Л")
-Зимой 2021 года Сибериан.Про начали делать новый проект для "Компании Х" - организатора азартных игр (нет, не джойказино и им подобные:) ).
-По требованиям  заказчика, требовался бекэнд на платформе Java, и Сибериан.Про они снова обратились ко мне.
+===== Company "X", project "L": a server for a business hypothesis validation app
+In winter 2021, Siberian.Pro started working on a new project for Company "X", a gambling provider.
+The client wanted the back-end system to be powered by the Java platform.
+Siberian.Pro reached out to me again.
 
-На момент написания текста, "Проект Л" на этапе разработки.
-Целью проекта является проверка бизнес-гипотезы об эффективности новой механики трансляции игры,
-поэтому большую часть функций "Проект Л" делегирует основной системе.
+At the time of me writing this text, Project "L" is still in the development stage.
+The project is to validate a business hypothesis regarding the efficiency of a new game translation mechanic.
+For that reason, Project "L" delegates most of its functionality to the main system.
 
-Сейчас в проекте интересно следующее:
+Here are some interesting spotlights:
 
-. Довольно высокие требования по по производительности, поэтому я выбрал реактивный стэк;
-. Использование Kotlin Coroutines для того, чтобы сделать работу с реактивным стэком такой же простой и понятной, как и с синхронным;
-. Ввиду специфики приложения, приходится искать баланс между временем отклика системы и согласованностью данных;
-. link:++{{< relref path="posts/21/03/210321-project-l-testing" lang="ru">}}++[Автоматическое тестирование организовано] так, что до заказчика за два месяца дошли 1 (один) баг и 0 (ноль) регрессий.
+. The project is quite demanding performance-wise, which is why I've picked the reactive stack.
+. I'm using Kotlin Coroutines to make working with the reactive stack as simple and straightforward as with the synchronized one.
+. Because of the app's nature, I have to be constantly looking to balance between the system's response time and data consistency.
+. link:++{{<relref path="posts/21/03/210321-project-l-testing" lang="ru">}}++[Automated testing is set up (rus)] in such a way that the client has only seen 3 (three) bugs and 1 (one) regressions over four months, with 11K slocs and two major changes in requirements understanding.
 
-.Технологии
+.Technologies
 [cols="3"]
 |===
 |
@@ -244,28 +253,31 @@ Github Actions;
 
 ---
 
-==== Трейдинг Клуб
+==== Trading Club
 
 [#yts_bot]
-===== Система защиты и лицензирования алгоритма торговли на бирже крипто-валют
+===== A system to protect & license a cryptocurrency trading algorithm
 
-Трейдинг Клуб разработали уникальный алгоритм торговли на бирже крипто-валют, который был запрограммирован на Python.
-Зимой 2019 года они обратились ко мне для решения трёх задач:
+Trading Club has developed a unique Python-powered algorithm for crypto exchange trading.
+In winter 2019, they reached out to me to have 3 things done.
+I was to:
 
-. защита самого алгоритма от реверс-инжиниринга;
-. разработка системы лицензирования доступа к алгоритму;
-. разработка GUI для управления алгоритмом.
+. protect the algorithm itself from reverse-engineering;
+. develop a licensing system for accessing the algorithm; and
+. develop a GUI for controlling the algorithm.
 
-Для защиты от реверс-инжиниринга, я принял решение скомпилировать скрипт в нативный код Cython-ом.
-Нативный код сам по себе сложен для реверс-инжениринга, не говоря уж о нативном коде полученном из кода на динамическом языке высокого уровня.
+To protect the algorithm from reverse-engineering, I decided to compile the script to native code via Cython.
+Native code per se is a tough nut to crack in terms of reverse-engineering.
+Things get much harder if we're talking native code generated from a code snippet written in a high-level dynamic language.
 
-Чтобы обеспечить лицензирование, я реализовал сервер лицензий и добавил проверку лицензии в алгоритм.
+For licensing, I developed a license server and added a license check into the algorithm.
 
-Наконец, GUI я сделал на QT, а для того чтобы избавить конечного пользователя от сложностей установки интерпретатора Python, я упаковал приложение pyinstaller-ом.
+Finally, I developed a GUI with QT.
+To keep the user from bothering with installing a Python interpreter, I packed the app with pyinstaller.
 
-На данный момент это мой единственный коммерческий проект на Python.
+For now, this is my only commercial project written with Python.
 
-.Технологии
+.Technologies
 [cols="3"]
 |===
 |
@@ -283,18 +295,19 @@ Docker/Docker compose
 
 
 [#tcs]
-===== Сервер Передачи данных
+===== Data Transfer server
 
-Разработав приложение, Трейдинг Клуб переключились на реализацию мобильного приложения для отслеживания работы бота.
-Летом 2020 года Трейдинг Клуб захотели связать эти разрозненные части в единую систему и они снова обратились ко мне.
+Once they were done with the app, Trading Club switched to developing a mobile app that could keep track of their bot's work.
+In summer 2020, Trading Club decided they want to arrange all the disparate parts of the app into a solid whole.
+That's why they reached out to me again.
 
-Суть проекта заключалась в разработке сервера, предоставляющего три АПИ:
+The project consisted of developing a server that would provide three APIs:
 
-. сохранения данных ботом;
-. получения данных мобильным приложением;
-. отправки ботом пуш-нотификаций в мобильное приложение.
+. an API for the bot to share the data;
+. an API for the mobile app to receive the data; and
+. an API for the bot to sent push notifications in the mobile app.
 
-.Технологии
+.Technologies
 [cols="3"]
 |===
 |
@@ -318,27 +331,30 @@ APNS
 
 ---
 
-==== ООО "Геймон Продакшн"
+==== GameOn Production
 
 [#udobno]
-===== Прототипы Android и iOS приложения для проверки бизнес-гипотезы
+===== Android and iOS app prototypes for validating a business hypothesis
 
-Весной 2019 года ООО "Геймон Продакшн" обратились ко мне за разработкой прототипа Андроид-приложения для проверки бизнес-гипотезы.
+In spring 2019, GameOn Production asked me to develop a prototype of an Android app that was to validate a business hypothesis.
 
-Суть приложения заключалась в том, чтобы хранить определённые пользовательские данные и использовать их для автоматизации заполнения схожих Веб-форм на различных сайтах.
+The app's idea was to store specific user data and use it to autofill similar web forms on various websites.
 
-Практически сразу стало понятно, что писать и поддерживать скрипты заполнения форм на стандартном АПИ WebView будет слишком долго и дорого.
-Поэтому я разработал DSL на базе Kotlin Coroutines, который позволял описывать шаги заполнения формы в декларативном стиле.
+It was clear from the start that writing and maintaining form-filling scripts powered by WebView's standard API would cost too much time and money.
+For that reason, I developed a DSL based on Kotlin Coroutines that allowed to describe the process of filling out a form in a declarative style.
 
-В процессе разработки скриптов, мне пришлось погрузиться в устройство современных веб-ферймворков, чтобы понять как автоматизировать заполнение форм, управляемых ими.
+While working on the scripts, I had to come up with a way to fill forms out automatically on websites powered by modern web frameworks.
+Naturally, I had to do extensive research into the frameworks' structure to do so.
 
-Изначально заказчик просил версию только под Андроид, но спустя несколько месяцев разработки, захотел так же и версию под iOS.
-Понимая, что самым дорогим в проекте были скрипты, я решил, вместо портирования их под iOS, рискнуть и выделить DSL и сами скрипты в мультиплатформенный модуль.
+Initially, the client wanted an Android app only.
+In a bunch of months of development, though, he decided he needs an iOS one as well.
+I knew that the scripts were the project's most expensive part.
+For that reason, I decided that instead of porting these to iOS, I'd better take a risk and put both the DSL and the scripts into a multiplatform module.
 
-В процессе подключения KMM-модуля к iOS-приложению возник ряд трудностей.
-Тем не менее я уверен, что это решение сэкономило заказчику 50-100% итоговой стоимости проекта.
+I had encountered some issues while connecting the KMM module to the iOS app.
+Still, I'm quite sure this decision saved my client around 50% to 100% of the project's final cost.
 
-.Технологии
+.Technologies
 [cols="3"]
 |===
 |
@@ -368,39 +384,42 @@ iOS
 ---
 
 [#threads]
-==== ООО "Брума Сервис"
+==== Brooma Service
 
-===== Реинжениринг модуля отчётности
+===== Reingeneering the reporting module
 
-Одним из продуктов Брумы является Threads - комплексное решение для организации взаимодействия с клиентами в чатах и мессенджерах.
-Весной 2019 года Брума обратилась ко мне с просьбой провести реинжиниринг модуля отчётности Threads, на который им на тот момент не хватало собственных ресурсов.
+One of Brooma's products is Threads, an end-to-end solution for handling customer communication via chats and messengers.
+In spring 2019, Brooma wanted Threads' report module reingeneered.
+They didn't have enough hands in-house for that back then, which is why they reached out to me.
 
-В оригинальном модуле было порядка 20 сложно диагностируемых ошибок, вызванных кэшированием данных, и в процессе работы он потреблял чрезмерно много памяти.
-Это приводило к отказу основного приложения.
+Originally, the module had about 20 caching-related issues that were hard to diagnose.
+It would consume too much memory when running, which was causing the main app to fail.
 
-Для решения проблемы, я:
+To solve the problem, I:
 
-* провёл реверс-инжиниринг оригинального модуля;
-* выделил его в отдельный процесс;
-* реализовал потоковую передачу данных от сервера БД до браузера клиента через два приложения на Spring Web MVC.
+* reverse-engineered the original module;
+* spawned it off into a separate process; and
+* set going a data streamline from the database server to the client browser via two apps powered by Spring Web MVC.
 
-Потоковый режим работы и работа с JDBC напрямую позволили исправить ошибки оригинального модуля, существенно повысить производительность нового модуля и решить проблемы с количеством потребляемой памяти.
+Setting up the data streamline and interacting with JDBC directly allowed to resolve the original module's problems, significantly improve on its performance, and fix all the memory-related issues.
 
-Выполнение проекта заняло значительно больше времени, чем планировалось.
-Тем не менее, мы продолжили сотрудничество в формате аутстаффа и проработали в таком формате ещё полтора года.
+The project took much longer than expected.
+Nonetheless, we continued to work together on an outstaff basis and kept it going for one year and a half.
 
-===== Реинжениринг модуля маршрутизации
+===== Reengineering the routing module
 
-Летом 2020 года в кратчайшие сроки я выполнил реинжиниринг модуля маршрутизации.
-Модуль маршрутизации является сердцем системы, которое соединяет клиентов и операторов, и если он не работает, вся система перестаёт функционировать.
+In summer 2020, I promptly reengineered the routing module for Brooma.
+The routing module is the system's 'heart' acting as an intermediary between the clients and the operators.
+If it's down, the entire system is as well.
 
-За годы разработки этот модуль накопил большое количество техдолга, который привел к серьёзным проблемам с производительностью.
-Что в свою очередь привело к критическому снижению качества обслуживания у одного из стратегических клиентов Брумы.
+Over the development years, the module had accumulated much technical debt, which eventually led to some serious performance issues.
+This has taken its toll on one of Brooma's strategic clients who noticed a significant drop in their service quality.
 
-За две недели я провёл первую итерацию реинжиниринга этого модуля в соответствии с принципами link:++{{< relref path="book/ergo" lang="ru">}}++[Эргономичного подхода].
-Это дало поразительный 300-кратный рост пропускной способности системы без потери функциональности и в конечно итоге позволило сохранить стратегического клиента.
+In two weeks, I brought the first reengineered version of this module in full accordance with link:++{{<relref path="/book/ergo" lang="ru">}}++[the ergonomic approach's principles].
+This allowed for quite impressive 300x growth in the system's throughput with no functional losses.
+Naturally, this in turn helped Brooma to retain their strategic client.
 
-.Технологии
+.Technologies
 [cols="3"]
 |===
 |
@@ -419,76 +438,76 @@ SQL
 
 ---
 
-==== Опыт работы в найме
+==== Employment experience
 
-*Место работы:* НГУ, Преподаватель, научный руководитель дипломных работ +
-*Время работы:* Сентябрь 2009 – текущий момент +
+*Company and position:* Novosibirsk State University, Lecturer and Thesis Advisor +
+*Time of employment:* September 2009 – current position +
 
-* Семинарист курса "Базы Данных" (2018-настоящий момент);
-* Лектор и семинарист курса "Объектно-Ориентированное программирование" (2009-2014).
-
-{empty} +
-
-*Место работы:* Excelsior, инженер, руководитель проектов +
-*Время работы:* Июнь 2013 - июнь 2017  +
-
-* https://www.teledyneoptech.com/en/products/software/lms/[Lidar Mapping Suite] - система для обработки данных полученных лидарами;
-* SendItBetter (более не доступен) - сервис отправки больших файлов по e-mail;
-* https://github.com/excelsior-oss/restler[Restler] - библиотека генерации клиентов HTTP-API по описанию Java-классом;
-* ExcelsiorJet (более не доступен) - сертифицированная реализация JVM и AOT-компилятор Java.
+* I'm the lecturer for the 'Databases' course (2018—current position).
+* I was the lecturer for the 'Object-Oriented Programming' course (2009-2014).
 
 {empty} +
 
-*Место работы:* Playtox, инженер +
-*Время работы:* Сентябрь 2012 – май 2013  +
-Разработка платформы для мобильных MMO игр.
+*Company and position:* Excelsior, Engineer and Project Manager +
+*Time of employment:* June 2013 - June 2017  +
+
+* https://www.teledyneoptech.com/en/products/software/lms/[Lidar Mapping Suite] - a system for processing the data received by lidars.
+* SendItBetter (not available anymore) - a tool for sending large files via email.
+* https://github.com/excelsior-oss/restler[Restler] - a library for HTTP-API clients generation based on a Java class description.
+* ExcelsiorJet (not available anymore) - certified JVM implementation and AOT Java compiler.
 
 {empty} +
 
-*Место работы:* КА Алексея Сухорукова, эксперт по Java +
-*Время работы:* Июнь 2010 – август 2013 +
-Оценка уровня владения Java соискателями.
+*Company and position:* Playtox, Engineer +
+*Time of employment:* September 2012 – May 2013  +
+I was developing a platform for mobile MMO games.
 
 {empty} +
 
-*Место работы:* Алавар.ру, HD Soft (с ноября 2009), инженер +
-*Время работы:* Октябрь 2008 – сентябрь 2012 +
-Разработка Java-платформы для приставок кабельных сетей цифрового телевидения США и прикладных приложений для них же.
+*Company and position:* Alexey Sukhorukov's Hiring Agency, Java Expert +
+*Time of employment:* June 2010 – August 2013 +
+I was evaluating job candidates' Java skill level.
 
 {empty} +
 
-*Место работы:* Инновационные технологии, инженер +
-*Время работы:* Март 2008 – октябрь 2008 +
-Разработка городского информационного портала «Город-гид».
+*Company and position:* Alavar.ru/HD Soft (since November 2009), Engineer +
+*Time of employment:* October 2008 – September 2012 +
+I was developing a Java platform and applications for US digital cable boxes.
 
 {empty} +
 
-*Место работы:* ВКИ НГУ, Преподаватель, научный руководитель дипломных работ +
-*Время работы:* Февраль 2007 – июль 2016 +
-Лектор и семинарист базового проекта "Трансляторы".
+*Company and position:* Innovative Technologies, Engineer +
+*Time of employment:* March 2008 – October 2008 +
+I was developing a city guidance portal called Gorod-Gid ("City guide").
 
 {empty} +
 
-*Место работы:* КБ  Информ, инженер +
-*Время работы:* Январь 2006 – март 2008 +
-Разработка автоматизированной информационно-измерительной системы коммерческого учёта электроэнергии.
+*Company and position:* Novosibirsk State University, Higher College of Informatics, Lecturer and Thesis Advisor +
+*Time of employment:* February 2007 – July 2016 +
+I was a lecturer for 'Translators,' a base project.
 
 {empty} +
 
-*Место работы:* ТрендСВ, младший инженер +
-*Время работы:* Май 2005 – октябрь 2005 +
-SaaS для риелторов США.
+*Company and position:* KB Inform, engineer +
+*Time of employment:* January 2006 – March 2008 +
+I was working on an automated system for the commercial account of electric power.
 
 {empty} +
 
-==== Опенсорс проекты
+*Company and position:* TrendSW, Junior Engineer +
+*Time of employment:* May 2005 – October 2005 +
+I was working on a SaaS project for US estate agents.
 
- . https://github.com/d-r-q/qbit[qbit] - встраиваемая распределённая СУБД на Kotlin Multiplatform;
- . https://github.com/d-r-q/Q5[Q5] - персональное Android-приложение для учёта расходов;
- . https://github.com/d-r-q/nuvola-app-yandex-music[Yandex Music • Nuvola Apps Runtime] - скрипт поддержки Яндекс.Музыки в https://nuvola.tiliado.eu/[Nuvola Player];
- . https://github.com/d-r-q/jeb-k[Jeb-k] - комманд-лайн инструмент для инкрементальных бэкапов со схемой ротации на базе Ханойских башень;
- . https://github.com/d-r-q/maroz[Maroz] - Hello World на голом железе на ассемблере и Rust;
- . https://github.com/d-r-q/kakos[Kakos] - загрузчик ОС на ассемблере и С;
- . https://github.com/d-r-q/QuickDialer[QuickDialer] - виджет рабочего стола Andoid, для быстрого набора "любимых" и недавних номеров;
- . https://github.com/d-r-q/DistributedRobocode[DistributedRobocode] - система распределённого запуска Robocode для локальной оценки рейтинга "Томкэта";
- . https://github.com/d-r-q/tomcat[Tomcat] - https://robowiki.net/wiki/Main_Page[Robcode] бот, в 2011 году занял первое место из примерно тысячи ботов на тот момент.
+{empty} +
+
+==== Open Source projects
+
+ . https://github.com/d-r-q/qbit[qbit] - embedded distributed DMBS powered by Kotlin Multiplatform.
+ . https://github.com/d-r-q/Q5[Q5] - Android app for personal finance management.
+ . https://github.com/d-r-q/nuvola-app-yandex-music[Yandex Music • Nuvola Apps Runtime] - a script for Yandex Music support in https://nuvola.tiliado.eu/[Nuvola Player];
+ . https://github.com/d-r-q/jeb-k[Jeb-k] - command-line tool for incremental backups with a Tower of Hanoi-based rotation schema.
+ . https://github.com/d-r-q/maroz[Maroz] - bare-metal Hello World program powered by Assembler and Rust.
+ . https://github.com/d-r-q/kakos[Kakos] - an OS loader powered by Assembler and C.
+ . https://github.com/d-r-q/QuickDialer[QuickDialer] - Android Home screen speed dialing widget for favorite and recent phone numbers.
+ . https://github.com/d-r-q/DistributedRobocode[DistributedRobocode] - a system to run distributed Robocode for local Tomcat version evaluation.
+ . https://github.com/d-r-q/tomcat[Tomcat] - https://robowiki.net/wiki/Main_Page[Robcode], a bot that won 1st place out of around a thousand back in 2011.

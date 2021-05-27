@@ -89,10 +89,10 @@ baseURL = "https://azhidkov.pro/"
             weight = 1
             url ="posts"
 
-        # [[languages.en.menu.main]]
-        #     name = "Portfolio"
-        #     weight = 3
-        #     url ="portfolio"
+        [[languages.en.menu.main]]
+            name = "Portfolio"
+            weight = 3
+            url ="portfolio"
 
         [[languages.en.menu.main]]
             name = "Contacts"
