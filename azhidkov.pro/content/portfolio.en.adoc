@@ -73,7 +73,7 @@ Here are some interesting highlights:
 . Some electric meter connection channels were quite unstable, so it was paramount to make both separate polling sessions and the system overall highly resilient.
 
 .Technologies:
-[cols="3"]
+[.portfolio,cols="3"]
 |===
 |
 Java 11
@@ -103,7 +103,7 @@ Because of the large-sized code base, I decided it would be more efficient to de
 The tool would detect all the spots that need to be synchronized, as well as all GUI requests coming outside the Main flow.
 
 .Technologies
-[cols="3"]
+[.portfolio,cols="3"]
 |===
 |
 Java 8
@@ -126,7 +126,7 @@ This project had me work with the code of Java Virtual Machine's certified imple
 What's more, I got the chance to dive deeply into all the minutiae of JVM's and Tomcat's class loaders.
 
 .Technologies
-[cols="3"]
+[.portfolio,cols="3"]
 |===
 |
 Java 8
@@ -160,7 +160,7 @@ The client asked for the server to be powered by C.
 This was the only HTTP server in my entire career that would start up in microseconds :)
 
 .Technologies
-[cols="3"]
+[.portfolio,cols="3"]
 |===
 |
 C
@@ -194,7 +194,7 @@ Siberian.Pro was satisfied with the quality and pace of my work.
 So once they needed a Java developer again, they reached out to me.
 
 .Technologies
-[cols="3"]
+[.portfolio,cols="3"]
 |===
 |
 Java 8
@@ -227,7 +227,7 @@ Here are some interesting spotlights:
 . link:++{{<relref path="posts/21/03/210321-project-l-testing" lang="ru">}}++[Automated testing is set up (rus)] in such a way that the client has only seen 3 (three) bugs and 1 (one) regressions over four months, with 11K slocs and two major changes in requirements understanding.
 
 .Technologies
-[cols="3"]
+[.portfolio,cols="3"]
 |===
 |
 Kotlin
@@ -278,7 +278,7 @@ To keep the user from bothering with installing a Python interpreter, I packed t
 For now, this is my only commercial project written with Python.
 
 .Technologies
-[cols="3"]
+[.portfolio,cols="3"]
 |===
 |
 Python/Cython
@@ -308,7 +308,7 @@ The project consisted of developing a server that would provide three APIs:
 . an API for the bot to sent push notifications in the mobile app.
 
 .Technologies
-[cols="3"]
+[.portfolio,cols="3"]
 |===
 |
 Kotlin
@@ -355,7 +355,7 @@ I had encountered some issues while connecting the KMM module to the iOS app.
 Still, I'm quite sure this decision saved my client around 50% to 100% of the project's final cost.
 
 .Technologies
-[cols="3"]
+[.portfolio,cols="3"]
 |===
 |
 Kotlin
@@ -420,7 +420,7 @@ This allowed for quite impressive 300x growth in the system's throughput with no
 Naturally, this in turn helped Brooma to retain their strategic client.
 
 .Technologies
-[cols="3"]
+[.portfolio,cols="3"]
 |===
 |
 Java 8

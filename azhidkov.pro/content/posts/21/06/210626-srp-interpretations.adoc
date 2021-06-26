@@ -1,0 +1,345 @@
+---
+title: "Многоликий принцип единственности ответственности"
+date: 2021-06-21T11:25:37+07:00
+draft: false
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:table-caption!:
+
+Кажется, любой "солидный" программист знает что такое SOLID вообще и принцип единственности ответственности (SRP) в частности.
+
+.Спойлер, если вдруг не знаете
+[%collapsible]
+====
+SOLID - это название принципов объектно-ориентированного дизайна, сформулированных Робертом Мартином, так же известным как анкл Боб.
+Принципы звучат следующим образом:
+
+. [big]##**S**##ingle Responsibility Principle: A module should have one, and only one, reason to change.
+. [big]##**O**##pen/Closed Principle:: A software artifact should be open for extension but closed for modification.
+. [big]##**L**##iskov Substitution Principle:: What is wanted here is something like the following substitution property: If for each object o1 of type S there is an object o2 of type T such that for all programs P defined in terms of T, the behavior of P is unchanged when o1 is substituted for o2 then S is a subtype of T
+. [big]##**I**##nterface Segregation Principle:: Clients should not be forced to depend upon interfaces that they do not use.
+. [big]##**D**##ependency Inversion Principle::
+A. High level modules should not depend upon low level modules. both should depend upon abstractions.
++
+B. Abstractions should not depend upon details. details should depend upon abstractions.
+====
+
+Когда речь заходит об SRP, я всегда уточняю, что именно имеет ввиду мой собеседник.
+Потому что у SRP существует как минимум пять разных формулировок и три интерпретации.
+И я не думаю, что подобная эмм... штуковина является хорошим руководством по разработке ПО.
+
+== Формулировки SRP
+
+Для начала приведу неверную, но самую популярную формулировку:
+[quote, народ]
+____
+Класс должен делать одну вещь
+____
+
+Которой вторит и русская википедия:
+[quote, Википедия, https://ru.wikipedia.org/wiki/SOLID_(объектно-ориентированное_программирование)]
+____
+Для каждого класса должно быть определено единственное назначение.
+Все ресурсы, необходимые для его осуществления, должны быть инкапсулированы в этот класс и подчинены только этой задаче.
+____
+
+Хотя английская версия той же статьи приводит одну из формулировок Мартина.
+
+Вообще, такой принцип есть - это один из принципов философии Unix.
+Но сам Мартин пишет в Чистой Архитектуре, что это не SRP:
+[quote, Robert C. Martin, Clean Architecture]
+____
+It is too easy for programmers to hear the name and then assume that it means that every module should do just one thing.
+
+Make no mistake, there is a principle like that. [...]
+But it is not one of the SOLID principles — it is not the SRP.
+____
+
+---
+
+Сам Мартин формулирует SRP тремя разными способами:
+
+Формулировка 2003 года::
+[quote, Robert C. Martin, Agile software development Principles Patterns and Practices]
+____
+The Single Responsibility Principle (SRP) states that a class or module should have one, and only one, reason to change
+____
+
+Формулировка 2014 года::
+[quote, Robert C. Martin, The Single Responsibility Principle]
+____
+Gather together the things that change for the same reasons.
+Separate those things that change for different reasons.
+____
+
+Формулировка 2018 года::
+[quote, Robert C. Martin, Clean Architecture]
+____
+A module should be responsible to one, and only one, actor
+____
+
+Чтобы понять, что у них общего, мне потребовалось по три прочтения всех публикаций Мартина об SRP.
+Вы же сэкономите день-два жизни и получите ответ за пятнадцать минут, если дочитаете пост до конца.
+
+Для начала рассмотрим как анкл Боб объясняет SRP последние двадцать лет.
+
+== Объяснения SRP
+
+*Agile software development Principles Patterns and Practices, 2003*
+
+[NOTE]
+====
+Любопытный факт - SRP появился на восемь лет позже остальных принципов SOLID, и изначальный порядок был другой - OLDI.
+А акроним SOLID придумал не анкл Боб, а Майкл Фэзерс.
+====
+
+Впервые SRP появился в https://www.amazon.com/Software-Development-Principles-Patterns-Practices/dp/0135974445[Agile software development Principles Patterns and Practices].
+В этой книге Мартин пояснял его на примере разделения кода различных *функций программы*:
+[quote, Robert C. Martin, Agile software development Principles Patterns and Practices]
+____
+Consider the bowling game from Chapter 6.
+For most of its development the Game class was handling two separate responsibilities.
+It was keeping track of the current frame, and it was calculating the score.
+In the end, RCM and RSK separated these two responsibilities into two classes.
+The Game kept the responsibility to keep track of frames, and the Scorer got the responsibility to calculate the score. (see page 85.)
+____
+
+*Clean Code, 2008*
+
+Пояснять SRP на примере разделения кода по *функциям программы* Мартин продолжает и в https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882[Clean Code]:
+
+[source,java]
+----
+public class SuperDashboard extends JFrame implements MetaDataUser {
+    public Component getLastFocusedComponent()
+    public void setLastFocused(Component lastFocused)
+    public int getMajorVersionNumber()
+    public int getMinorVersionNumber()
+    public int getBuildNumber();
+}
+----
+
+[quote, Robert C. Martin, Clean Code]
+____
+The seemingly small SuperDashboard class in Listing 10-2 has two reasons to change.
+First, it tracks version information that would seemingly need to be updated every time the software gets shipped.
+Second, it manages Java Swing components (it is a derivative of JFrame, the Swing representation of a top-level GUI window)
+____
+
+*The Clean Coder, 2011*
+
+Затем в https://www.amazon.com/Clean-Coder-Conduct-Professional-Programmers/dp/0137081073/ref=pd_sim_5/131-9122726-9479409?pd_rd_w=0NdTd&pf_rd_p=d88e414a-c661-4436-b6ed-003c19da9b92&pf_rd_r=6FTHCEPHBC1138C43SJ9&pd_rd_r=28244df1-86a2-478b-85b3-5e3542ecf45b&pd_rd_wg=H5iaV&pd_rd_i=0137081073&psc=1[The Clean Coder] анкл Боб иллюстрирует SRP уже примером разделения *аспектов реализации* (пользовательского интерфейса и бизнес-правил):
+
+[quote, Robert C. Martin, The Clean Coder]
+____
+There is a design principle called the Single Responsibility Principle (SRP).
+This principle states that you should separate those things that change for different reasons, and group together those things that change for the same reasons.
+GUIs are no exception.
+
+The layout, format, and workflow of the GUI will change for aesthetic and efficiency reasons, but the underlying capability of the GUI will remain the same.
+
++++[...]+++
+
+Design experts have been telling us for decades to separate our GUIs from our business rules.
+____
+
+*The Single Responsibility Principle, 2014*
+
+В https://blog.cleancoder.com/uncle-bob/2014/05/08/SingleReponsibilityPrinciple.html[следующей] публикации о SRP анкл Боб уже напрямую использует термин "разделение *аспектов [реализации]*" (separation of concerns):
+[quote, Robert C. Martin, https://blog.cleancoder.com/uncle-bob/2014/05/08/SingleReponsibilityPrinciple.html]
+____
+Two years later, Edsger Dijkstra wrote another classic paper entitled On the role of scientific thought. in which he introduced the term: The Separation of Concerns.
++++[...]+++
+This is the reason we do not put SQL in JSPs.
+This is the reason we do not generate HTML in the modules that compute results.
+This is the reason that business rules should not know the database schema.
+This is the reason we separate concerns.
+____
+
+Но здесь же, Мартин впервые объясняет SRP совсем в другом ключе:
+[quote, Robert C. Martin, https://blog.cleancoder.com/uncle-bob/2014/05/08/SingleReponsibilityPrinciple.html]
+____
+And this gets to the crux of the Single Responsibility Principle.
+This principle is about people.
+
+When you write a software module, you want to make sure that when changes are requested, those changes can only originate from a single person, or rather, a single tightly coupled group of people representing a single narrowly defined business function.
+____
+Здесь уже речь идёт о разделении кода по *людям*.
+
+*Clean Architecture, 2018*
+
+В окончательной же форме это объяснение появляется ещё через четыре года в https://www.amazon.com/Clean-Architecture-Craftsmans-Software-Structure/dp/0134494164/ref=pd_sim_1/131-9122726-9479409?pd_rd_w=Kj7C7&pf_rd_p=d88e414a-c661-4436-b6ed-003c19da9b92&pf_rd_r=0ZQVJKRJ6VFKKPXGBRJA&pd_rd_r=664e0c37-918c-4613-b12d-6e758d26e96b&pd_rd_wg=DAys9&pd_rd_i=0134494164&psc=1[Clean Architecture]:
+[quote, Robert C. Martin, Clean Architecture]
+____
+A module should be responsible to one, and only one, actor
+____
+
+Действующим лицом (actor) в этом случае является группа https://ru.wikipedia.org/wiki/%D0%A1%D1%82%D0%B5%D0%B9%D0%BA%D1%85%D0%BE%D0%BB%D0%B4%D0%B5%D1%80[стейкходеров] (людей так или иначе причастных к программе и её созданию) с одинаковыми потребностями.
+
+== Шестая формулировка SRP
+
+Мне кажется более понятной шестая (уже моя) формулировка SRP:
+[quote, Алексей Жидков, Многоликий принцип единственности ответсвенности]
+____
+Модуль должен отвечать за реализацию требований одного стейкхолдера.
+____
+
+Эта формулировка привязывается ко вполне определённому понятию - "требование".
+На мой взгляд, термин "требование" вызывает намного меньше разночтений, чем "действующее лицо".
+"Действующее лицо" - крайне неудачный термин, так как он чаще встречается в значении "пользователь программы", популяризированном UML-ем.
+
+В моей формулировке понятно, почему надо разделять модули хранения данных и представления.
+Одни специфицируются человеком выполняющим роль администратора БД, а другие - человеком, выполняющим роль дизайнера интерфейсов.
+Также понятно и почему надо разделять модули, отвечающие за реализацию функций CFO и COO - требования к ним определяется разными людьми из разных отделов.
+
+Но и с этой формулировкой есть пара проблем.
+Во-первых, инфраструктурные модули будут реализовывать минимум по два требования - функциональное и качественное.
+Во-вторых, я не видел проекта, где были бы внятно прописаны функциональные и нефункциональные требования, список стейкхолдеров и их привязка друг к другу.
+
+Ни эта, ни любая другая формулировка SRP не даёт программистам практического руководства к действию в каждодневной работе.
+Может быть, будет полезнее разбить SRP на несколько практических рекомендаций?
+Например:
+
+. формируйте направленный ациклический граф зависимостей между модулями;
+. разделяйте ввод-вывод (в том числе GUI) и бизнес-правила;
+. разделяйте код реализующий разные функции системы;
+. пишите тесты.
+  В тестах мокайте только внешние системы, а system under test создавайте "руками" (а не с помощью DI-контейнера).
+
+Эти рекомендации не нуждаются большом предварительном проектировании с определением стейкхолдеров и требований.
+И следование им можно контролировать механически.
+
+Применение таких рекомендаций в каждодневной работе доступно намного более широкому кругу программистов и также даст поддерживаемую и стабильную систему на выходе.
+
+Помимо приведенных, есть ещё одна важная рекомендация:  разделяйте "стандартную библиотеку" (домен) и "скрипты" (функции) приложения.
+Об этом пишут и Мартин в Clean Architecture - разделение сущностей и интеракторов, и Эванс в DDD - разделение сервисов приложения и сущностей и доменных сервисов.
+Но ни они, ни я не можем дать объективного критерия, по которому можно следить за соблюдением этой рекомендации механически.
+Поэтому я не включаю её в ряд простых и понятных.
+
+== На суку висит мочало, начинаем всё сначала
+
+image::/posts/21/06/images/years-without-new-srp-version.png[]
+
+*SOLID relevance, 2020*
+
+Постоянное изменение формулировок и интерпретаций SRP можно было бы объяснить эволюцией понимания SRP самим Мартином.
+Сначала для него SRP был о разделении по функциям программы.
+Потом он понял, что по аспектам реализации код тоже необходимо разделять.
+Наконец, анкл Боб обобщил их через разделение по требованиям различных действующих лиц.
+
+Это было отличное объяснение развития событий.
+Пока Мартин не написал свой последний пост на тему SRP.
+В нём он снова откатился к разделению только по аспектам:
+[quote, Robert C. Martin, https://blog.cleancoder.com/uncle-bob/2020/10/18/Solid-Relevance.html]
+____
+It is hard to imagine that this principle is not relevant in software.
+We do not mix business rules with GUI code.
+We do not mix SQL queries with communications protocols.
+____
+
+Если посмотреть на историю объяснений SRP с высоты "птичьего полёта", то становится видно что анкл Боб постоянно скачет между этими критериями декомпозиции кода:
+
+// декомпозиция упоминается в первый (и возможно последний) раз, надо упомянуть выше
+
+.История интерпретаций SRP
+
+[cols="1,3,5"]
+|===
+|Год|Источник|Критерий разделения
+
+|2003
+|Agile software development Principles Patterns and Practices
+|Функциональность и +
+намёк на действующее лицо*
+
+|2008
+|Clean Code
+|Функциональность
+
+|2011
+|The Clean Coder
+|Аспект реализации
+
+|2014
+|The Single Responsibility Principle
+|Функциональность, аспект реализации и действующее лицо
+
+|2018
+|Clean Architecture
+|Функциональность и действующее лицо, +
+в меньшей степени аспект реализации**
+
+|2020
+|SOLID Relevance
+|Аспект реализации
+
+|===
+
+[sidebar]
+--
++++*+++ В Agile software development Principles Patterns and Practices был и другой пример в главе про SRP.
+
+image::/posts/21/06/images/rectangle.png[]
+
+[quote, Robert C. Martin, Agile software development Principles Patterns and Practices]
+____
+Two different applications use the Rectangle class.
+One application does computational geometry.
+It uses Rectangle to help it with the mathematics of geometric shapes.
+It never draws the rectangle on the screen.
+The other application is graphical in nature.
+It may also do some computational geometry, but it definitely draws the rectangle on the screen.
+____
+
+Глядя на этот пример (из 2021 года) можно прийти к выводу, что у разных приложений будут разные пользователи (один из видов действующих лиц) и методы draw и area реализуют требования разных действующих лиц.
+
+
+---
+
++++**+++ В Clean Architecture разделение по аспекту реализации тоже присутствует (метод save, определяемый CTO).
+Но в этой книге Мартин уже явно не проговаривает необходимость разделения по аспектам.
+В сочетании с нетипичным значением слова actor, это приводит к тому, что такое объяснение можно проинтерпретировать как декомпозицию только на основе пользователей программы.
+Это может стать четвёртой интерпретацией SRP, но в жизни я её пока не встречал.
+--
+
+Разделение по функциональности и аспектам реализации программы - это не две разные точки зрения на один принцип.
+Это два разных принципа декомпозиции, которые ведут к разным результатам.
+
+=== Разделение кода по функциональности != разделению кода по аспектам реализации
+
+Можно разделять SQL и JSP и всё ещё использовать один и тот же код в разных функциях и ломать функции одних пользователей при модификации функций других пользователей.
+
+И наоборот, можно завести по микросервису для каждого пользователя или функции системы и собрать в один метод и парсинг json-а, и бизнес-правила, и выполнение SQL-запросов.
+В итоге получить хрупкий код, который трудно поддерживать.
+
+Аспекты реализации функциональности и сама функциональность - ортогональные оси декомпозиции кода.
+
+SRP нарушает одну из собственных интерпретаций и смешивает различные аспекты дизайна программ.
+Зачем анкл Боб объединил два разных принципа в один - я не понимаю.
+Возможно, он сам не сразу понял, что код надо разделять и по функциональности, и по аспектам реализации, а когда понял  - SOLID стал уже брендом, который было жаль терять.
+
+Можем ли мы полагаться на принцип, формулировка и интерпретация которого меняется каждые три года?
+Я думаю нет.
+
+== Нам нужны новые принципы
+
+В итоге мы приходим к тому, что:
+
+* вообще, не очень понятно, что такое SRP.
+  Разные разработчики понимают под этой аббривиатурой разные принципы дизайна.
+  Даже сам Мартин постоянно по-разному формулирует и иллюстрирует SRP;
+* то, что мне кажется Единственно Верной Версией SRP, невозможно использовать на практике.
+  Потому что в реальной жизни необходимую для этой версии аналитику  никто не делает.
+* а если бы и делали, то SRP-идеал всё равно был бы недостижим.
+  Так как у значительной части кода будет как минимум две причины для изменения - требования к функциональности и требования к способу реализации.
+
+И хотя SRP является самым неоднозначным принципом SOLID-а, остальные четыре принципа тоже имеют разночтения и пробелемы с приминением на практике.
+Поэтому я не думаю, что SOLID в своём текущем виде является хорошим руководством по дизайну систем.
+
+Тем не менее, в SOLID заключено много хороших и полезных идей, поэтому я не предлагаю упразднить его - я предлагаю его реставрировать.
+Актуальные идеи вычленить, уточнить и проиллюстрировать хорошими примерами.
+То, что потеряло свою значимость - убрать.
+
+И главное - не загонять себя в рамки того, чтобы из первых букв новых принципов можно было составить красивый акроним.
