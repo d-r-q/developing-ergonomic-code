@@ -1,0 +1,69 @@
+---
+title: "On Systems Decomposition"
+description: An algorithm for breaking the system down into modules.
+date: 2021-03-24T13:25:37+07:00
+draft: false
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+
+*Dislaimer: here's a brief link post on a topic that's book chapter worthy.
+
+Finally, your dream has come true. 
+You'll now get to build a project from the ground up.
+Finally, you can do everything right yourself instead of fighting legacy code written a hundred
+years ago by people you've never even seen.
+
+How would you do that, though? 
+How to build a system you won't be cursed for by your successors?
+
+I've already given half the answer—in some way—in my book.
+Basically, it's all about the link:++{{<ref "/book/ergo#_таблица_эффектов">}}++[effects table (rus)] and link:++{{<ref
+"/book/ergo#_принципы_проектирования_системы">}}++[components (rus)].
+
+The effects table is a way to describe link:++{{<ref "/posts/21/01/210119-effects">}}++[which effects get triggered by various operations].
+Or, in other words, it's a way to describe the program's behavior—that is, its functional specification.
+
+Components imply encapsulated state.
+The good old conceptual objects that comprise multiple objects of several levels in the runtime.
+
+There's just one catch.
+When you're going from the functional spec to the components, that's exactly what 'software design'
+per se is.
+And these days, people who can do quality software design are few and far between in our industry.
+
+So the second part of the answer is an algorithm to take you from the effects table straight to components.
+The algorithm goes something like this: 
+
+. Make a graph based on the effects table. 
+In that graph, the edges will contain the signals and the vertices will contain the relation between them.
+. Break the graph down into subgraphs. 
+There should be high cohesion within subgraphs and low coupling among them.
+. Voila, the components are ready. 
+Each subgraph is a separate component that encapsulates the state changed by this subgraph's effects as a result of processing the signals of the subgraph.
+
+Surprisingly, this simple algorithm yields quite neat results. 
+
+Finally, here go the links that are the reason why I decided to write this blog post.
+I've recently come across two research articles written by a German-Israeli group that cover this very topic.
+
+. https://www.researchgate.net/publication/283566310_Improving_Design_Decomposition[Improving Design Decomposition].
+. https://www.researchgate.net/publication/326260296_Functional_Decomposition_for_Software_Architecture_Evolution[Functional Decomposition for Software Architecture Evolution];
+
+Basically, they're offering the same approach with just a few points to note:
+
+. The best idea I'll certainly use in my work is to split the reading/writing operations and assign
+different weights to them.
+. They managed to come up with a cleaner table structure. 
+The rows contain operations, and the columns show all the different state variables.
+. They came up with an idea to automate the process of breaking the graph down into subgraphs.  
+ Well, that's scientists for you :)
+ Or maybe they just kept ending up with graphs too large. 
+
+The effects table and the decomposition algorithm were the last—or so I thought—unique parts of the
+Ergonomic Approach.
+Well, in some way, it's great the EA has no distinctive unique elements. 
+It means that the EA is a mix of science- and industry-approved ideas, as opposed to a mix of some
+lone enthusiast's idealistic delusions. 
+[logo]#image:/images/logo.svg[]#
