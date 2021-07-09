@@ -86,7 +86,7 @@ got in fashion, so Java simply had no
 https://docs.oracle.com/javase/8/docs/api/java/util/stream/package-summary.html[Stream API].
 . It's quite hard to come up with a good design straight away. 
 If you're the author behind a popular library and have at least some respect for your users, you'll
-be stuck with the mistakes of your youth forever for one simple reason: backwards compatibility.
+be stuck with the mistakes of your youth forever for one simple reason: backward compatibility.
 
 Luckily, we have quite a lot under our belt here. 
 We know of the ergonomic approach, have learned from others' mistakes, and are armed with a sequence
