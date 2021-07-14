@@ -35,8 +35,9 @@ ____
 Every business rule that would once have depended on an if/else/switch statement now has its own particular method to call in the base class
 ____
 
-Usually, this solution would make for either a good design or at least a sensible compromise. 
-In this case, though, it's neither. 
+Usually, this would make for either a good design or at least a sensible compromise,
+although it still shouldn't be your no-brainer solution. 
+In this particular case, though, it's neither of the two. 
 
 I see two main problems with this design for the original task dealing with genders.
 
@@ -82,7 +83,7 @@ Yet again, I can only speculate here.
 Judging by Uncle Bob's idea to add new methods to the base class, we're talking about an https://martinfowler.com/ieeeSoftware/published.pdf[unpublished] class.
 
 If that's true, barely anyone would waste this much time fiddling with the visitor. 
-Even if they had, they would realize, a few dozen classes into the task, that the visitor's cost is
+Even if they had, they'd realize, after writing a few dozen classes, that the visitor's cost is
 inadequate for the job.
 That's great if they think that, even, instead of just jumbling everything into one class.
 We'll get back to this later, though.
@@ -92,7 +93,7 @@ We'll get back to this later, though.
 The second problem is caused by the cohesive logic being scattered through space, or at least among
 multiple classes.
 
-Maybe it's due to all the different packages and modules, since Uncle Bob says nothing about
+Maybe across all the packages and modules, even. Uncle Bob says nothing about
 imposing any limitations on the gender hierarchy. 
 
 While criticizing the 'if's-based option, Uncle Bob says: 
@@ -118,12 +119,12 @@ I can imagine a new gender appearing, but only in theory for now.
 You can be sure you'll need new operations, though. 
 
 With modern programming languages (and even Java, https://openjdk.java.net/jeps/397[at least
-almost]), compilers are at best as secure during compilation as interfaces.
+almost]), in case of ADT, compilers are at best as secure during compilation as interfaces.
 With a new type added, the program won't compile until all the ifs and switches get it
 processed. 
 
-Speaking about dependencies' directions, HighLevel can depend on an abstract function as well, as opposed to
-a concrete function only:
+Speaking about dependencies' directions, HighLevel can depend on both an abstract and a
+concrete function alike:
 [source,kotlin]
 ----
 class UI(private val generateAvatar: (Gender) -> Image)

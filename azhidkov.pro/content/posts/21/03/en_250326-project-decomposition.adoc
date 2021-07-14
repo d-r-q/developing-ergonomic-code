@@ -37,7 +37,7 @@ So the second part of the answer is an algorithm to take you from the effects ta
 The algorithm goes something like this: 
 
 . Make a graph based on the effects table. 
-In that graph, the edges will contain the signals and the vertices will contain the relation between them.
+In that graph, the edges will contain the signals and the effects, but the vertices will contain the relation between them.
 . Break the graph down into subgraphs. 
 There should be high cohesion within subgraphs and low coupling among them.
 . Voila, the components are ready. 
@@ -55,7 +55,7 @@ Basically, they're offering the same approach with just a few points to note:
 
 . The best idea I'll certainly use in my work is to split the reading/writing operations and assign
 different weights to them.
-. They managed to come up with a cleaner table structure. 
+. They managed to come up with a plainer table structure. 
 The rows contain operations, and the columns show all the different state variables.
 . They came up with an idea to automate the process of breaking the graph down into subgraphs.  
  Well, that's scientists for you :)

@@ -12,7 +12,7 @@ I'm working on a project where I'm the lead back-end developer.
 Naturally, I'm trying to keep everything in line with my Ergonomic Approach.
 
 The code base will be ergonomic if you have a set of tests you can trust. 
-If the tests pass, it means the release is ready.
+If the tests pass, it means the build is ready for release.
 There's no other way around this.
 
 In this post, I'll talk about the testing strategy I'm using for the 'L' Project. 
@@ -29,9 +29,9 @@ It works via a public HTTP API.
 For that reason, the back-end features just three business rules.
 * Most method implementations within the 'L' project pull data from multiple main app methods.
 * Therefore, the 'L' project has a quite complex system of data transformation and caching.
-* The main app has a test framework.
+* The main app has a test environment.
 * The 'L' project is quite limited budget- and time limits-wise.
-* I made two mistakes while analyzing one of the steps. Therefore, I had to rework and refactor everything twice.
+* I made two major mistakes while analyzing one of the iterations. Therefore, I had to rework and refactor everything twice.
 
 == Inner versions release cycle
 
@@ -97,7 +97,8 @@ External dependencies:: None
 Number:: 26
 
 Due to the project's character, barely any unit tests are actually used here.
-There are three ones that check the business rule compliance and two ones that parse the main app's response. 
+There are three ones that check the business rule compliance and two ones that check up on the main
+app's response parser. 
 
 There are 26 unit tests because one of those business rules is validation. 
 21 of these all stem from one
@@ -116,9 +117,9 @@ External dependencies:: None
 Number:: 17
 
 These tests should validate the SQL expressions to make sure they're both semantically and
-syntactically correct, as well as mapping objects of the +++<->+++ string.
+syntactically correct, as well as mapping objects of the +++<->+++ rows.
 The database for these tests is set up in a container.
-It will be used for all tests in the run, though.
+The same instance will be used for all tests in the run, though.
 
 === Main app's API integration testing
 
@@ -176,10 +177,10 @@ Internal dependencies:: None.
 External dependencies:: a running app (the backend plus Postgres in docker-compose), the main system.
 Number:: 8
 
-These tests look at the backend in production-like environment:
+These tests probe the backend in production-like environment:
 
-* The backend is interacting with the main system. 
-* The tests are emulating the frontend's behavior.
+* The backend interacts with the main system. 
+* The tests emulate the frontend's behavior.
 
 == Mocks and stubs
 
