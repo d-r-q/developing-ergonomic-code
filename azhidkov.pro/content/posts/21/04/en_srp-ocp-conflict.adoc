@@ -1,0 +1,136 @@
+---
+title: "Uncle Bob Isn't Always Right"
+description: A classic implementation of OCP can lead to SRP violations and increase the risk of regressions.
+date: 2021-04-28T13:25:37+07:00
+
+draft: false
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+
+[NOTE]
+--
+You can follow the blog's updates in my channel: https://t.me/ergonomic_code[Ergonomic code (rus)]
+--
+
+== Uncle Bob's Latest Article
+
+I've just read https://blog.cleancoder.com/uncle-bob/2021/03/06/ifElseSwitch.html[Uncle Bob's recent
+article] and must say I disagree.
+
+Here's a brief overview of the contents.
+
+. Someone on the internet asked how'd one go about refactoring this code.
++
+image::/posts/21/04/srp-ocp-conflict-197cb.png[]
+
+. Uncle Bob said that the right way would be to encapsulate this 'if' statement in a factory object.
++
+image::/posts/21/04/srp-ocp-conflict-f5d0e.png[]
+
+He followed with:
+[quote, Uncle Bob, https://blog.cleancoder.com/uncle-bob/2021/03/06/ifElseSwitch.html]
+____
+Every business rule that would once have depended on an if/else/switch statement now has its own particular method to call in the base class
+____
+
+Usually, this would make for either a good design or at least a sensible compromise,
+although it still shouldn't be your no-brainer solution. 
+In this particular case, though, it's neither of the two. 
+
+I see two main problems with this design for the original task dealing with genders.
+
+. It'll cause SRP violations.
+. It'll cause regressions. 
+
+Let's take a deeper look. 
+We'll start with SRP. 
+
+
+== God Objects
+
+[NOTE]
+==== 
+Here goes a bit of speculation.
+
+In his blog post, Uncle Bob drafted an abstract scheme that leaves his readers with no other choice but to speculate.
+
+So I'm going to proceed with the assumption that in the second picture:
+
+. BaseClass means Gender,
+. LLA means Male, 
+. LLB means Female, and
+. LLC means Unknown.
+
+====
+
+It's quite easy to imagine some software using gender data to: 
+
+. generate an avatar in the UI, or
+. top up the budget accounting for a woman's possible maternity leave. 
+
+You'd have to include both these methods in the Gender class.
+This would be a SRP violation, no matter how you'd define it. 
+
+If you've read the full article, you must've noticed the Acyclic Visitor Pattern being talked about in the last sentence. 
+It's supposed to solve the problem of having to re-compile the Gender clients.
+It can also fix SRP violations. 
+In this case, you'd have to create an interface with three implementations for each rule. 
+In case a new gender appears, you'll also have to make a new implementation for each interface.
+
+Yet again, I can only speculate here. 
+Judging by Uncle Bob's idea to add new methods to the base class, we're talking about an https://martinfowler.com/ieeeSoftware/published.pdf[unpublished] class.
+
+If that's true, barely anyone would waste this much time fiddling with the visitor. 
+Even if they had, they'd realize, after writing a few dozen classes, that the visitor's cost is
+inadequate for the job.
+That's great if they think that, even, instead of just jumbling everything into one class.
+We'll get back to this later, though.
+
+== Quantum entanglement
+
+The second problem is caused by the cohesive logic being scattered through space, or at least among
+multiple classes.
+
+Maybe across all the packages and modules, even. Uncle Bob says nothing about
+imposing any limitations on the gender hierarchy. 
+
+While criticizing the 'if's-based option, Uncle Bob says: 
+[quote, Uncle Bob]
+____
+The fact that they are replicated in many places is problematic because when such statements are inevitably changed, it is easy to miss some.
+This leads to fragile systems.
+____
+
+He's approaching this in the exact same way, though, albeit at a different angle! 
+
+The root of all code analysis problems lies here as well.
+While you'll be trying to understand how the avatar generation works, you'll have to be switching back and
+forth between three files. 
+
+== Are there any alternatives, though?
+
+Fifteen years ago I would, with no doubts, suggest using algebraic data types.
+It's easy to assume there'll be a lot of new operations here, yet barely any new options.
+
+Today, I'd have my doubts but would still stick with ADT. 
+I can imagine a new gender appearing, but only in theory for now. 
+You can be sure you'll need new operations, though. 
+
+With modern programming languages (and even Java, https://openjdk.java.net/jeps/397[at least
+almost]), in case of ADT, compilers are at best as secure during compilation as interfaces.
+With a new type added, the program won't compile until all the ifs and switches get it
+processed. 
+
+Speaking about dependencies' directions, HighLevel can depend on both an abstract and a
+concrete function alike:
+[source,kotlin]
+----
+class UI(private val generateAvatar: (Gender) -> Image)
+----
+If you want, you can also wrap it in `IAvatarGenerator` and implement in `AvatarGeneratorImpl`.
+
+Main thing is that in this case, the avatar generation method stays in the UI, while the budget
+calculation method stays in the services layer.  
+What's more, you'd be able to fit their code in just one screen. 

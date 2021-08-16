@@ -1,0 +1,284 @@
+---
+title: "The Tests You Can Trust"
+description: How to devise a testing strategy that'll result in 0 (zero) regressions
+date: 2021-03-13T13:25:37+07:00
+draft: false
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+
+I'm working on a project where I'm the lead back-end developer.
+Naturally, I'm trying to keep everything in line with my Ergonomic Approach.
+
+The code base will be ergonomic if you have a set of tests you can trust. 
+If the tests pass, it means the build is ready for release.
+There's no other way around this.
+
+In this post, I'll talk about the testing strategy I'm using for the 'L' Project. 
+
+== The 'L' Project
+
+Since this project is under NDA, I can't disclose much details. 
+Here are some key points: 
+
+* The project's goal is to validate a business hypothesis.
+* The 'L' project is supplemental to the client's main app. 
+It works via a public HTTP API.
+* The project's main value is concentrated in the front-end.
+For that reason, the back-end features just three business rules.
+* Most method implementations within the 'L' project pull data from multiple main app methods.
+* Therefore, the 'L' project has a quite complex system of data transformation and caching.
+* The main app has a test environment.
+* The 'L' project is quite limited budget- and time limits-wise.
+* I made two major mistakes while analyzing one of the iterations. Therefore, I had to rework and refactor everything twice.
+
+== Inner versions release cycle
+
+For now, I have the development process organized like this:
+
+. I spend some time writing code.
+  I'll probably rework most of the design here. 
+. I push the code. At the push, the CI tool runs the tests. 
+. If I forgot to run the tests myself before pushing and the tests failed, I fix the mistakes.
+. Once the CI-based tests all pass, it means the internal release is ready. 
+
+I don't do any manual testing whatsoever.
+Yet still, two months of development in, we've had only 1 (one) bug and 0 (zero) regressions.
+
+I've achieved that by putting the code under 6 types of tests.
+
+== Project modules
+
+I've decided to break the project down into four modules.
+
+. core: the project's business logic (well, actually, integration logic). It contains the services,
+the data model, and the repo interfaces. Moreover, I also put the client implementation for the main
+app into this module.
+. app: The project's infrastructure. This module includes Spring, all things database, HTTP, etc.
+. itests: HTTP-based tests.
+. test-fixtures: the constants and the util functions for all test types.
+
+== Testing libraries
+
+* https://junit.org/junit5/[JUnit 5]: the de facto standard library for Java testing
+* https://kotest.io/docs/assertions/assertions.html[kotest]: a Kotlin-tuned assertions library
+* https://www.testcontainers.org/[testcontainers]: a library for managing Docker containers in
+tests
+* http://wiremock.org/[WireMock]: a tool for mocking servers at the HTTP level
+* https://rest-assured.io/[Rest-assured] - a DSL for REST services testing.
+
+== Test types
+
+I'm using the following test types in this project: 
+
+* Unit testing
+* Database testing
+* Main app's API integration testing
+* Integration testing
+* API testing
+* Scenario testing.
+
+In the next step, I'll also add a bunch of load tests for critical scenarios.
+
+All tests are labeled with tags, and you can run each group separately.
+In practice, though, I created two extra Gradle tasks for running my tests. 
+The first one, allTest, runs everything apart from scenario tests.
+The second one, scenarioTest, runs—you've guessed it—the scenario tests only.
+The default task, test, runs just the tests with no external dependencies (unit tests, database
+tests, and integration tests).
+
+=== Unit tests
+
+Goal:: To check business rules compliance
+Interface:: Direct method calling
+Internal dependencies*:: None
+External dependencies:: None
+Number:: 26
+
+Due to the project's character, barely any unit tests are actually used here.
+There are three ones that check the business rule compliance and two ones that check up on the main
+app's response parser. 
+
+There are 26 unit tests because one of those business rules is validation. 
+21 of these all stem from one
+https://junit.org/junit5/docs/current/user-guide/#writing-tests-parameterized-tests[parameterized
+test].
+
+_* By internal dependencies, I mean the dependencies the test runs for itself. 
+By external dependencies, I mean the ones the test is expecting to be running already._
+
+=== Database tests
+
+Goal:: To check the repo implementations
+Interface:: Direct method calling
+Internal dependencies:: Postgres (in testcontainers)
+External dependencies:: None
+Number:: 17
+
+These tests should validate the SQL expressions to make sure they're both semantically and
+syntactically correct, as well as mapping objects of the +++<->+++ rows.
+The database for these tests is set up in a container.
+The same instance will be used for all tests in the run, though.
+
+=== Main app's API integration testing
+
+Goal:: To check the main system's client
+Interface:: Direct method calling
+Internal dependencies:: WireMock-powered mock of the main system
+External dependencies:: The main system
+Number:: 10
+
+These tests mostly validate the response parsing.
+A mock server checks the error handling.
+
+=== Integration tests
+
+Goal:: To check the behavior of some large blocks of the system's core in those cases not covered
+by API tests
+Interface:: Direct method calling
+Internal dependencies:: Postgres (in testcontainers), WireMock-powered mock of the main system
+External dependencies:: None
+Number:: 6
+
+=== API tests
+
+Goal::
+These tests are actually meant for four things:
+* They check whether Spring is configurated correctly, especially the controllers and the error
+handler.
+* They cover all the "happy pass" code of the system and the expected error handling with carpet end-to-end testing.
+* They prevent any backward-incompatible changes by freezing the API. 
+* They generate snippets for https://spring.io/projects/spring-restdocs[Spring Rest Docs].
+Interface:: addressing the backend through HTTP via RestAssured and a custom client.
+
+Internal dependencies:: WireMock-powered mock of the main system
+External dependencies:: a running app (the backend plus Postgres in docker-compose)
+Number:: 37
+
+As you can tell by the number alone, I'm mostly relying on API tests when testing the "L" Project. 
+They test the entire system, covering all the basic "happy passes" and dealing with processing all the
+expected errors.
+For better backward compatibility control, API tests aren't dependent on the main app's modules. 
+Therefore, there are duplicate URLs and data structures in them.
+
+There are two kinds of requests—the fixture ones and the control ones.
+There's a dedicated class for executing the fixture requests that presents the backend HTTP
+interface as a Kotlin class.
+The response to these fixture requests doesn't get checked.
+Control requests are executed via RestAssured.
+
+=== Scenario tests
+
+Goal:: To check the interaction protocols of the frontend and the backend, as well as of the
+project's backend and that of the main app.
+Interface:: addressing the backend through HTTP via a custom client.
+Internal dependencies:: None.
+External dependencies:: a running app (the backend plus Postgres in docker-compose), the main system.
+Number:: 8
+
+These tests probe the backend in production-like environment:
+
+* The backend interacts with the main system. 
+* The tests emulate the frontend's behavior.
+
+== Mocks and stubs
+
+I never use mock class libraries, at all. 
+There are two main reasons behind this.
+
+On one hand, I don't trust mock tests. 
+I have quite a solid working experience with projects that were using mock-based "tests." 
+They would always have manual testers, who'd always end up finding regressions in seemingly "green" builds.
+
+On the other hands, mocks are there to test the implementation, not the contract.
+That's why you have to spend as much time rewriting the tests after any refactoring as was spent
+actually making that very refactoring.
+
+Ted Kaminski has a bunch of good articles covering this topic:
+
+* https://www.tedinski.com/2018/04/10/making-tests-a-positive-influence-on-design.html[The influence
+of testing on design]: in this one, he discusses the advantages of boundary testing.
+* https://www.tedinski.com/2018/10/09/relationship-induction-and-tests.html[Testing, induction, and
+mocks]: in this one, he discusses all the problems caused by mocks.
++
+I think the most interesting takeaway in the second article is that mocks are quite one-sided.
+Mocks say that the system will behave in a certain way.
+They never verify that it's actually behaving in this way in the runtime, though. 
+
+== Some stats
+
+Some say integration tests take a while to write and run, so I'll outline some stats I've collected down below.
+
+Total endpoints:: 10
+Total tests:: 104
+Local test runtime:: ~20 seconds
+The time it takes to run the CI pipeline on Github Actions:: 4 to 5 minutes
+The relation between the production code and the tests:: `2665 / 3503 = ~3/4` +
+However, you have to account for these API tests containing pretty heavy JSON response stubs and Spring Rest
+Docs-powered docs.
+
+[source, kotlin]
+----
+filter(
+    document(
+        "login-ok",
+        preprocessRequest(prettyPrint()),
+        preprocessResponse(prettyPrint()),
+        requestFields(
+            fieldWithPath("login").description("Phone or e-mail")
+                .attributes(credsConstraints.constraintsFor("login")),
+            fieldWithPath("password").description("Password")
+                .attributes(credsConstraints.constraintsFor("password")),
+        ),
+        responseFields(
+            fieldWithPath("token").description("Authorization token")
+                .attributes(authConstraints.constraintsFor("token")),
+        )
+    )
+)
+----
+
+== How to fit tests into your schedule
+
+First off, stop thinking of tests as some standalone task when estimating how long the project will take :)
+It's not "one day for a ready-made solution, and one day for running some tests."
+It's "two days for a ready-made solution."
+
+Second, start with tests. 
+Well, actually, I'm no advocate of Test-Driven Development.
+I'm also against Test-Driven Design.
+Still, once I come across a bug or a regression, the first thing I do is conjure up a test that'll
+reproduce the problem.
+
+The process mostly depends on the feature.
+Sometimes I start with an API test, sometimes with a unit tests, and sometimes with no test at all.
+
+Apart from improving on the development's speed and quality in the long run, tests are also beneficial
+for development performance in the short run, thanks to automating the run and checking the functionality.
+
+== Conclusion
+
+I couldn't find the source, but I think somewhere in his "Clean Architecture," Uncle Bob says
+something along these lines:
+[quote]
+____
+"If I had to choose between a system with good architecture and one with good tests, I'd go with the
+latter."
+If you have tests you can trust, you can fix the architecture.
+If there are no tests, you can't do anything about the system.
+____
+
+I wholly agree with that.
+Reliable tests are a crucial part of any ergonomic codebase. 
+
+In this project, I've had to rework the design twice.
+
+. There was this one time when I had to change the relation between two core entities. It went from
+1-N to N-M.
+. Second time, I had to make the data load transition from synchronous to asynchronous preload.
+
+Thanks to the testing strategy described above, I managed to implement both of these with no
+regressions that could be seen by the client.
+
+[logo]#image:/images/logo.svg[]#
