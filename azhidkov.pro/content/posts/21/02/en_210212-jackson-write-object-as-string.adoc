@@ -108,7 +108,7 @@ It's worthy of its own dedicated post. :) [logo]#image:/images/logo.svg[]#
 
 ---
 
-P.S. Perhaps you'll say that a lazy Sequence isn't the same as a can-do Writer, and you'll always
+P.S. Perhaps you'll say that a lazy Sequence isn't the same as a eager Writer, and you'll always
 [line-through]#have a harder time# will be less used to writing this way. 
 Thanks to coroutines, though, even that's not true: 
 
