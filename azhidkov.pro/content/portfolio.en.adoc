@@ -440,11 +440,11 @@ SQL
 
 ==== Employment experience
 
-*Company and position:* Novosibirsk State University, Lecturer and Thesis Advisor +
-*Time of employment:* September 2009 – current position +
+*Company and position:* Siberian.Pro, Director of Java functional team +
+*Time of employment:* May 2021 – current position +
 
-* I'm the lecturer for the 'Databases' course (2018—current position).
-* I was the lecturer for the 'Object-Oriented Programming' course (2009-2014).
+I'm creating and organizing from scratch work of Java platform department.
+I perform the role of an techlead/architect on internal and external projects.
 
 {empty} +
 
