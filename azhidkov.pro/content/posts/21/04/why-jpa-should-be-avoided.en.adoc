@@ -12,6 +12,12 @@ draft: false
 [NOTE]
 --
 You can follow the blog updates in my channel: https://t.me/ergonomic_code[Ergonomic Code (rus)]
+
+22.08.21 edit:
+
+* Section <<Bad procedural programming style>>
+* Section <<What to do if JPA is unavoidable>>
+* Section <<Links>>
 --
 
 == Disclaimer: I passionately hate JPA and Hibernate.
@@ -114,22 +120,6 @@ So while pursuing this, JPA excludes the more ergonomic declarative model.
 JPA undermines both design and performance.
 First, let’s take a look at how JPA can jeopardize software design.
 
-=== Default constructors
-
-JPA requires that all entity classes include constructors by default:
-[quote, JSR 338: JavaTM Persistence API; Version 2.2; "2.1 The Entity Class," https://github.com/javaee/jpa-spec/blob/master/jsr338-MR/JavaPersistence.pdf]
-____
-The entity class must have a no-arg constructor.
-____
-
-Note that default constructors are an antipattern and a ticking bomb, as they allow for invariant-violating objects.
-They also cause link:++{{<relref path="/posts/21/01/210119-effects#_временная_связность" lang="ru">}}++[temporal coupling].
-Look https://blog.ploeh.dk/2011/05/30/DesignSmellDefaultConstructor/[here] for more details.
-
-You can partly avoid this problem by making the default constructor package private and marking it as @Deprecated.
-
-I've never seen anyone but me adhere to this practice, though.
-
 === Classes must be open for inheritance
 
 JPA requires entity classes to be open for inheritance:
@@ -145,6 +135,22 @@ It would take much more effort to design a class for inheritance than to define 
 I've never seen a JPA Entity designed with inheritance in mind.
 
 Although JPA's entity inheritability can cause potential problems, I've never encountered any in my experience.
+
+=== Default constructors
+
+JPA requires that all entity classes include constructors by default:
+[quote, JSR 338: JavaTM Persistence API; Version 2.2; "2.1 The Entity Class," https://github.com/javaee/jpa-spec/blob/master/jsr338-MR/JavaPersistence.pdf]
+____
+The entity class must have a no-arg constructor.
+____
+
+Note that default constructors are an antipattern and a ticking bomb, as they allow for invariant-violating objects.
+They also cause link:++{{<relref path="/posts/21/01/210119-effects#_временная_связность" lang="ru">}}++[temporal coupling].
+Look https://blog.ploeh.dk/2011/05/30/DesignSmellDefaultConstructor/[here] for more details.
+
+You can partly avoid this problem by making the default constructor package private and marking it as @Deprecated.
+
+I've never seen anyone but me adhere to this practice, though.
 
 === Objects must be mutable
 
@@ -166,6 +172,33 @@ If you try to save this new instance, JPA will attempt to insert it. This will c
 You can partly avoid this by making your entities immutable and only ever performing updates with UPDATE queries.
 However, this will only work as long as you have to update just one object.
 Things get much more complicated if you're working with an immutable object graph, though. You'll need to manually write the queries of each type and–manually as well–run the UPDATE queries through the graph.
+
+=== Bad procedural programming style
+
+The previous two points with addition of several more minor JPA constraints leads to degradation of programming style to procedural.
+There are data sturctures without behaviour (JPA entities) and imperative procedures to manipulate them (services).
+Welcome to the 1981.
+
+In seventies classics, like Larry Constantine in https://archive.org/details/structureddesign00edwa[Structured Design], had discovered universal structure of maintable programs:
+
+image::/posts/21/04/images/good-module-structure-en.svg[]
+
+This structure is still actual in disguise of https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html[Clean Architecture] и https://www.kennethlange.com/functional-core-imperative-shell/[Functional core/Imperative shell].
+
+However JPA turns it in following structure:
+
+image::/posts/21/04/images/bad-module-structure-en.svg[]
+
+It's very difficult to analyze this secret IO.
+The difficulty leads to big problems with performance - try to understand count of sql queries executed while request handling, and regressions - try to understand which rows and how will be changed in DB.
+Additionally such structures requires usage of mocks in business rules tests (transformation).
+And tests with mocks are probing method implementations instead of contracts and breaks after any little refactoring.
+
+It isn't relates to JPA directly, but in my practise JPA-developers thinks that they are programming in OO-style and do not study "old junk" such as structured programming and structured design.
+As result they are write bad procedural code with low cohesion, high coupling, scopes of decisions effects exceedings scopes of control (see https://archive.org/details/structureddesign00edwa/page/160/mode/2up[9.4 Scope of effect/scope of control]) etc.
+
+Welcome to the 1981.
+I recommend to abstain of usage of go to operator.
 
 === All code becomes side effect code
 
@@ -366,6 +399,21 @@ https://mybatis.org/mybatis-3/[mybatis.org]
 I haven't had the chance to try MyBatis myself in commercial environment.
 As far as I know, though, it makes a popular alternative to JPA as well.
 
+== What to do if JPA is unavoidable
+
+Often JPA is unavoidable.
+Someone is given with large legacy, which must be maintained.
+Someone is given with new project, where technologies is dictated by "Architect" or customer.
+
+Already after my post publication I stumbled upon https://www.stemlaur.com/blog/2021/03/30/tech-hibern-hate/[this post].
+In this post author describes all (and little more) rules, that I use to minimize JPA's damage in projects where I didn't managed to avoid it.
+In particular I recommend to:
+
+. Stop having public default constructor and setters
+. Keep JPA DAOs outside of the domain as much as you can
+. Stop adding multi-directional association
+. Stop adding entity mappings whenever its possible
+
 == Conclusion
 
 In my opinion, JPA comes in handy when you need a fast, poor, and cheap solution.
@@ -379,3 +427,12 @@ In these cases, <<You need an extra query to reference an entity,saving entities
 
 I'd recommend against JPA if your project will be facing a higher load or feature a more complex domain model.
 Here, you'd be much better off using one of the alternative technologies instead.
+
+== Links
+
+More links with JPA critics and hacks to workaround it problems:
+
+* https://www.baeldung.com/spring-persisting-ddd-aggregates[Persisting DDD Aggregates]
+* https://www.stemlaur.com/blog/2021/03/30/tech-hibern-hate/[Stop using JPA/Hibernate]
+* https://leanpub.com/opinionatedjpa/read#ch-questionable-parts[Opinionated JPA with Querydsl, 3. Questionable parts]
+* https://vladmihalcea.com/the-best-way-to-map-a-onetomany-association-with-jpa-and-hibernate/[The best way to map a @OneToMany relationship with JPA and Hibernate]
