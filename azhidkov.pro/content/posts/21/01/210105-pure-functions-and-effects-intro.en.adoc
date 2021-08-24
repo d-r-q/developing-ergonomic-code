@@ -1,0 +1,71 @@
+---
+title: "Pure and efficient functions: Introduction"
+date: 2021-01-05T09:19:22+07:00
+draft: false
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+
+In this blog and link:++{{< ref "book/ergo" >}}++[my book (rus)], I repeat, time and again, the same mantra
+about "separating the effects from the logic."
+I think it's necessary that my readers fully understand what I mean.
+However, when I started to analyze the existing terminology, I was surprised to find out there's no
+uniform framework.
+The options that are available don't include the nuances I believe to be important. 
+Therefore, I decided to write an article series about the terminology I'm using.
+
+Pure functions have it easy. 
+There's a https://en.wikipedia.org/wiki/Pure_function[Wikipedia article] about these that provides a decent enough definition:
+[quote, Wikipedia]
+____
+<...> a pure function is a function that has the following properties:
+. The function return values are identical for identical arguments (no variation with local static variables, non-local variables, mutable reference arguments or input streams).
+. The function application has no side effects (no mutation of local static variables, non-local variables, mutable reference arguments or input/output streams).
+____
+
+Well, even this isn't exactly perfect, as it references a bunch of random books.
+Moreover, the definition relies on side effects.
+
+Alright, let's find out what side effects are using https://en.wikipedia.org/wiki/Side_effect_(computer_science)[Wikipedia].
+
+[quote, Wikipedia]
+____
+In computer science, an operation, function or expression is said to have a side effect if it modifies some state variable value(s) outside its local environment, that is to say has an observable effect besides returning a value (the main effect) to the invoker of the operation.
+[…] Example side effects include modifying a non-local variable, modifying a static local variable, modifying a mutable argument passed by reference, performing I/O or calling other side-effect functions.
+____
+
+Well, some questions certainly arise.
+And the most important one is, what is the effect side to?
+Computation?
+And what if I'm only invoking the function for the "side" effect?
+Is `printf`, for example, side?
+
+It seems sensible that apart from side effects, there are also effects. 
+
+The other question is, what's the in-between for pure functions and side effects functions?
+For example, a function that reads the current time.
+Or a function returning the value of a global variable.
+These are undetermined, that is, not pure. 
+They also don't change their global state, that is, they have no side effects as per Wikipedia's definition.
+
+With enough perseverance, you'd find
+https://alvinalexander.com/scala/what-effects-effectful-mean-in-functional-programming/[this text] and
+https://www.youtube.com/watch?app=desktop&v=po3wmq4S15A[this video] explaining functional effects
+and effective functions.
+
+That's where the funny part starts.
+They say that an effect is how a monad implements the flatMap.
+Apart from everything that Wikipedia brands as side effects, they also put under that umbrella the
+functions I mentioned above that read the global state, as well as asynchronous effects (Future), errors
+(Try), and even the value absence (Option).
+For them, effective functions are functions that instead of a result, such as T, return some wrapping around
+that result, such as F.
+And side effect is a bug. 
+
+Well, that's the painful sight that the current effect terminology framework is.
+In this article series, I'll present to you my full uniform terminology framework. :)
+
+Here's a book on this topic I'd recommend picking up:
+https://www.amazon.com/Concepts-Programming-Languages-Robert-Sebesta/dp/013394302X[Concepts
+of Programming Languages], Chapter 7.2.2
