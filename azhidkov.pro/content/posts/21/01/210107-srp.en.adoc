@@ -1,0 +1,71 @@
+---
+title: "Single Responsibility Principle considered harmful"
+date: 2021-01-07T07:25:37+07:00
+draft: false
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+
+I've just come across https://tommcfarlin.com/programming-side-effects/[this article], and it bummed
+me out quite a bit.
+
+Theoretically, the principle per se (that is, the Single Responsibility Principle) may very well
+be a good one. 
+There's just one problem: Uncle Bob has been trying to explain it for 20 (twenty) years to no avail.
+
+I managed to track back Martin's process of defining this term. To sum it up:
+
+* 2003: _"A class should have only one reason to change"_ - https://www.amazon.com/Software-Development-Principles-Patterns-Practices/dp/0135974445[Agile Software Development, Principles, Patterns, and Practices]
+* 2008: _"The Single Responsibility Principle (SRP) states that a class or module should have one, and only one, reason to change"_ - https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882[Clean Code]
+* 2014: _"Gather together the things that change for the same reasons. Separate those things that change for different reasons."_ - https://blog.cleancoder.com/uncle-bob/2014/05/08/SingleReponsibilityPrinciple.html[The Single Responsibility Principle]
+* 2018: _"A module should be responsible to one, and only one, actor"_ - https://www.amazon.com/Clean-Architecture-Craftsmans-Software-Structure/dp/0134494164/ref=pd_bxgy_img_2/147-8271342-0171521?_encoding=UTF8&pd_rd_i=0134494164&pd_rd_r=90e2cb95-6f04-4c0c-9c7b-66c2d960039a&pd_rd_w=iwjpt&pd_rd_wg=0JqHc&pf_rd_p=f325d01c-4658-4593-be83-3e12ca663f0e&pf_rd_r=1HX5JTT8AYRP3ABYS91W&psc=1&refRID=1HX5JTT8AYRP3ABYS91W[Clean Architecture]
+
+Yet still, the article that bummed me out says "That class itself should do one thing."
+I feel that "one thing" is the most common interpretation of the SRP.
+
+That could be alright, but "thing" can mean a whole lot of stuff.
+Is a sorting one thing? 
+And what if https://en.wikipedia.org/wiki/Timsort[a single method] employs different algorithms depending on the input size?
+Is that still one thing, or multiple ones? 
+And what if
+https://www.freebsd.org/cgi/man.cgi?query=sort&apropos=0&sektion=0&manpath=2.9.1+BSD&arch=default&format=html[the
+code] is capable of sorting arrays that exceed memory and works with the hard drive in an according manner?
+
+You could argue day and night about the size of things. 
+I bet the only thing software engineers over there in Heaven are busy with is arguing about how many
+things this or that piece of code does.
+
+Well, to heck with the "thing."
+Even Uncle Bob himself is confused with the definition.
+In one of his articles, 
+[quote, Uncle Bob, https://blog.cleancoder.com/uncle-bob/2020/10/18/Solid-Relevance.html], he says:
+____
+We do not mix business rules with GUI code
+____
+
+It's hard to argue with that.
+We don't mix these things, and that's great.
+However, specification changes alone often incur incur making changes to the GUI, to the rules, and to the database.
+That is, these things (both for one feature) should be stored in the same place.
+
+To sum up, IMO, the SRP is a decent motto to know about.
+One should keep it mind when analyzing design, but it certainly isn't that important.
+Naturally, it should'be embraced as a design foundation.
+
+Here's some more general hate towards SOLID:
+
+* https://www.youtube.com/watch?v=tMW08JkFrBA[The SOLID Design Principles Deconstructed] - a lecture
+by an all-around cool guy.
+You can't go wrong with just
+https://www.youtube.com/results?search_query=Kevlin+Henney[searching for his name on YouTube] and
+binge-watching everything you see.
+I'd strongly recommend doing so;
+* https://www.tedinski.com/2019/04/02/solid-critique.html[Deconstructing SOLID design principles]: a
+post from another cool guy who at some point started writing a book on the same topic I do.
+Unfortunately, it seems like he didn't go through it after all.
+He managed to write much more than I have so far, though, so I strongly recommend giving it a read :)
+* https://dannorth.net/2021/03/16/cupid-the-back-story/[CUPID – the back story] – a consultant I
+don't know much about.
+
+And here's Martin analyzing and replying to the consultant's slides. https://blog.cleancoder.com/uncle-bob/2020/10/18/Solid-Relevance.html[Solid Relevance]
