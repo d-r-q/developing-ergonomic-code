@@ -209,7 +209,7 @@ JPA активно продвигает ленивую загрузку.
 Я не удивлюсь, если ленивая загрузка ответственна за 1% мирового потребления электроэнергии.
 Ленивая загрузка была причиной 90% проблем с производительностью, которые мне приходилось решать в проектах с JPA.
 
-Я много раз на порядки увеличивал производительность частей, системы использующих JPA, по следующему алгоритму:
+Я много раз (например link:++{{<ref "/portfolio#threads">}}++[здесь]) на порядки увеличивал производительность частей системы, использующих JPA, по следующему алгоритму:
 
 . посчитать количество запросов, выполняемых кодом;
 . пригладить волосы, вставшие дыбом от сотен запросов вместо несколько штук;
@@ -238,6 +238,9 @@ JPA активно продвигает ленивую загрузку.
 С ленивой загрузкой надо быть постоянно начеку.
 Каждый раз, написав что-то в духе `entity.getXXXs`, задумываться - не случится ли здесь https://stackoverflow.com/questions/97197/what-is-the-n1-selects-problem-in-orm-object-relational-mapping[N+1 запрос].
 Лично мне не хватает дисциплины на это.
+
+В результате получается что-то вроде этого (дойдите до твита сами, если адблокер блокирует изображение):
++++<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Migration from <a href="https://twitter.com/hashtag/Hibernate?src=hash&amp;ref_src=twsrc%5Etfw">#Hibernate</a> to <a href="https://twitter.com/hashtag/JOOQ?src=hash&amp;ref_src=twsrc%5Etfw">#JOOQ</a> looks good so far <a href="https://t.co/gCDHPDguy0">pic.twitter.com/gCDHPDguy0</a></p>&mdash; Dmitry Baev (@baevdm) <a href="https://twitter.com/baevdm/status/1423636838275768322?ref_src=twsrc%5Etfw">August 6, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>+++
 
 Так же, говоря о ленивой загрузке, невозможно обойти печально известный LazyInitializationException.
 Я всё ещё продолжаю встречать его в продакшене с завидной регулярностью.
