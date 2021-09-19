@@ -1,0 +1,382 @@
+---
+title: "The Many Faces of the Single Responsibility Principle"
+description: "The single responsibility principle? Which one do you mean, exactly?"
+date: 2021-06-21T11:25:37+07:00
+draft: false
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:table-caption!:
+
+[NOTE]
+--
+You can follow the blog’s updates in my channel: https://t.me/ergonomic_code[Ergonomic code (rus)]
+--
+
+It feels like any solid software engineer knows of SOLID in general and the single-responsibility
+principle (SRP) in particular.
+
+.In case you don't...
+[%collapsible]
+====
+The SOLID is a set of principles guiding object-oriented design.
+It was put together by Robert Martin, who's also known as Uncle Bob.
+These principles go as follows:
+
+. [big]##**S**##ingle Responsibility Principle: A module should have one, and only one, reason to change.
+. [big]##**O**##pen/Closed Principle:: A software artifact should be open for extension but closed for modification.
+. [big]##**L**##iskov Substitution Principle:: What is wanted here is something like the following substitution property: If for each object o1 of type S there is an object o2 of type T such that for all programs P defined in terms of T, the behavior of P is unchanged when o1 is substituted for o2 then S is a subtype of T
+. [big]##**I**##nterface Segregation Principle:: Clients should not be forced to depend upon interfaces that they do not use.
+. [big]##**D**##ependency Inversion Principle::
+A. High level modules should not depend upon low level modules. both should depend upon abstractions.
++
+B. Abstractions should not depend upon details. details should depend upon abstractions.
+====
+
+Whenever someone mentions SRP, I always ask to specify which one.
+That's because with SRP, there are at least five different formulas with three interpretations.
+I don't really see how such a... thing can make a good software development guideline.
+
+== SRP formulas
+
+First off, let's see the most popular formula—albeit a wrong one:
+[quote, they say]
+____
+A class should only do one thing
+____
+
+Well, the principle per se certainly exists.
+It's one of the principles guiding Linux philosophy.
+However, Martin himself says in his "Clean Architecture" that it has nothing to do with SRP:
+[quote, Robert C. Martin, Clean Architecture]
+____
+It is too easy for programmers to hear the name and then assume that it means that every module should do just one thing.
+
+Make no mistake, there is a principle like that. [...]
+But it is not one of the SOLID principles — it is not the SRP.
+____
+
+---
+
+Martin himself has provided three formulas for SRP:
+
+The 2003 formula::
+[quote, Robert C. Martin, Agile software development Principles Patterns and Practices]
+____
+The Single Responsibility Principle (SRP) states that a class or module should have one, and only one, reason to change
+____
+
+The 2014 formula::
+[quote, Robert C. Martin, The Single Responsibility Principle]
+____
+Gather together the things that change for the same reasons.
+Separate those things that change for different reasons.
+____
+
+The 2018 formula::
+[quote, Robert C. Martin, Clean Architecture]
+____
+A module should be responsible to one, and only one, actor
+____
+
+To understand what these three have in common, I had to give three reads to every single piece Martin has
+ever written on SRP.
+You'll save yourself a day or two and get the same answer in 15 minutes if you make it to the end of
+this post.
+
+Let's start with looking at how Uncle Bob has been explaining SRP for the last 20 years.
+
+== SRP explanations
+
+*Agile software development Principles Patterns and Practices, 2003*
+
+[NOTE]
+====
+Fun fact: SRP was formulated eight years later than the other SOLID principles.
+The initial order was different and looked like OLDI.
+The SOLID acronym was coined not by Uncle Bob, but by Michael Feathers.
+====
+
+The SRP makes it first appearance in the https://www.amazon.com/Software-Development-Principles-Patterns-Practices/dp/0135974445[Agile software development Principles Patterns and Practices].
+In this book, Martin explains it with separating the code based on what it's responsible for in the system: 
+[quote, Robert C. Martin, Agile software development Principles Patterns and Practices]
+____
+Consider the bowling game from Chapter 6.
+For most of its development the Game class was handling two separate responsibilities.
+It was keeping track of the current frame, and it was calculating the score.
+In the end, RCM and RSK separated these two responsibilities into two classes.
+The Game kept the responsibility to keep track of frames, and the Scorer got the responsibility to calculate the score. (see page 85.)
+____
+
+*Clean Code, 2008*
+
+Martin keeps explaining the basic idea of SRP as separating the code based on its responsibilitiesZZ in his https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882[Clean Code]:
+
+[source,java]
+----
+public class SuperDashboard extends JFrame implements MetaDataUser {
+    public Component getLastFocusedComponent()
+    public void setLastFocused(Component lastFocused)
+    public int getMajorVersionNumber()
+    public int getMinorVersionNumber()
+    public int getBuildNumber();
+}
+----
+
+[quote, Robert C. Martin, Clean Code]
+____
+The seemingly small SuperDashboard class in Listing 10-2 has two reasons to change.
+First, it tracks version information that would seemingly need to be updated every time the software gets shipped.
+Second, it manages Java Swing components (it is a derivative of JFrame, the Swing representation of a top-level GUI window)
+____
+
+*The Clean Coder, 2011*
+
+Next, in his
+https://www.amazon.com/Clean-Coder-Conduct-Professional-Programmers/dp/0137081073/ref=pd_sim_5/131-9122726-9479409?pd_rd_w=0NdTd&pf_rd_p=d88e414a-c661-4436-b6ed-003c19da9b92&pf_rd_r=6FTHCEPHBC1138C43SJ9&pd_rd_r=28244df1-86a2-478b-85b3-5e3542ecf45b&pd_rd_wg=H5iaV&pd_rd_i=0137081073&psc=1[The
+Clean Coder], Uncle Bob explains SRP with separating implementation concerns (that us, the GUI and the
+business rules):
+
+[quote, Robert C. Martin, The Clean Coder]
+____
+There is a design principle called the Single Responsibility Principle (SRP).
+This principle states that you should separate those things that change for different reasons, and group together those things that change for the same reasons.
+GUIs are no exception.
+
+The layout, format, and workflow of the GUI will change for aesthetic and efficiency reasons, but the underlying capability of the GUI will remain the same.
+
++++[...]+++
+
+Design experts have been telling us for decades to keep our GUIs separated from our business rules.
+____
+
+*The Single Responsibility Principle, 2014*
+
+In his https://blog.cleancoder.com/uncle-bob/2014/05/08/SingleReponsibilityPrinciple.html[next]
+piece on SRP, Uncle Bob explicitly uses the "separation of concerns" term:
+[quote, Robert C. Martin, https://blog.cleancoder.com/uncle-bob/2014/05/08/SingleReponsibilityPrinciple.html]
+____
+Two years later, Edsger Dijkstra wrote another classic paper entitled On the role of scientific thought. in which he introduced the term: The Separation of Concerns.
++++[...]+++
+This is the reason we do not put SQL in JSPs.
+This is the reason we do not generate HTML in the modules that compute results.
+This is the reason that business rules should not know the database schema.
+This is the reason we separate concerns.
+____
+
+Here, we have the first time Martin gives SRP this brand new definition:
+[quote, Robert C. Martin, https://blog.cleancoder.com/uncle-bob/2014/05/08/SingleReponsibilityPrinciple.html]
+____
+And this gets to the crux of the Single Responsibility Principle.
+This principle is about people.
+
+When you write a software module, you want to make sure that when changes are requested, those changes can only originate from a single person, or rather, a single tightly coupled group of people representing a single narrowly defined business function.
+____
+Here, he's talking about separating code by *people behind writing it*.
+
+*Clean Architecture, 2018*
+
+This explanation received its final form in four years, in https://www.amazon.com/Clean-Architecture-Craftsmans-Software-Structure/dp/0134494164/ref=pd_sim_1/131-9122726-9479409?pd_rd_w=Kj7C7&pf_rd_p=d88e414a-c661-4436-b6ed-003c19da9b92&pf_rd_r=0ZQVJKRJ6VFKKPXGBRJA&pd_rd_r=664e0c37-918c-4613-b12d-6e758d26e96b&pd_rd_wg=DAys9&pd_rd_i=0134494164&psc=1[Clean Architecture]:
+[quote, Robert C. Martin, Clean Architecture]
+____
+A module should be responsible to one, and only one, actor
+____
+
+Here, an actor is a group of stakeholders—that is, people in some way or another related to the
+app and/or engaged in developing it—who share the same needs and wants. 
+
+== The sixth SRP formula
+
+I think the sixth—mine—SRP formula is far more clear:
+[quote, Alexey Zhidkov, The Many Faces of the Single Responsibility Principle]
+____
+A module should be responsible for implementing the requirements of just one stakeholder.
+____
+
+This formula is based around a quite specific concept of a requirement.
+I think there are much less conflicting interpretantions to the word "requirement" than there are to
+the word "actor."
+"Actor" per se isn't the best word, as it's usually understood as "the program's user"—a definition
+popularized by the UML.
+
+In my formula, it's clear why data storage modules should be separated from data presentation modules.
+The former are specified by the DBA, and the latter by the UX designer.
+It's also clear why you should separate the modules responsible for implementing the CFO and COO
+responsibilities.
+The requirements for these are defined by different people from different departments.
+
+This formula isn't perfect as well, though.
+First, infrastructure modules will be fulfilling at least two requirements, i.e. the functional and
+the quality ones.
+Second, I've never seen a project that would have the functional and the non-functional
+requirements, stakeholder list, and stakeholder relations all clearly written out.
+
+Neither this SRP formula nor any other one doesn't provide software engineers with a guide on the
+nuts and bolts of how they should be implementing the principle in their everyday work.
+Perhaps it would be more useful to break SRP down into multiple down-to-earth recommendations?
+For example:
+
+. form a directed acyclic graph of inter-module dependency;
+. separate the I/O (GUI included) from the business rules,
+. separate the code responsible for different functions of the system,
+. write tests.
+  In your tests, you should only mock external systems and create the system under test manually (as
+  opposed to with a DI container). 
+
+These recommendations don't require extensive planning ahead with defining the stakeholders and the
+requirements.
+It's also easy to see whether you're following these recommendations when writing your code.
+
+These are much easier to use in day-to-day work for wider circles of software engineers.
+They would also result in a system that's reliable and easy to maintain. 
+
+I have one more recommendation apart from those listed above.
+You should separate the "default library" (the domain) and the "scripts" (functions) of the application.
+This is dicussed by both Martin in his Clean Architecture as the separation of entities and
+interactors and Evans in his DDD as the separation of application and domain services.
+Nether they nor I can provide any objective criteria that could allow to see whether the code
+you're writing adheres to this recommendation.
+Therefore, I'm not listing it as a simple and clear one.
+
+== Here we go 'round the mulberry bush
+
+image::/posts/21/06/images/years-without-new-srp-version.png[]
+
+*SOLID relevance, 2020*
+
+The constant change of SRP formulas and interpretantions could be explained with Martin's own
+understanding of SRP changing and evolving.
+At first, SRP meant for him that we should separate the code by its responsibilities.
+Then it occurred to him that the code should also be separated by implementation concerns.
+Finally, Uncle Bob combined both under "people-based" code decomposition.
+
+This was an excellent explanation of SRP history, all the way until Martin wrote his last post on SRP.
+In that post, he went back to concerns-based code decomposition:
+[quote, Robert C. Martin, https://blog.cleancoder.com/uncle-bob/2020/10/18/Solid-Relevance.html]
+____
+It is hard to imagine that this principle is not relevant in software.
+We do not mix business rules with GUI code.
+We do not mix SQL queries with communications protocols.
+____
+
+If we take a step back and look at SRP explanation history, it'll become clear that Uncle Bob keeps
+jumping back and forth between these code decomposition criteria:
+
+// декомпозиция упоминается в первый (и возможно последний) раз, надо упомянуть выше
+
+.The history of SRP interpretations
+
+[cols="1,3,5"]
+|===
+|Year|Source|Decomposition criteria
+
+|2003
+|Agile software development Principles Patterns and Practices
+|Responsibilities and +
+a vague actor inkling*
+
+|2008
+|Clean Code
+|Responsibilities
+
+|2011
+|The Clean Coder
+|Concerns
+
+|2014
+|The Single Responsibility Principle
+|Responsibilities, concerns, and actor
+
+|2018
+|Clean Architecture
+|Responsibilities and actor, +s
+concerns to a lesser extent**
+
+|2020
+|SOLID Relevance
+|Concerns
+
+|===
+
+[sidebar]
+--
++++*+++ In his Agile software development Principles Patterns and Practices, Martin provides one
+more example in the SRP chapter.
+
+image::/posts/21/06/images/rectangle.png[]
+
+[quote, Robert C. Martin, Agile software development Principles Patterns and Practices]
+____
+Two different applications use the Rectangle class.
+One application does computational geometry.
+It uses Rectangle to help it with the mathematics of geometric shapes.
+It never draws the rectangle on the screen.
+The other application is graphical in nature.
+It may also do some computational geometry, but it definitely draws the rectangle on the screen.
+____
+
+Looking at this example (from 2021), we can conclude that different apps will have different users
+(which are one kind of actors) and the draw and area methods serve for implementing the requirements of
+different actors.
+
+---
+
++++**+++ In the Clean Architecture, concerns separation is mentioned as well (the save method
+defined by the CTO).
+In this book, though, Martin isn't explicitly discussing the need for concerns-based
+decomposition.
+Considering the quite unconventional usage of the word "actor," this explanation could be
+interpreted as decomposition based on the users alone.
+This would be a fourth SRP interpretation, albeit I've never encountered it in the wild.
+--
+
+Responsibilities-based decomposition and implementation concerns-based decomposition aren't two ways of laying out the same principle.
+These are two different principles that lead to different results.
+
+=== Separation of responsibilities != Separation of concerns
+
+You can separate SQL and JSP and still use the same code in different functions, as well as break
+some users' functions while modifying some other users' functions.
+Alternatively, you can get each user or each function of the system their own dedicated
+microservice, as well as have just one method for json parsing, business rules,  and SQL request execution.
+You'll end up with fragile code that's painful to maintain, though. 
+
+Functionality implementation concerns and functionality per se are orthogonal axes of code decomposition.
+
+SRP violates one of its own interpretations and mixes together various concerns of software design.
+I have zero idea on why Uncle Bob would combine two different principles to make one.
+
+Perhaps it took Martin himself some time to understand that code should be separated by both
+responsibilitity and implementation concerns.
+By the time he understood this, the SOLID had already taken off and become a brand no one would want
+to lose.
+
+Can we rely on a principle whose formula and interpretation both change every three years?
+I don't think so.
+
+== We need new principles
+
+To sum things up:
+
+* It isn't quite clear what SRP even is.
+  Different developers mean different design principles by SRP.
+  Even Martin himself keep changing the formulas and the examples he's using to define SRP.
+* The Single True Version of SRP I believe in isn't viable to use in real life projects.
+  Because in real life projects, no one does the analytics this version would require.
+* Even if they did, the SRP ideal would still be an unattainable ideal.
+  That's because a significant part of the code will have at least two reasons to change: namely, the
+  functionality requirements and the implementation method requirements.
+
+Even though SRP is the most questionable SOLID principle, the other four have their fair share
+of problems and conflicting readings as well.
+Therefore, I don't think that SOLID as it is can be a good system design guideline.
+
+Yet still, the SOLID contains quite a lot of good and useful ideas.
+That's why I'm not calling for it to be abolished altogether — I'm suggesting for it to be reinstated.
+We should pick out the relevant ideas it contains, make these more specific, and supplement them
+with best-practice examples.
+Naturally, everything that has now lost its relevance should be deprecated.
+
+Here's the most important part: we shouldn't pigeonhole ourselves by only using those principles
+whose first letters can form up a pretty acronym.
