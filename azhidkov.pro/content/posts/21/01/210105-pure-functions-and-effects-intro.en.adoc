@@ -7,15 +7,15 @@ draft: false
 :rouge-theme: github
 :icons: font
 
-In this blog and link:++{{< ref "book/ergo" >}}++[my book (rus)], I repeat, time and again, the same mantra
+In this blog and link:++{{< ref path="book/ergo" lang="ru">}}++[my book (rus)], I repeat, time and again, the same mantra
 about "separating the effects from the logic."
 I think it's necessary that my readers fully understand what I mean.
 However, when I started to analyze the existing terminology, I was surprised to find out there's no
 uniform framework.
-The options that are available don't include the nuances I believe to be important. 
+The options that are available don't include the nuances I believe to be important.
 Therefore, I decided to write an article series about the terminology I'm using.
 
-Pure functions have it easy. 
+Pure functions have it easy.
 There's a https://en.wikipedia.org/wiki/Pure_function[Wikipedia article] about these that provides a decent enough definition:
 [quote, Wikipedia]
 ____
@@ -41,12 +41,12 @@ Computation?
 And what if I'm only invoking the function for the "side" effect?
 Is `printf`, for example, side?
 
-It seems sensible that apart from side effects, there are also effects. 
+It seems sensible that apart from side effects, there are also effects.
 
 The other question is, what's the in-between for pure functions and side effects functions?
 For example, a function that reads the current time.
 Or a function returning the value of a global variable.
-These are undetermined, that is, not pure. 
+These are undetermined, that is, not pure.
 They also don't change their global state, that is, they have no side effects as per Wikipedia's definition.
 
 With enough perseverance, you'd find
@@ -61,7 +61,7 @@ functions I mentioned above that read the global state, as well as asynchronous 
 (Try), and even the value absence (Option).
 For them, effective functions are functions that instead of a result, such as T, return some wrapping around
 that result, such as F.
-And side effect is a bug. 
+And side effect is a bug.
 
 Well, that's the painful sight that the current effect terminology framework is.
 In this article series, I'll present to you my full uniform terminology framework. :)
