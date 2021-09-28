@@ -111,7 +111,7 @@ ____
 
 *Clean Code, 2008*
 
-Martin keeps explaining the basic idea of SRP as separating the code based on its responsibilitiesZZ in his https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882[Clean Code]:
+Martin keeps explaining the basic idea of SRP as separating the code based on its responsibilities in his https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882[Clean Code]:
 
 [source,java]
 ----
@@ -173,7 +173,7 @@ This principle is about people.
 
 When you write a software module, you want to make sure that when changes are requested, those changes can only originate from a single person, or rather, a single tightly coupled group of people representing a single narrowly defined business function.
 ____
-Here, he's talking about separating code by *people behind writing it*.
+Here, he's talking about separating code by *people—by its end users*.
 
 *Clean Architecture, 2018*
 
@@ -232,9 +232,9 @@ These are much easier to use in day-to-day work for wider circles of software en
 They would also result in a system that's reliable and easy to maintain. 
 
 I have one more recommendation apart from those listed above.
-You should separate the "default library" (the domain) and the "scripts" (functions) of the application.
-This is dicussed by both Martin in his Clean Architecture as the separation of entities and
-interactors and Evans in his DDD as the separation of application and domain services.
+You should separate the "standard library" (the domain) and the "scripts" (functions) of the application.
+This is dicussed by both Martin in his Clean Architecture as the separation of interactors and
+entities and Evans in his DDD as the separation of application and domain services.
 Nether they nor I can provide any objective criteria that could allow to see whether the code
 you're writing adheres to this recommendation.
 Therefore, I'm not listing it as a simple and clear one.
@@ -249,10 +249,10 @@ The constant change of SRP formulas and interpretantions could be explained with
 understanding of SRP changing and evolving.
 At first, SRP meant for him that we should separate the code by its responsibilities.
 Then it occurred to him that the code should also be separated by implementation concerns.
-Finally, Uncle Bob combined both under "people-based" code decomposition.
+Finally, Uncle Bob combined both under "people-based" code separation.
 
-This was an excellent explanation of SRP history, all the way until Martin wrote his last post on SRP.
-In that post, he went back to concerns-based code decomposition:
+This was an excellent explanation of the way SRP evolved, all the way until Martin wrote his last post on SRP.
+In that post, he went back to concerns-based code separation:
 [quote, Robert C. Martin, https://blog.cleancoder.com/uncle-bob/2020/10/18/Solid-Relevance.html]
 ____
 It is hard to imagine that this principle is not relevant in software.
@@ -261,7 +261,7 @@ We do not mix SQL queries with communications protocols.
 ____
 
 If we take a step back and look at SRP explanation history, it'll become clear that Uncle Bob keeps
-jumping back and forth between these code decomposition criteria:
+jumping back and forth between these code separation criteria:
 
 // декомпозиция упоминается в первый (и возможно последний) раз, надо упомянуть выше
 
@@ -269,7 +269,7 @@ jumping back and forth between these code decomposition criteria:
 
 [cols="1,3,5"]
 |===
-|Year|Source|Decomposition criteria
+|Year|Source|Separation criteria
 
 |2003
 |Agile software development Principles Patterns and Practices
@@ -325,24 +325,23 @@ different actors.
 +++**+++ In the Clean Architecture, concerns separation is mentioned as well (the save method
 defined by the CTO).
 In this book, though, Martin isn't explicitly discussing the need for concerns-based
-decomposition.
+separation.
 Considering the quite unconventional usage of the word "actor," this explanation could be
-interpreted as decomposition based on the users alone.
+interpreted as separation based on the users alone.
 This would be a fourth SRP interpretation, albeit I've never encountered it in the wild.
 --
 
-Responsibilities-based decomposition and implementation concerns-based decomposition aren't two ways of laying out the same principle.
+Responsibilities-based separation and implementation concerns-based separation aren't two ways of laying out the same principle.
 These are two different principles that lead to different results.
 
 === Separation of responsibilities != Separation of concerns
 
-You can separate SQL and JSP and still use the same code in different functions, as well as break
-some users' functions while modifying some other users' functions.
+You can separate SQL and JSP and still use the same code in different functions, which can lead to some users' functions getting broken while you're modifying some other users' functions.
 Alternatively, you can get each user or each function of the system their own dedicated
-microservice, as well as have just one method for json parsing, business rules,  and SQL request execution.
+microservice, having just one method for json parsing, business rules, and SQL request execution.
 You'll end up with fragile code that's painful to maintain, though. 
 
-Functionality implementation concerns and functionality per se are orthogonal axes of code decomposition.
+Functionality implementation concerns and functionality per se are orthogonal axes of code separation.
 
 SRP violates one of its own interpretations and mixes together various concerns of software design.
 I have zero idea on why Uncle Bob would combine two different principles to make one.
