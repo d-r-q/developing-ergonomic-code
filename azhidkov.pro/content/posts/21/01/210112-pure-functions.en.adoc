@@ -30,11 +30,11 @@ Here are some signs the function isn't pure:
 . It has no result (the functions returns void or Unit).
   In theory, this could be a pure function. 
   There would be little point to this, though.
-  It could only ever be used as some output helper function.
+  It could only ever be used as some mock output function.
 +
 A typical example is printf/println.
 . It has no arguments.
-  Again, in theory, you could write such a function. There would be little point to this, though, as
+  Again, in theory, you could make such a function pure. There would be little point to this, though, as
   it could only be used as some input helper function.
 +
 A typical example is currentTime.
@@ -45,7 +45,7 @@ A typical example Files.readString(Path.of(``/tmp/test’’))
 . Being determined, it has an observable effect apart from returning the value.
   Again, any such function isn't pure by definition.
 +
-Typical examples include: determined function caching and logging for determined functions.
+Typical examples include: determined caching and logging in determined functions.
 
 What's so special about pure functions we had to come up with a separate name?
 Pure functions are https://en.wikipedia.org/wiki/Referential_transparency[referential transparent].
@@ -78,7 +78,7 @@ Well, apart from the compiler, as it'll just refuse to compile this.
 == Testing
 Pure functions testing is a trivial task. 
 Establish the parameters, call the function, and check the output. 
-There's no need to slow down the I/O, run any external service, use mocks, bother yourself with
+There's no need to perform slow I/O operations, run any external service, use mocks, bother yourself with
 testing in multi-thread environment, emulate input/output errors, or endure any other suffering that
 would be inevitable with impure function testing.
 
