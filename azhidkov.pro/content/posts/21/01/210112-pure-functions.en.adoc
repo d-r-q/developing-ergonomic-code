@@ -9,11 +9,10 @@ draft: false
 
 [NOTE]
 --
-You can follow the blog’s updates in my channel: https://t.me/ergonomic_code[Эргономичный код]
+You can follow the blog’s updates in my channel: https://t.me/ergonomic_code[Ergonomic Code (rus)]
 --
 
-The first part of my terminology series can be found
-link:++{{<ref "posts/21/01/210105-pure-functions-and-effects-intro">}}++[here]
+The first part of my terminology series can be found link:++{{<relref path="posts/21/01/210105-pure-functions-and-effects-intro" lang="en">}}++[here]
 
 _Note that I've broadened the topic I'm covering here.
 Apart from dirty functions announced yesterday, I also mentioned signals.
@@ -107,4 +106,4 @@ Pure functions usage automatically gets you a https://en.wikipedia.org/wiki/Desi
 
 If pure functions are all so great, why isn't everyone writing nothing but pure functions?
 Because we're creating programs for the sake of their effects on our real physical world.
-link:++{{<ref "posts/21/01/210119-effects">}}++[To be continued] :)
+link:++{{<relref path="posts/21/01/210119-effects" lang="ru">}}++[To be continued (rus)] :)
