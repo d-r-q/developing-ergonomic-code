@@ -2,7 +2,7 @@
 title: "Структура эргономичных программ"
 description: "Описание основных структур эргономичной кодовой базы"
 date: 2021-11-29T12:25:37+07:00
-draft: true
+draft: false
 ---
 :source-highlighter: rouge
 :rouge-theme: github
