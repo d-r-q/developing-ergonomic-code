@@ -1,0 +1,95 @@
+---
+title: "Что почитать по проектированию приложений?"
+description: "Рассмотрим в чём разница для бизнеса между типовым и эргономичным подходами"
+date: 2022-02-06T12:25:37+07:00
+draft: false
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+
+[NOTE]
+--
+Следить за обновлениями блога можно в моём канале: https://t.me/ergonomic_code[Эргономичный код]
+--
+
+В этом посте я привожу свою версию (на февраль 22 года) ответа на вопрос "Можешь порекомендовать толковую инфу по проектированию приложений?"
+
+[NOTE]
+__
+Всё, что дальше упомянуто я могу скинуть в личку.
+__
+
+Я считаю, что проектированием должны заниматься разработчики, а для разработчиков важно прочить _Структуру и интерпретацию компьютерных програм_ (_курсивом_ - книги и статьи).
+Единственная книга, которую рекомендую в русском переводе.
+
+На мой взгляд надо начать с вдумчивого изучения *Domain-Driven Design* (тактических паттернов) (*жирным* - важные термины и концепции):
+
+. _Domain-Driven Design_
+. _Domain Modeling Made Functional_
+. _Patterns, Principles, and Practices of Domain-Driven Design_
+. _Implementing DDD_
+
+Читать надо все четыре, от корки до корки, подряд, два раза:) Я почти серьёзно - сам прочитал все по разу, от корки до корки.
+Но постоянно перечитываю разные куски и вычитываю что-то новое.
+Я настоятельно рекомендую программировать в декларативном/функциональном подходе, но если оставаться в императивном/объектно-ориентированном, то вторую книгу можно пропустить.
+
+Затем можно почитать _**Structured Design**_ (жирным курсивом - книги вводящие термины). В частности главы "6. COUPLING", "7. COHESION", "8. THE MORPHOLOGY OF SIMPLE SYSTEMS" и "9. DESIGN HEURISTICS".
+
+Потом можно пойти в вотчину анкл Боба.
+Начать с принципов проектирования пакетов:
+
+* The Release Reuse Equivalency Principle
+* The Common Closure Principle
+* The Common Reuse Principle
+* The Acyclic Dependencies Principle
+* The Stable Dependencies Principle
+* The Stable Abstractions Principle
+
+Они есть в _Clean Architecture_ и _Design Principles and Design Patterns_.
+Из вторых рук есть в _Principles of Package Design_.
+
+*SOLID* тоже стоит изучить, но важно "зрить в корень":
+
+. SRP - https://azhidkov.pro/posts/21/06/210626-srp-interpretations/[совсем не однозначная штука]
+. OCP - https://azhidkov.pro/posts/21/04/srp-ocp-conflict/[не только про полиморфизм], всю систему нельзя сделать закрытой для изменений - надо понимать что и зачем закрывается
+. LSP - не только про наследование
+. ISP - то ли я ещё не познал дзен, то ли потерял актуальность, то ли всегда был актуален только для огромных кодовых баз на C++
+. DIP - самый простой, понятный и безопасный, но с ним тоже можно переборщить
+
+Затем можно почитать _**Clean Architecture**_ - в книге много полезного, но по моему опыту чистая архитектура (с DIP на уровне архитектуры) не должна быть выбором по умолчанию (слишком тяжеловесная).
+
+А что должно быть выбором по умолчанию - это архитектура *Functional Core/Imperative Shell*.
+Каноничного описания я не знаю, но пример приводится в _Domain Modeling Made Functional_ и _Structured Design_ (если на модули трансформаций наложить требование чистоты).
+
+Затем можно почитать про *Information hiding/Parnas Partitioning*.
+Эти штуки хорошо держать в уме и искать их, но как и с OCP важно не упираться и не высасывать их из пальца.
+
+Отделить ООП с классами (в которое я не верю) от ООД (в который верю) мне помогла _Object-Oriented Software Engineering: A Use Case Driven Approach_.
+Хороший пример ООД на чисто функциональном языке приведён в _Clojure Applied_, в главе "6. Creating Components".
+
+Дизайну в целом можно поучиться у https://github.com/tallesl/Rich-Hickey-fanclub[Рича Хики] и Clojure , особые жемчужины - https://www.infoq.com/presentations/Are-We-There-Yet-Rich-Hickey/[Are We There Yet?] и https://www.infoq.com/presentations/Simple-Made-Easy/[Simple Made Easy].
+
+Ещё на мой взгляд для общего развития полезно ознакомиться с *Экторной моделью* на примере _Programming Erlang_ - там и распределённое программирование и функциональное программирование.
+
+Для проектирования информационных систем важно прочитать _Designing Data-Intensive Applications_.
+
+После этого можно вернуться ещё раз к ООП в _Applying UML and Patterns_.
+Там действительно много UML-я и это можно пропускать, но помимо этого там есть много полезной информации, включая уже знакомые High Cohesion/Low Coupling и Information Hiding
+
+По роли архитектора можно почитать и посмотреть https://simonbrown.je/[Simon Brown-а] (у него есть пара книг) и _Just Enough Software Architecture: A Risk-Driven Approach_.
+
+По хорошему надо ещё понять юз кейсы - они встречаются во многих книгах выше, но книгу непосредственно по юз кейсам пока не могу посоветовать.
+
+Для общего развития полезно почитать _Practical API Design_.
+
+Интересная идея *Data Context Interaction* описана в _Lean Architecture for Agile Software Development_.
+
+Философию ООД можно почитать в _Object Thinking_.
+А философию моделирования информации в _Data and Reality_.
+
+Любопытные идеи описаны в первой части _Righting Software_ - по сути тоже самое что и в Parnas Partitioning, поэтому проблема та же - непонятно как предугадать, что и как будет меняться.
+В этой книге я тоже не нашёл ответа на этот вопрос.
+
+Уже скорее из соображений общей эрудиции можно почитать _Design Patterns Elements of Reusable Object-Oriented Software_.
+Но сейчас шаблоны уже вышли из моды, а в ООП с классами я не верю.

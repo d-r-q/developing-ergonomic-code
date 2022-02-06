@@ -98,3 +98,7 @@ baseURL = "https://azhidkov.pro/"
             name = "Contacts"
             weight = 4
             url ="/"
+
+[security]
+  [security.exec]
+    allow = ['^dart-sass-embedded$', '^go$', '^npx$', '^postcss$', 'asciidoctor']
