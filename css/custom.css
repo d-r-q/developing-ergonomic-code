@@ -262,3 +262,7 @@ dd {
     font-size: small;
     vertical-align: super;
 }
+
+article {
+    margin-bottom: 10em
+}
