@@ -26,7 +26,7 @@ __
 На мой взгляд надо начать с вдумчивого изучения *Domain-Driven Design* (тактических паттернов) (*жирным* - важные термины и концепции):
 
 . _Domain-Driven Design_
-. _Domain Modeling Made Functional_
+. _https://pragprog.com/titles/swdddf/domain-modeling-made-functional/[Domain Modeling Made Functional]_
 . _Patterns, Principles, and Practices of Domain-Driven Design_
 . _Implementing DDD_
 
@@ -34,7 +34,7 @@ __
 Но постоянно перечитываю разные куски и вычитываю что-то новое.
 Я настоятельно рекомендую программировать в декларативном/функциональном подходе, но если оставаться в императивном/объектно-ориентированном, то вторую книгу можно пропустить.
 
-Затем можно почитать _**Structured Design**_ (жирным курсивом - книги вводящие термины). В частности главы "6. COUPLING", "7. COHESION", "8. THE MORPHOLOGY OF SIMPLE SYSTEMS" и "9. DESIGN HEURISTICS".
+Затем можно почитать _**https://archive.org/details/Structured_Design_Edward_Yourdon_Larry_Constantine[Structured Design]**_ (жирным курсивом - книги вводящие термины). В частности главы "6. COUPLING", "7. COHESION", "8. THE MORPHOLOGY OF SIMPLE SYSTEMS" и "9. DESIGN HEURISTICS".
 
 Потом можно пойти в вотчину анкл Боба.
 Начать с принципов проектирования пакетов:
@@ -59,8 +59,11 @@ __
 
 Затем можно почитать _**Clean Architecture**_ - в книге много полезного, но по моему опыту чистая архитектура (с DIP на уровне архитектуры) не должна быть выбором по умолчанию (слишком тяжеловесная).
 
-А что должно быть выбором по умолчанию - это архитектура *Functional Core/Imperative Shell*.
-Каноничного описания я не знаю, но пример приводится в _Domain Modeling Made Functional_ и _Structured Design_ (если на модули трансформаций наложить требование чистоты).
+А что должно быть выбором по умолчанию - это архитектура *Functional Core/Imperative Shell* ака *функциональная архитектура*.
+Корнями она уходит в _https://dl.acm.org/doi/pdf/10.1145/359576.359579[Can Programming Be Liberated from the von Neumann Style?]_.
+Лучшее же известное мне описание *функциональной архитектуры* дано в _https://www.manning.com/books/unit-testing[Unit Testing PPP]_. Есть и https://www.piter.com/product/printsipy-yunit-testirovaniya[верисия на русском] и так как автор русский, думаю она вполне норм.
+Пусть вас не смущает название - в книге очень много мудрости в целом.
+Так же эта тема раскрыта в _https://pragprog.com/titles/swdddf/domain-modeling-made-functional/[Domain Modeling Made Functional]_ и https://archive.org/details/Structured_Design_Edward_Yourdon_Larry_Constantine[Structured Design] в разделе 8.6 Transform-centered morphology.
 
 Затем можно почитать про *Information hiding/Parnas Partitioning*.
 Эти штуки хорошо держать в уме и искать их, но как и с OCP важно не упираться и не высасывать их из пальца.
