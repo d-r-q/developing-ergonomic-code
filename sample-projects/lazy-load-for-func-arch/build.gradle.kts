@@ -2,8 +2,8 @@ plugins {
     kotlin("jvm")
 }
 
-group = "org.example"
-version = "unspecified"
+group = "pro.azhidkov.llfa"
+version = "0.0.1"
 
 repositories {
     mavenCentral()
