@@ -7,6 +7,7 @@ draft: false
 :source-highlighter: rouge
 :rouge-theme: github
 :icons: font
+:sectlinks:
 
 [NOTE]
 --
