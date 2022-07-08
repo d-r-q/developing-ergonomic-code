@@ -10,7 +10,8 @@ draft: false
 == Жидков Алексей Павлович
 *Архитектор, техлид* +
 https://azhidkov.pro +
-https://github.com/d-r-q
+https://github.com/d-r-q +
+https://habr.com/ru/users/jdev/
 
 {empty} +
 
