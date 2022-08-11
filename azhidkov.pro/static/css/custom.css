@@ -266,3 +266,12 @@ dd {
 article {
     margin-bottom: 10em
 }
+
+div.epigraph {
+    text-align: right;
+    font-size: small;
+}
+
+div.epigraph blockquote {
+    border-left-width: 0px
+}
