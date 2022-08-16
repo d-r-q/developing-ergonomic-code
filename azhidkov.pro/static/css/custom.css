@@ -200,6 +200,10 @@ td.halign-right p {
     text-align: right;
 }
 
+td.halign-center {
+    text-align: center;
+}
+
 td.valign-top {
     vertical-align: top;
 }
