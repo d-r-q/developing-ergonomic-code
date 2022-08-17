@@ -480,3 +480,9 @@ fun updateCustomerSymbols(customerId: Long, activeSymbols: List<ActiveSymbol>) {
 Кроме того, этот совет наиболее актуален при разработке библиотек, фреймворков и платформ с динамической загрузкой кода (плагинами).
 
 При разработке же прикладных программ, намного более простой и поддерживаемый код дают усилия по минимизации протечек абстракций и применение функциональной архитектуры.
+
+== Ссылки по теме
+
+* https://blog.ttulka.com/too-many-interfaces[Too Many Interfaces]
+* https://blog.ploeh.dk/2010/12/02/Interfacesarenotabstractions/[Interfaces are not abstractions]
+* https://ardalis.com/what-are-abstractions-in-software-development/[What are Abstractions in Software Development]
