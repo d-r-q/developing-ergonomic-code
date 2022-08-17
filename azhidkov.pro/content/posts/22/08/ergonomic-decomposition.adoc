@@ -7,7 +7,7 @@ draft: false
 :rouge-theme: github
 :icons: font
 :sectlinks:
-:imagesdir: /drafts/images
+:imagesdir: /posts/22/08/images
 
 [NOTE]
 --
