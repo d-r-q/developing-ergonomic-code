@@ -1,0 +1,174 @@
+---
+title: "Что почитать разработчику?"
+date: 2022-08-25T12:25:37+07:00
+draft: false
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+
+[NOTE]
+--
+Следить за обновлениями блога можно в моём канале: https://t.me/ergonomic_code[Эргономичный код]
+--
+
+Этот пост содержит подборки книг, которые на мой взгляд стоит прочитать профессиональному разработчику.
+Большинство книг я рекомендую читать на английском, так как русские переводы зачастую https://t.me/ergonomic_code/199[фатально искажают смысл].
+
+== Одна лучшая книга в области программирования за всю историю по версии меня
+
+Естественно, лучшая книга по программированию - книга об Эргономичном подходе:)
+К сожалению, она ещё не написана.
+
+Но у меня уже есть ряд постов (~80-100 страниц), которые можно почитать:
+
+. link:++{{<ref "posts/22/04/220409-ergo-approach-v10m1#_методика">}}++[общий обзор процесса разработки по Эргономичному подходу]
+. link:++{{<ref "posts/22/05/220519-effects-diagram-intro">}}++[диаграмма эффектов]
+. link:++{{<ref "posts/22/06/220611-true-story-project">}}++[пример построения диаграммы эффектов]
+. link:++{{<ref "posts/22/08/ergonomic-decomposition#_пакетирование_по_объектам_ака_объектно_ориентированная_декомпозиция">}}++[общий обзор методики выполнения объектно-ориентированной декомпозиции]
+. link:++{{<ref "posts/22/04/220401-aggregates">}}++[агрегаты]
+. link:++{{<ref "posts/22/07/abstraction-wars">}}++[эргономичный подход к абстракции и немного функциональной архитектуры]
+. link:++{{<ref "posts/21/11/211107-what-is-the-difference">}}++[отличия Эргономичного подхода от мейнстримного] (ранний пост, мог несколько потерять актуальность)
+
+Кроме того, https://www.piter.com/product/printsipy-yunit-testirovaniya["Принципы юнит тестирования"] отлично раскрывает темы функциональной архитектуры и эффективного тестирования.
+Поэтому прочитав мои посты и эту книгу вполне возможно получить хорошее представление о содержании моей будущей книги.
+
+== Три лучшие книги в области программирования за всю историю по версии меня
+
+. https://www.ozon.ru/product/struktura-i-interpretatsiya-kompyuternyh-programm-5322055/[Структура и интерпретация компьютерных програм].
+  Очень крутая и глубокая книга по основам программирования - как думать о программах, как реализуются высоко-уровневые абстракции языков программирования, как программы исполняются - это всё есть в книге
+. https://www.oreilly.com/library/view/patterns-principles-and/9781118714706/[Patterns, Principles, and Practices of Domain-Driven Design].
+  Очень хорошая, прикладная книга по DDD с эргономичными примерами кода
+. https://www.piter.com/product/printsipy-yunit-testirovaniya["Принципы юнит тестирования"].
+  Уже упоминал её - на 2/3 раскрывает Эргономичный подход
+
+== Материалы для понимания Эргономичного подхода
+
+В этом разделе я собрал книги (и доклады), которые либо повлияли на Эргономичный подход, либо содержат прямо позаимствованные идеи.
+
+. Объектно-ориентированная декомпозиция системы
+.. https://web.archive.org/web/20220814201607/http://www.codingthearchitecture.com/2015/03/08/package_by_component_and_architecturally_aligned_testing.html[Package by Component]. Свои поиски альтернативного слоям способа декомпозиции систем я начал с подхода описанного в этой статье.
+.. https://www.amazon.com/Object-Oriented-Software-Engineering-Approach/dp/0201544350[Object-Oriented Software Engineering]. На мой подход к декомпозиции существенно повлияла идея объектов дизайна из этой книги.
+.. https://pragprog.com/titles/vmclojeco/clojure-applied/[Clojure Applied]. В этой книге в "6. Creating Components" описан схожий подход к декомпозиции на функциональном языке (Clojure).
+.. К декомпозиции систем на основе эффектов я пришёл самостоятельно, но потом наткнулся на пару статей с очень похожей идеей:
+... https://www.researchgate.net/publication/283566310_Improving_Design_Decomposition[Improving Design Decomposition].
+... https://www.researchgate.net/publication/326260296_Functional_Decomposition_for_Software_Architecture_Evolution[Functional Decomposition for Software Architecture Evolution];
+.. Структурный дизайн
+... https://archive.org/details/Structured_Design_Edward_Yourdon_Larry_Constantine[Structured Design]. Весь Эргономичный подход строится на снижении сцепленности, понятие которой изначально было введено в этой книге (главы "6. COUPLING", "7. COHESION")
+... https://www.amazon.com/Practical-Guide-Structured-Systems-Design/dp/0136907695[THE PRACTICAL GUIDE TO STRUCTURED SYSTEMS DESIGN]. А в этой книге, на мой взгляд, понятия сцепленности и связанности раскрыты более доступно
+.. https://cseweb.ucsd.edu/~wgg/CSE218/Parnas-IFIP71-information-distribution.PDF[Сокрытие информации].
+  Сокрытие информации (на ряду с низкой сцепленностью и высокой связанностью) является третьим основопологающим принципом Эргономичного подхода как в дизайне, так и в кодировании.
+
+. Функциональная архитектура.
+.. https://www.youtube.com/watch?v=SxdOUGdseq4[Simple Made Easу] (русские человеческие субтитры).
+   Этот доклад внёс существенный вклад в мою любовь к функциональному программированию и как следствие к функциональной архитектуре в Эргономичном подходе.
+   Так же я во многом опирался на этот доклад, отказываясь от сложных ORM-ов.
+.. https://www.youtube.com/watch?v=ScEPu1cs4l0[Are We There Yet?].
+   Ещё один доклад Рича Хикки, из которого я утащил способ представления изменяемых сущностей как последовательности неизменяемых состояний - эпохальную модель времени.
+.. https://www.youtube.com/watch?v=yTkzNHF6rMs[Boundaries by Gary Bernhardt].
+   Идея функциональной архитектуры (ака функциональное ядро/императивная оболочка) мне в первый раз попалась в этом докладе
+.. https://www.piter.com/product/printsipy-yunit-testirovaniya["Принципы юнит тестирования"].
+   Книга настолько хороша, что не грех её упомянуть ещё раз.
+.. А https://pragprog.com/titles/swdddf/domain-modeling-made-functional/[Domain Modeling Made Functional] объединяет функциональную архитектуру с DDD
+.. Главы "8. the morphology of simple systems" и "9. design heuristics" из https://archive.org/details/Structured_Design_Edward_Yourdon_Larry_Constantine[Structured Design] существенно повлияли на мой подход к реализации подсистем.
+
+. Предметно-ориентированное проектирование (Domain-Driven Design, DDD)
+.. https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215[Domain-Driven Design: Tackling Complexity in the Heart of Software].
+   Обязательно надо прочитать оригинальную книгу.
+   Из этой книги я утащил базовые блоки дизайна - сервисы приложения и домена, репозитории, сущности, объекты-значения и, самое главное - агрегаты.
+   Агрегаты играют одну из ключевых ролей в объектно-ориентированной декомпозиции.
+.. https://www.oreilly.com/library/view/patterns-principles-and/9781118714706/[Patterns, Principles, and Practices of Domain-Driven Design].
+   Эта книга раскрывает DDD с более прикладной точки зрения.
+.. https://www.oreilly.com/library/view/implementing-domain-driven-design/9780133039900/[Implementing DDD].
+   Эта книга считается классикой DDD, но мне предыдущая книга понравилась больше
+.. https://pragprog.com/titles/swdddf/domain-modeling-made-functional/[Domain Modeling Made Functional].
+   Книга настолько хороша, что не грех ещё раз упомянуть
+
+. Денверская школа тестирования.
+.. https://www.piter.com/product/printsipy-yunit-testirovaniya["Принципы юнит тестирования"].
+   В общих чертах к этому подходу я подошёл сам, а потом наткнулся на его очень качественную и подробную проработку в этой уже трижды упомянутой книге.
+
+== Что ещё почитать
+
+Условно я разделил все книги на три раздела - "Программирование", "Проектирование", "Тестирование", но многие книги содержат информацию по всем трём разделам, так что разделение довольно условное и субъективне.
+Книги приведены примерно в рекомендуемом порядке прочтения, но это тоже весьма условно.
+
+=== Программирование
+
+. https://www.oreilly.com/library/view/clean-code-a/9780136083238/[Clean Code].
+  Базовая подборка правил написания поддерживаемого код
+. https://www.amazon.com/Implementation-Patterns-Kent-Beck/dp/0321413091[Implementation Patterns].
+  Я не сторонник императивного объектно-ориентированного программирования, но если писать в этом стиле, то в книге много полезного.
+  Плюс с содержимым первых 4 глав о философии и общим принципам программирования я полностью согласен.
+. https://www.amazon.com/Concurrent-Programming-Java%C2%99-Principles-Pattern/dp/0201310090[Concurrent Programming in Java Design Principles and Patterns]
+. https://www.amazon.com/Java-Concurrency-Practice-Brian-Goetz/dp/0321349601[Java Concurrency in Practice]
+. https://enterprisecraftsmanship.com/[Блог Владимира Хорикова] (автора Принципов юнит тестирования).
+  В целом  описывает подход к разработке, который процентов на 70-80 совпадает с Эргономичным.
+. https://dl.acm.org/doi/pdf/10.1145/359576.359579[Can programming be liberated from the von neumann style?].
+  Одна из классических академических статей по ФП и, кажется, первое описание функциональной архитектуры
+. https://www.cs.kent.ac.uk/people/staff/dat/miranda/whyfp90.pdf[Why Functional Programming Matters].
+  Ещё одна классическая академическая статья по ФП
+. http://curtclifton.net/papers/MoseleyMarks06a.pdf[Out of the Tar Pit].
+  И ещё одна классическая академическая статья по ФП
+. https://www.oreilly.com/library/view/practical-api-design/9781430209737/[Practical API Design].
+  Очень крутая книга по проектированию API, содержащая всю боль ошибок, допущенных главным архитектором NetBeans.
+. https://use-the-index-luke.com/[Use The Index, Luke].
+  Хороший блог с большим объёмом информации об эффективном использовании РСУБД
+. https://www.oreilly.com/library/view/design-patterns-elements/0201633612/[Design Patterns Elements of Reusable Object-Oriented Software]
+  Сейчас шаблоны уже вышли из моды, а в ООП с классами я не верю, но из соображений общей эрудиции можно почитать.
+. https://www.amazon.com/Philosophy-Software-Design-John-Ousterhout/dp/1732102201[Philosophy of Software Design].
+  Ещё одна хорошая книга для пополнения общей эрудиции.
+  В этой книге мне _теоретически_ прям нравится блок про комментарии, а в остальном книга является хорошей оппозицией многим широко распространённым "лучшим практикам".
+. https://www.amazon.com/Object-Oriented-Software-Construction-Book-CD-ROM/dp/0136291554[Object-Oriented Software Construction].
+  Довольно любопытная книга по ООП и ООД.
+  Она огромная и, на мой взгляд, в значительной степени морально устаревшая, но там как минимум есть очень важная идея Command Query Separation.
+
+=== Тестирование
+
+. https://www.amazon.com/Test-Driven-Development-Kent-Beck/dp/0321146530[Test Driven Development: By Example].
+  Классика и точка.
+. https://www.amazon.com/xUnit-Test-Patterns-Refactoring-Code/dp/0131495054[xUnit Test Patterns: Refactoring Test Code].
+  Классика и точка №2.
+
+=== Проектирование
+
+. https://www.oreilly.com/library/view/designing-data-intensive-applications/9781491903063/[Designing Data-Intensive Applications].
+  На мой взгляд самая крутая книга по хранению данных.
+  Она и очень "широкая" - раскрывает всю тему целиком, и достаточно "глубокая" - довольно глубоко залазит в устройство и способ работы различных систем хранения данных
+. https://www.amazon.com/Next-Generation-Databases-NoSQLand-Data/dp/1484213300[Next Generation Databases: NoSQLand Big Data].
+  Облегчённый аналог Designing Data-Intensive Applications - широкий но поверхностный обзор темы хранения данных.
+. https://www.amazon.com/Applying-UML-Patterns-Introduction-Object-Oriented/dp/0131489062[Applying UML and Patterns].
+  Я сам не сторонник ни ООП, ни UML, ни тяжеловесных процессов, но в книге описаны хорошие общие принципы проектирования и программирования, а так же подход к декомпозиции систем.
+  Части про UML можно смело пропускать.
+. https://www.amazon.com/Clean-Architecture-Craftsmans-Software-Structure/dp/0134494164[Clean Architecture: A Craftsman's Guide to Software Structure and Design].
+  Чистую архитектуру полезно иметь в своём арсенале, а знание SOLID на зубок - полезная штука для прохождения собеседований.
+  Кроме того, я советую обратить особое внимание на часть 5 "Принципы организации компонентов"
+. https://www.amazon.com/Just-Enough-Software-Architecture-Risk-Driven/dp/0984618104[Just Enough Software Architecture: A Risk-Driven Approach].
+  Довольно хорошая книга по проектированию систем и роли архитектора.
+. https://www.tedinski.com/book/[Блог Тэда Камински].
+  Блог/черновик книги (неоконченной) с кучей интересных мыслей по всем аспектам разработки.
+. https://pragprog.com/titles/jaerlang2/programming-erlang-2nd-edition/[Programming Erlang].
+  Книга по Эрлангу с подробным описанием эктороной модели.
+  На мой взгляд Эрланг и экторная модель - лучшая из существующих реализации Истинного ООП (TM)
+. https://www.oreilly.com/library/view/building-microservices-2nd/9781492034018/[Building microservices].
+  Очень крутая книга по разработке микросервисов.
+  Редкая книга с содержанием которой я согласен на 100%.
+  Рекомендую обратить особое внимание на рекомендацию начинать с монолита и резать его на микросервисы, только когда по другому никак.
+. https://www.amazon.com/Data-Reality-Perspective-Perceiving-Information/dp/1935504215[Data and Reality].
+  Вообще это больше книга по философии, но она всё равно оперирует понятиями записей, соединений и т.п. и очень глубоко рассматривает вопрос моделирования данных.
+. https://www.seas.upenn.edu/~zives/03f/cis550/codd.pdf[A relational model of data for large shared data banks].
+  Оригинальная академическая статья по реляционной модели данных.
+. https://dl.acm.org/doi/10.1145/320434.320440[The entity-relationship model—toward a unified view of data].
+  Оригинальная академическая статья по Entity-Relationship модели
+. https://dl.acm.org/doi/10.1145/1924421.1924436[A coRelational Model of Data for Large Shared Data Banks].
+  Хорошая академическая статья Эрика Мейера о дуальности SQL и NoSQL (реляционной и нереляционной моделей, на самом деле)
+. https://www.oreilly.com/library/view/lean-architecture-for/9780470684207/[Lean Architecture for Agile Software Development].
+  В этой книге описан любопытный подход к архитектуре - Data, Context, Interaction
+. http://jodypaul.com/SWE/HAL/hal.html[Parnas Partitioning].
+  Методика выполнения декомпозиции систем по Парнасу.
+. https://www.amazon.com/Righting-Software-Juval-L%C3%B6wy/dp/0136524036[Righting Software].
+  Подход проектированию и планированию проектов на на безе разделения Парнаса.
+. https://www.amazon.com/Object-Thinking-Developer-Reference-David/dp/0735619654[Object Thinking].
+  Тоже больше философская, чем техническая книжка, но на этот раз для формирования ООП-мышления.
+  Правда применить его в современных языках с классами не особо получается.
+  А вот в Эрланге, имхо, вполне может получиться.
