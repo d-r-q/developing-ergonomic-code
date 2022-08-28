@@ -140,7 +140,11 @@ ul, ol {
 }
 
 li {
-    margin: 1.05em 0px ;
+    margin: 1.05em 0px;
+}
+
+ul.pagination li {
+    margin: 1.05em 1em;
 }
 
 figcaption {
