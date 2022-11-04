@@ -17,7 +17,7 @@ draft: false
 
 == Серия про модульные приложения
 
-==== Modular Applications
+=== Modular Applications
 https://www.youtube.com/watch?v=DlQ6Ht9Cf5s&list=PLe6FX2SlkJdTVSt4D3bBCOkVeXB0qGdEY&index=25
 
 Тут мужики всё правильно говорят.
@@ -34,7 +34,7 @@ Spring ведёт R&D проект "Modulith", по поддержке моду�
 Лет 5-6 назад я ненавидел Спринг и считал его корнем всех бед в архитектуре (пакетирование по слоям, инъекция на филдах, глобальный компонент скан, анемичная модель, связный двунаправленный граф JPA-сущностей).
 А сейчас вижу, что у нас (теперь) общие ценности - начиная с рекомендации инъекции через конструктор, продолжая рекомендуемой структурой пакетов (https://docs.spring.io/spring-boot/docs/current/reference/html/using.html#using.structuring-your-code.locating-the-main-class[Locating the Main Application Class]) и рекомендацией делать репозы на агрегаты, а не сущности (https://stackoverflow.com/questions/21265262/are-you-supposed-to-have-one-repository-per-table-in-jpa[Are you supposed to have one repository per table in JPA?]) вместе с Spring Data JDBC, который, кажется, они сейчас активно продвигают вместо JPA и вот заканчивая "Modulith-ом".
 
-==== Getting modules right with Domain-driven Design
+=== Getting modules right with Domain-driven Design
 
 https://www.youtube.com/watch?v=Q_0XW46IlHY&list=PLe6FX2SlkJdTVSt4D3bBCOkVeXB0qGdEY&index=49
 
@@ -43,7 +43,7 @@ https://www.youtube.com/watch?v=Q_0XW46IlHY&list=PLe6FX2SlkJdTVSt4D3bBCOkVeXB0qG
 
 Ещё интересная мысль - ООАД фокусируется на существительных, а ДДД - на глаголах. А ЭП/ОД, судя по всему (раньше не думал в этом ключе), на их связях
 
-==== Spring for the architecturally curious developer
+=== Spring for the architecturally curious developer
 
 https://www.youtube.com/watch?v=zrqupmaIsto&list=PLe6FX2SlkJdTVSt4D3bBCOkVeXB0qGdEY&index=31).
 
@@ -52,7 +52,7 @@ https://www.youtube.com/watch?v=zrqupmaIsto&list=PLe6FX2SlkJdTVSt4D3bBCOkVeXB0qG
 
 А генерация доков - это вообще бомба.
 
-=== Let's build components, not layers
+== Let's build components, not layers
 
 https://www.youtube.com/watch?v=-VmhytwBZVs&list=PLe6FX2SlkJdTVSt4D3bBCOkVeXB0qGdEY&index=38
 
@@ -75,7 +75,7 @@ https://www.youtube.com/watch?v=-VmhytwBZVs&list=PLe6FX2SlkJdTVSt4D3bBCOkVeXB0qG
 Но у него есть хороший аргумент за них - у него на этом базируется ArchUnit-чек, который следит, за тем чтобы никто не лазил в кишки модуля.
 Я сам до ArchUnit ещё не добрался, но если доберусь и пойму, что подругому никак - тоже соглашусь на заголовочные интерфейсы.
 
-=== Thoughts about layered architecture – Mapping efficiently with SQL
+== Thoughts about layered architecture – Mapping efficiently with SQL
 
 https://www.youtube.com/watch?v=glxS4Ffxtdw&list=PLe6FX2SlkJdTVSt4D3bBCOkVeXB0qGdEY&index=23
 
@@ -94,7 +94,7 @@ https://www.youtube.com/watch?v=glxS4Ffxtdw&list=PLe6FX2SlkJdTVSt4D3bBCOkVeXB0qG
 Невозможно ответить на этот вопрос, т.к. ответ зависит от маппинга сущностей и что творилось в коде выше по стеку.
 Это и есть "нелокальность" рассуждений ака сложность кода, которую всегда тащит ленивая загрузка.
 
-=== How fixing a broken window cut down our build time by 50%
+== How fixing a broken window cut down our build time by 50%
 
 https://www.youtube.com/watch?v=c-GV2PxymoY&list=PLe6FX2SlkJdTVSt4D3bBCOkVeXB0qGdEY&index=12
 
@@ -107,7 +107,7 @@ https://www.youtube.com/watch?v=c-GV2PxymoY&list=PLe6FX2SlkJdTVSt4D3bBCOkVeXB0qG
 . Базы храните на RAM-диске (`.withTmpFs(mapOf("/var" to "rw")).withEnv("PGDATA", "/var/lib/postgresql/data-no-mounted")`)
 
 
-=== Modern frontends using Spring Boot and Thymeleaf with htmx
+== Modern frontends using Spring Boot and Thymeleaf with htmx
 
 https://www.youtube.com/watch?v=okCdaBTQsik
 
