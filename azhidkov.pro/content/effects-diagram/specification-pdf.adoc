@@ -3,4 +3,4 @@
 
 :imagesdir: images/spec
 
-include::specification.adoc[]
+include::specification-base.adoc[]
