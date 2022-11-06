@@ -1,6 +1,0 @@
-= Спецификация диаграммы Эффектов: v0.0.2
-:doctype: book
-
-:imagesdir: images/spec
-
-include::specification-base.adoc[]
