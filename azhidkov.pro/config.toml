@@ -1,6 +1,7 @@
 theme = "coder-portfolio"
 DefaultContentLanguage = "ru"
 baseURL = "https://azhidkov.pro/"
+ignoreFiles = ['-pdf.adoc$']
 
 [params]
     langseparator = "|"
@@ -47,9 +48,9 @@ baseURL = "https://azhidkov.pro/"
             thumbnail = "images/logo.png"
 
         [[languages.ru.menu.main]]
-            name = "Книга"
+            name = "Диаграмма Эффектов"
             weight = 1
-            url ="book/ergo"
+            url ="effects-diagram/landing"
 
         [[languages.ru.menu.main]]
             name = "Блог"
