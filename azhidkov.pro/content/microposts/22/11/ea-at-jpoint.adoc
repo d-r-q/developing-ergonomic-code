@@ -181,7 +181,7 @@ class AnalysisService(
     private val analysisReportCalculator: AnalysisReportCalculator,
 ) {
 
-    fun getReportAnalysis(userId: Int, start: Instant, end: Instant): AnalysisReport {
+    fun getAnalysisReport(userId: Int, start: Instant, end: Instant): AnalysisReport {
         val reportEvents = diaryService.getReportEvents(userId, start, end)
         val analysisReport = analysisReportCalculator.calculateAnalysisReport(reportEvents, start, end)
         return analysisReport
