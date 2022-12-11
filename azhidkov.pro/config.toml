@@ -85,21 +85,6 @@ ignoreFiles = ['-pdf.adoc$']
 
             thumbnail = "images/logo.png"
 
-        [[languages.en.menu.main]]
-            name = "Blog"
-            weight = 1
-            url ="posts"
-
-        [[languages.en.menu.main]]
-            name = "Portfolio"
-            weight = 3
-            url ="portfolio"
-
-        [[languages.en.menu.main]]
-            name = "Contacts"
-            weight = 4
-            url ="/"
-
 [security]
   [security.exec]
     allow = ['^dart-sass-embedded$', '^go$', '^npx$', '^postcss$', 'asciidoctor']
