@@ -48,23 +48,28 @@ ignoreFiles = ['-pdf.adoc$']
             thumbnail = "images/logo.png"
 
         [[languages.ru.menu.main]]
-            name = "Диаграмма Эффектов"
+            name = "Эргономичный подход"
             weight = 1
+            url = "ergo-approach/landing"
+
+        [[languages.ru.menu.main]]
+            name = "Диаграмма Эффектов"
+            weight = 2
             url ="effects-diagram/landing"
 
         [[languages.ru.menu.main]]
             name = "Блог"
-            weight = 2
+            weight = 3
             url ="posts"
 
         [[languages.ru.menu.main]]
             name = "Портфолио"
-            weight = 3
+            weight = 4
             url ="portfolio"
 
         [[languages.ru.menu.main]]
             name = "Контакты"
-            weight = 4
+            weight = 5
             url ="/"
 
     [languages.en]
