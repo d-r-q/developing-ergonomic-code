@@ -19,7 +19,7 @@ jobs:
     - name: Setup ruby
       uses: actions/setup-ruby@v1
       with:
-        ruby-version: '2.x'
+        ruby-version: '3.x'
 
     - name: Setup Asciidoctor
       run: |
@@ -41,8 +41,8 @@ jobs:
         which asciidoctor
         cd azhidkov.pro
         hugo --minify
-        
-  
+
+
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
