@@ -6,6 +6,13 @@ draft: false
 :icons: font
 :sectlinks:
 
+[NOTE]
+--
+Этот материал является "микропостом" - текстом, написанным в режиме потока сознания без особой редактуры.
+
+Следить за обновлениями блога можно в моём канале: https://t.me/ergonomic_code[Эргономичный код]
+--
+
 Привет!
 
 Посмотрел https://www.youtube.com/watch?v=WB8S_miQNvM[Меняем Spring Data JPA на Spring Data JDBC!] и хотя докладчик в начале https://youtu.be/WB8S_miQNvM?t=342[сказал], что не призывает использовать JPA, мне что-то захотелось написать микропост в защиту Spring Data JDBC (далее - просто JDBC).
