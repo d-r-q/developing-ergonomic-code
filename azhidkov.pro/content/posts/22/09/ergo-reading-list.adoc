@@ -53,6 +53,7 @@ draft: false
 .. К декомпозиции систем на основе эффектов я пришёл самостоятельно, но потом наткнулся на пару статей с очень похожей идеей:
 ... https://www.researchgate.net/publication/283566310_Improving_Design_Decomposition[Improving Design Decomposition].
 ... https://www.researchgate.net/publication/326260296_Functional_Decomposition_for_Software_Architecture_Evolution[Functional Decomposition for Software Architecture Evolution];
+... https://www.researchgate.net/publication/327229270_Identifying_Microservices_Using_Functional_Decomposition_4th_International_Symposium_SETTA_2018_Beijing_China_September_4-6_2018_Proceedings[Identifying Microservices Using Functional Decomposition];
 .. Структурный дизайн
 ... https://archive.org/details/Structured_Design_Edward_Yourdon_Larry_Constantine[Structured Design]. Весь Эргономичный подход строится на снижении сцепленности, понятие которой изначально было введено в этой книге (главы "6. COUPLING", "7. COHESION")
 ... https://www.amazon.com/Practical-Guide-Structured-Systems-Design/dp/0136907695[THE PRACTICAL GUIDE TO STRUCTURED SYSTEMS DESIGN]. А в этой книге, на мой взгляд, понятия сцепленности и связанности раскрыты более доступно
@@ -167,7 +168,7 @@ draft: false
 . http://jodypaul.com/SWE/HAL/hal.html[Parnas Partitioning].
   Методика выполнения декомпозиции систем по Парнасу.
 . https://www.amazon.com/Righting-Software-Juval-L%C3%B6wy/dp/0136524036[Righting Software].
-  Подход проектированию и планированию проектов на на безе разделения Парнаса.
+  Подход проектированию и планированию проектов на базе разделения Парнаса.
 . https://www.amazon.com/Object-Thinking-Developer-Reference-David/dp/0735619654[Object Thinking].
   Тоже больше философская, чем техническая книжка, но на этот раз для формирования ООП-мышления.
   Правда применить его в современных языках с классами не особо получается.
