@@ -1,0 +1,89 @@
+strict digraph  {
+    layout=neato
+    overlap = scale
+    sep = 0.5
+
+    requestOtp [shape="rectangle" style="filled" fillcolor="#b6d7f0", label="Запросить OTP" pos="-1,-1!"]
+    smsSender [shape="rectangle" style="filled" fillcolor="#85bbf0", label="Сервис отправки СМС" pos="0,0!"]
+    otps [shape="rectangle" style="filled" fillcolor="#85bbf0", label="Коллекция OTP" pos="0,-1!"]
+
+    requestOtp -> smsSender [color="#b85450";weight=2,label="Отправить СМС"]
+    requestOtp -> otps [color="#b85450";weight=2,label="Сохранить OTP"]
+    
+    otpLogin [shape=rectangle, style="filled", fillcolor="#b6d7f0", label="Получить токен из OTP"]
+    passLogin [shape="rectangle" style="filled" fillcolor="#b6d7f0", label="Получить токен из логина/пароля"]
+    tokens [shape="rectangle" style="filled" fillcolor="#85bbf0", label="Коллекция токенов"]
+    
+    otps -> otpLogin [color="#6c8ebf";weight=1,label="Флаг валидности OTP"]
+    otpLogin -> tokens [color="#b85450";weight=2,label="Сохранить токен пользователя"]
+    
+    users [shape="rectangle" style="filled" fillcolor="#85bbf0", label="Коллкеция пользователей"]
+    users -> passLogin [color="#6c8ebf";weight=1,label="Аутентификационные данные пользователя"]
+    passLogin -> tokens [color="#b85450";weight=2,label="Сохранить токен пользователя"]
+
+    editUser [shape="rectangle" style="filled" fillcolor="#b6d7f0", label="Изменить пользователя"]
+    editUser -> users [color="#b85450";weight=2,label="Изменить данные пользователя"]
+    
+    deleteUser [shape="rectangle" style="filled" fillcolor="#b6d7f0", label="Удалить пользователя"]
+    deleteUser -> users [color="#b85450";weight=2,label="Установаить флаг удаления пользователя"]
+
+    wheelSizes [shape="rectangle" style="filled" fillcolor="#85bbf0", label="Размеры колёс"]
+    carTypes [shape="rectangle" style="filled" fillcolor="#85bbf0", label="Типы машин"]
+    
+    getUser [shape="rectangle" style="filled" fillcolor="#b6d7f0", label="Получить пользователя"]
+
+    users -> getUser [color="#6c8ebf";weight=1,label="Информация о пользователе"]
+    wheelSizes -> getUser [color="#6c8ebf";weight=1,label="Размер колёс пользователя"]
+    carTypes -> getUser [color="#6c8ebf";weight=1,label="Тип машины пользователя"]
+    
+    getPoints [shape="rectangle" style="filled" fillcolor="#b6d7f0", label="Получить точки"]
+    
+    facilities [shape="rectangle" style="filled" fillcolor="#85bbf0", label="Услуги"]
+    tags [shape="rectangle" style="filled" fillcolor="#85bbf0", label="Тэги"]
+    
+    mapPoints [shape="rectangle" style="filled" fillcolor="#85bbf0", label="Точки на карте"]
+    
+    wheelSizes -> getPoints [color="#6c8ebf";weight=1,label="Поддерживаемые размеры колёс"]
+    carTypes -> getPoints [color="#6c8ebf";weight=1,label="Поддерживаемые типы машин"]
+    facilities -> getPoints [color="#6c8ebf";weight=1,label="Услуги точки"]
+    tags -> getPoints [color="#6c8ebf";weight=1,label="Тэги точки"]
+    mapPoints -> getPoints [color="#6c8ebf";weight=1,label="Спиок точек"]
+    
+    mpModerated [shape="rectangle" style="filled" fillcolor="#85bbf0", label="Топик \"Точка на карте промодерирована\""]
+    createMapPoint [shape="rectangle" style="filled" fillcolor="#b6d7f0", label="Создать точку"]
+    createMapPoint -> mapPoints [color="#b85450";weight=2,label="Создать точку"]
+    
+    editMapPoint [shape="rectangle" style="filled" fillcolor="#b6d7f0", label="Изменить точку"]
+    editMapPoint -> mapPoints [color="#b85450";weight=2,label="Изменить точку"]
+    editMapPoint -> mpModerated [color="#b85450";weight=2,label="Отправить сообщение о прохождении модерации"]
+    
+    deleteMapPoint [shape="rectangle" style="filled" fillcolor="#b6d7f0", label="Удалить точку"]
+    deleteMapPoint -> mapPoints [color="#b85450";weight=2,label="Установить флаг удаления точки"]
+    deleteMapPoint -> mpModerated [color="#b85450";weight=2,label="Отправить сообщение о прохождении модерации"]
+    
+    // pushService [shape="rectangle" style="filled" fillcolor="#85bbf0", label="Сервис отправки Push-уведомлений"]
+    // notifications [shape="rectangle" style="filled" fillcolor="#85bbf0", label="Коллекция уедомлений"]
+
+    // createNewsNotification [shape="rectangle" style="filled" fillcolor="#b6d7f0", label="Создать новостное уведомление"]
+    // createNewsNotification -> pushService [color="#b85450";weight=2,label="Отправить push"]
+    // createNewsNotification -> notifications [color="#b85450";weight=2,label="Добавить уведомление"]
+
+    // deleteNotification [shape="rectangle" style="filled" fillcolor="#b6d7f0", label="Удалить уведомление"]
+    // deleteNotification -> notifications [color="#b85450";weight=2,label="Удалить уведомление"]
+    
+    // createPersonalNotification [shape="rectangle" style="filled" fillcolor="#b6d7f0", label="Создать персональное уведомление"]
+    // createPersonalNotification -> pushService [color="#b85450";weight=2,label="Отправить push"]
+    // createPersonalNotification -> notifications [color="#b85450";weight=2,label="Добавить уведомление"]
+
+    // getNewsNotifications [shape="rectangle" style="filled" fillcolor="#b6d7f0", label="Получить список новостных уведомлений"]
+    // notifications -> getNewsNotifications [color="#6c8ebf";weight=1,label="Новостные уведомления"]
+    
+    // readNotifications [shape="rectangle" style="filled" fillcolor="#85bbf0", label="Прочитанные уведомления"]
+    // readNotification [shape="rectangle" style="filled" fillcolor="#b6d7f0", label="Прочитать уведомление"]
+
+    // readNotification -> readNotifications [color="#b85450";weight=2,label="Добавить пару пользователь/уведомление"]
+
+    // getPersonalNotifications [shape="rectangle" style="filled" fillcolor="#b6d7f0", label="Получить список персональных уведомлений"]
+    // notifications -> getPersonalNotifications [color="#6c8ebf";weight=1,label="Уведомления"]
+    // readNotifications -> getPersonalNotifications [color="#6c8ebf";weight=1,label="Флаги прочтения"]
+}
