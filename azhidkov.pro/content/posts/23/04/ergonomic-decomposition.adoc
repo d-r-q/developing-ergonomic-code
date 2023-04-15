@@ -1,0 +1,16 @@
+---
+title: "Рациональный подход к декомпозиции систем на модули или микросервисы"
+description: "Рациональный подход к декомпозиции систем на модули или микросервисы"
+date: 2023-04-15T01:25:37+07:00
+draft: false
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:sectlinks:
+:imagesdir: /posts/23/04/images
+
+[NOTE]
+--
+Данный пост является базовым материалом для моего https://jpoint.ru/talks/329f3cb2b72e4ec6a0e931207191546b/[доклада на JPoint 2023] и будет опубликован 19 апреля 2023.
+--
