@@ -45,7 +45,7 @@ ignoreFiles = ['-pdf.adoc$']
             custom_css = ["https://use.fontawesome.com/releases/v5.2.0/css/all.css", "css/custom.css", "css/github.css", "css/JetBrains-Mono.css" ]
             description = "Разработка и реинжиниринг ПО"
 
-            thumbnail = "images/logo.png"
+            thumbnail = "images/190811-2-square-1mb.jpg"
 
         [[languages.ru.menu.main]]
             name = "Эргономичный подход"
