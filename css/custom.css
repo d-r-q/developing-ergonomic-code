@@ -283,3 +283,29 @@ div.epigraph {
 div.epigraph blockquote {
     border-left-width: 0px
 }
+
+table {
+    border: 1px solid grey;
+}
+
+table td {
+    border: 1px solid grey;
+}
+
+th, td {
+    padding: 1rem;
+    border: 1px solid grey;
+}
+
+table tr td:first-child {
+    border: 1px solid grey;
+}
+
+table tr:first-child {
+    font-weight: bold;
+    background: #f9f9f9;
+}
+
+tr:nth-child(odd) {
+    background: #fbfbfb;
+}
