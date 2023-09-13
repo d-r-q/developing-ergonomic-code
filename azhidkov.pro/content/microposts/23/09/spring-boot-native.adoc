@@ -1,0 +1,210 @@
+---
+title: "Перевод сервиса на Spring Boot Native"
+date: 2023-09-11T08:25:37+07:00
+draft: false
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:sectlinks:
+
+[NOTE]
+--
+Этот материал является "микропостом" - текстом, написанным в режиме потока сознания без особой редактуры.
+
+Следить за обновлениями блога можно в моём канале: https://t.me/ergonomic_code[Эргономичный код]
+--
+
+Я начал двигать link:++{{<ref "posts/23/09/project-e-part1">}}++[Проект Э] в сторону микроядерной архитектуры.
+Пока план такой что, в оригинальном монолите останутся ядерные модули, которые, частично в силу предметной области, а частично в силу дизайна оригинального бэка, который я перенёс как есть при реинжинирнге, довольно сильно сцеплены между собой, а интеграции (которых у нас уже три и предвидится ещё пачка) мы будем делать в отдельных сервисах.
+
+Но есть нюанс - на дев стенде у нас дефицит памяти.
+Поэтому я пошёл смотреть на Spring Boot Native.
+
+Посмотрел, и в этом микропосте поделюсь впечатлениями.
+
+== Сервис
+
+Эксперементировать, естественно, я начал на котике - сервисе, реализующим интеграцию с ЕМИАС, о котором я link:++{{<ref "microposts/23/08/emias-integration">}}++[уже писал].
+В сервисе 65 продовых котлин-файлов, он выставляет один HTTP-эндпоинт и слушает одну очередь в RabbitMQ и ходит в два HTTP-эндпоинта ЕМИАСа и публикует сообщения в один топик Кафки ЕМИАСа.
+Так же сервис пишет данные в три таблички через Spring Data JDBC.
+
+Сервис сделан на JDK 17, Kotlin 1.9, Spring Boot 3.1.3 и собирается Гредлом 8.2.1 с билд-файлом на Kotlin DSL.
+
+Зависимости проекта:
+
+[source,kotlin]
+----
+implementation("org.springframework.boot:spring-boot-starter-web")
+implementation("org.springframework.boot:spring-boot-starter-security")
+implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+implementation("org.springframework.boot:spring-boot-starter-amqp")
+implementation("org.springframework.boot:spring-boot-starter-actuator")
+implementation("org.springdoc:springdoc-openapi-starter-common:2.0.2")
+implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
+implementation("org.springframework:spring-aspects:6.0.8")
+implementation("org.flywaydb:flyway-core")
+implementation("org.postgresql:postgresql")
+implementation("org.apache.httpcomponents.client5:httpclient5:5.2.1")
+
+// Для публикации в Кафку ЕМИАС выдаёт либу с джарником, которая работает с Кафкой напрямую...
+implementation("org.apache.kafka:kafka-clients:3.2.1")
+implementation(files("lib/client-lib-4.6.0.jar"))
+
+api("io.jsonwebtoken:jjwt-api:0.11.5")
+runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
+runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
+implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+implementation("org.jetbrains.kotlin:kotlin-reflect")
+runtimeOnly("com.github.therapi:therapi-runtime-javadoc:0.15.0")
+kapt("com.github.therapi:therapi-runtime-javadoc-scribe:0.15.0")
+----
+
+Так же стоит уточнить, что я работаю на Linux (Manjaro, в частности) и если вы работаете на Windows, то мой опыт будет для вас ограничено полезен.
+
+== Процесс
+
+Первым делом почитал матчасть, выяснилось, что для сборки в натив достаточно поставить GraalVM и добавить одну строку в билд-файл.
+
+Пока читал матчасть где-то попалось на глаза, что GraalVM проще всего поставить https://sdkman.io/[sdkman-ом], так и сделал:
+
+[source,shell]
+----
+sdk install java 22.3.2.r17-nik
+----
+
+Поставилось без проблем.
+На рабочей машине.
+А на ноуте в дороге до моей деревни sdkman тупил, но это был локальный глюк с интернетом, дома тоже нормально поставилось и у вас он врядли повториться.
+
+Далее, добавил строку в билд-файл:
+
+.build.gradle.kts
+[source,kotlin]
+----
+plugins {
+    id("org.graalvm.buildtools.native") version "0.9.24"
+}
+----
+
+Запустил `nativeCompile` в Идее - взорвался из-за того что Градл запустился не на Граале.
+Запустил в консоле - та же фигня.
+Сделал фейспалм, переключил консоль на Грааль:
+
+[source,shell]
+----
+sdk use java 22.3.2.r17-nik
+----
+
+Сборка пошла.
+
+[NOTE]
+====
+Где-то между делом я видел, что вроде в блилд-файле можно что-то прописать, чтобы нативные сборки работали автоматом и вполне возможно это подтянется в Идею.
+Но я пока не стал туда закапываться.
+====
+
+И прошла с первого раза.
+
+Я радостный запускаю свежескомпилинный и банрник и...
+
+  org.apache.kafka.common.config.ConfigException: Invalid value org.apache.kafka.common.serialization.StringSerializer for configuration key.serializer: Class org.apache.kafka.common.serialization.StringSerializer could not be found.
+        at org.apache.kafka.common.config.ConfigDef.parseType(ConfigDef.java:744)
+        at org.apache.kafka.common.config.ConfigDef.parseValue(ConfigDef.java:490)
+        at org.apache.kafka.common.config.ConfigDef.parse(ConfigDef.java:483)
+
+Пошёл гуглить, нагуглил https://jeqo.github.io/posts/2022-03-18-kafka-clients-graalvm/[пост] ровно об этом.
+Взял  оттуда `kafka-client-reflection.json`, но как его прописать в сборку - не понятно, в посте пример для Мавена.
+Потыкался через подсказки кода - ничего не нашёл, пошёл дальше гуглить.
+
+Нагуглил https://graalvm.github.io/native-build-tools/latest/gradle-plugin.html[официальную доку] по плагину GraalVM для Грэдла.
+Попытался добавить как в примере:
+
+[source,groovy]
+----
+binaries {
+    main {
+        buildArgs.add('--link-at-build-time')
+    }
+}
+----
+
+Не скомпилировалось.
+Потупил, понял что это в примере Groovy DSL, а у меня Kotlin DSL - переключил вкладку, поменял `main` на `named("main")` - собралось, запускаю...
+
+Фик, та же проблема.
+Смотрю в файлик - там нет `StringSerializer`.
+По аналогии добавляю его, собираю (и да, каждая сборка - 3 минуты) - успех!
+Проект стартанул.
+
+Дёргаю эндпоинт - работает!
+
+Публикую сообщение в кролика и опять взрыв:
+
+  kotlin.reflect.jvm.internal.KotlinReflectionInternalError: Unresolved class: class project_e.core.diary.api.dto.ActivityEventDto
+        at kotlin.reflect.jvm.internal.KClassImpl.reportUnresolvedClass(KClassImpl.kt:328)
+        at kotlin.reflect.jvm.internal.KClassImpl.access$reportUnresolvedClass(KClassImpl.kt:44)
+        at kotlin.reflect.jvm.internal.KClassImpl$Data$descriptor$2.invoke(KClassImpl.kt:56)
+        at kotlin.reflect.jvm.internal.KClassImpl$Data$descriptor$2.invoke(KClassImpl.kt:48)
+        at kotlin.reflect.jvm.internal.ReflectProperties$LazySoftVal.invoke(ReflectProperties.java:93)
+        at kotlin.reflect.jvm.internal.ReflectProperties$Val.getValue(ReflectProperties.java:32)
+        at kotlin.reflect.jvm.internal.KClassImpl$Data.getDescriptor(KClassImpl.kt:48)
+        at kotlin.reflect.jvm.internal.KClassImpl$Data$sealedSubclasses$2.invoke(KClassImpl.kt:154)
+        at kotlin.reflect.jvm.internal.KClassImpl$Data$sealedSubclasses$2.invoke(KClassImpl.kt:153)
+        at kotlin.reflect.jvm.internal.ReflectProperties$LazySoftVal.invoke(ReflectProperties.java:93)
+        at kotlin.reflect.jvm.internal.ReflectProperties$Val.getValue(ReflectProperties.java:32)
+        at kotlin.reflect.jvm.internal.KClassImpl$Data.getSealedSubclasses(KClassImpl.kt:153)
+        at kotlin.reflect.jvm.internal.KClassImpl.getSealedSubclasses(KClassImpl.kt:259)
+        at com.fasterxml.jackson.module.kotlin.KotlinAnnotationIntrospector.findSubtypes(KotlinAnnotationIntrospector.kt:97)
+
+Теперь не нашёлся код из нашей кодовой базы.
+Потому что у нас эвенты (записи в дневнике) представляют из себя иерархию, маппинг которой в json настроен так:
+
+[source,kotlin]
+----
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "type"
+)
+@JsonSubTypes(
+    JsonSubTypes.Type(value = ActivityEventDto::class, name = "ACTIVITY"),
+    // ...
+)
+sealed class EventDto(
+    val type: EventType
+) {
+    // ...
+}
+----
+
+И не все типы напрямую используются в коде сервиса.
+
+Завёл по аналогии ещё один файлик с рефлекшеном, прописал его в гредле, запустил сборку, покурил, публикую сообщение в кролик и успех!
+
+== Результаты
+
+На всё про всё - обзорный гуглёж, все тупняки, перекуры на сборки, прикручивание - у меня ушло часа 4.
+А результы следующие:
+
+[cols="1,1,1"]
+|===
+|| Обычный билд | Билд в натив
+| Время сборки^*^
+| 8 c.
+| 170 с.
+
+| Потребление памяти^**^
+| 433мб
+| 205мб
+
+| Время запуска
+| 4.5 с.
+| 0.35 с.
+|===
+
++++*+++ Сборка без тестов
+
++++**+++ После обработки одного HTTP-запроса и RabbitMQ-сообщения
+
+Пока что я проделал все эти упражнения локально и впереди у нас сборка этого добра в GitLab, деплой в k8s и тщательное тестирование командой QA, но я смотрю в будущее с оптимизмом.
