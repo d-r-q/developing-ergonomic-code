@@ -7,7 +7,7 @@ draft: false
 :rouge-theme: github
 :icons: font
 :sectlinks:
-:imagesdir: /drafts/project-e-retro/images
+:imagesdir: /posts/23/09/images
 
 == Введение
 
