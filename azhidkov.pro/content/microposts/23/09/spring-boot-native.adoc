@@ -130,7 +130,20 @@ binaries {
 ----
 
 Не скомпилировалось.
-Потупил, понял что это в примере Groovy DSL, а у меня Kotlin DSL - переключил вкладку, поменял `main` на `named("main")` - собралось, запускаю...
+Потупил, понял что это в примере Groovy DSL, а у меня Kotlin DSL - переключил вкладку, поменял `main` на `named("main")`:
+[source,kotlin]
+----
+tasks {
+    graalvmNative {
+        binaries {
+            named("main") {
+                buildArgs.add("-H:ReflectionConfigurationFiles=../../../src/main/resources/META-INF/native-image/kafka-client-reflection.json,../../../src/main/resources/META-INF/native-image/project-e-reflection.json")
+            }
+        }
+    }
+}
+----
+собралось, запускаю...
 
 Фик, та же проблема.
 Смотрю в файлик - там нет `StringSerializer`.
