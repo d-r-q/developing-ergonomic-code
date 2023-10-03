@@ -45,7 +45,15 @@
         <span class=n>buildArgs</span><span class=o>.</span><span class=na>add</span><span class=o>(</span><span class=s1>&#39;--link-at-build-time&#39;</span><span class=o>)</span>
     <span class=o>}</span>
 <span class=o>}</span></code></pre></div><p>Не скомпилировалось.
-Потупил, понял что это в примере Groovy DSL, а у меня Kotlin DSL - переключил вкладку, поменял <code>main</code> на <code>named("main")</code> - собралось, запускаю…​</p><p>Фик, та же проблема.
+Потупил, понял что это в примере Groovy DSL, а у меня Kotlin DSL - переключил вкладку, поменял <code>main</code> на <code>named("main")</code>:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=nf>tasks</span> <span class=p>{</span>
+    <span class=nf>graalvmNative</span> <span class=p>{</span>
+        <span class=nf>binaries</span> <span class=p>{</span>
+            <span class=nf>named</span><span class=p>(</span><span class=s>&#34;main&#34;</span><span class=p>)</span> <span class=p>{</span>
+                <span class=n>buildArgs</span><span class=p>.</span><span class=nf>add</span><span class=p>(</span><span class=s>&#34;-H:ReflectionConfigurationFiles=../../../src/main/resources/META-INF/native-image/kafka-client-reflection.json,../../../src/main/resources/META-INF/native-image/project-e-reflection.json&#34;</span><span class=p>)</span>
+            <span class=p>}</span>
+        <span class=p>}</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></div><p>собралось, запускаю…​</p><p>Фик, та же проблема.
 Смотрю в файлик - там нет <code>StringSerializer</code>.
 По аналогии добавляю его, собираю (и да, каждая сборка - 3 минуты) - успех!
 Проект стартанул.</p><p>Дёргаю эндпоинт - работает!</p><p>Публикую сообщение в кролика и опять взрыв:</p><div class=literal-block><pre>kotlin.reflect.jvm.internal.KotlinReflectionInternalError: Unresolved class: class project_e.core.diary.api.dto.ActivityEventDto
