@@ -9,5 +9,5 @@ draft: false
 
 Содержание:
 
-. link:++{{<ref "ergo-approach/guideline/test-automation">}}++[Автоматизация тестирования]
-. link:++{{<ref "ergo-approach/guideline/git">}}++[Работа с Git]
+. link:++{{<ref "/ergo-approach/guideline/test-automation">}}++[Автоматизация тестирования]
+. link:++{{<ref "/ergo-approach/guideline/git.adoc">}}++[Работа с Git]
