@@ -28,7 +28,6 @@ draft: false
 Верхнеуровнево, кодовая база тестов состоит из следующих пакетов:
 
 * assertions - классы с доменно-специфичными ассёртами
-* backgrounds - классы для сетапа часто используемых наборов фикстуры - зарегестрированный пользователь, стандартный набор событий, пара наблюдатель-наблюдаемый и т.п.
 * cases - классы тестовых сценариев
 * clients - классы клиентов бэка
 * fixtures - классы создания экземпляров тестовых данных
@@ -39,5 +38,5 @@ draft: false
 [source,kotlin]
 ----
 @Test
-fun `getInsulinMedicaemnts should contain single 'Other' entry for each insulin type`()
+fun `getMedicaemnts should contain single 'Other' entry for each insulin type`()
 ----

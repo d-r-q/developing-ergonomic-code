@@ -8,3 +8,6 @@ draft: false
 :sectlinks:
 
 Содержание:
+
+. link:++{{<ref "ergo-approach/guideline/test-automation">}}++[Автоматизация тестирования]
+. link:++{{<ref "ergo-approach/guideline/git">}}++[Работа с Git]
