@@ -7,7 +7,13 @@ draft: false
 :icons: font
 :sectlinks:
 
+[NOTE]
+====
+Работа над гайдлайном находится в процессе.
+====
+
 Содержание:
 
 . link:++{{<ref "/ergo-approach/guideline/test-automation">}}++[Автоматизация тестирования]
+. link:++{{<ref "/ergo-approach/guideline/db">}}++[Работа с БД]
 . link:++{{<ref "/ergo-approach/guideline/git.adoc">}}++[Работа с Git]

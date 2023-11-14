@@ -10,6 +10,11 @@ draft: false
 :icons: font
 :sectlinks:
 
+[NOTE]
+====
+Работа над гайдлайном находится в процессе.
+====
+
 ## Именование веток
 
 Имена веток формируются по шаблону <issue-code>/<short-descr> - например qg-81/create-client.
