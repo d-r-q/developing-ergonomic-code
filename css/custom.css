@@ -139,7 +139,15 @@ ul, ol {
     padding-left: 20px
 }
 
-li {
+div.olist ol li, div.ulist ul {
+    margin: 0.25rem;
+}
+
+li p {
+    margin: 0px;
+}
+
+section.container.list ul li {
     margin: 1.05em 0px;
 }
 
