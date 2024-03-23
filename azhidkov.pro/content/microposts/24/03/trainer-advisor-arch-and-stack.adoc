@@ -2,6 +2,7 @@
 title: "Trainer Advisor - архитектура и стэк"
 date: 2024-03-20T08:25:37+07:00
 draft: false
+tags: trainer-advisor
 ---
 :source-highlighter: rouge
 :rouge-theme: github
