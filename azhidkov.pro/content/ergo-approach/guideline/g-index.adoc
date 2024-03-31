@@ -16,4 +16,5 @@ draft: false
 
 . link:++{{<ref "/ergo-approach/guideline/test-automation">}}++[Автоматизация тестирования]
 . link:++{{<ref "/ergo-approach/guideline/db">}}++[Работа с БД]
+.. link:++{{<ref "/ergo-approach/guideline/postgres">}}++[Работа с PostgreSQL]
 . link:++{{<ref "/ergo-approach/guideline/git.adoc">}}++[Работа с Git]
