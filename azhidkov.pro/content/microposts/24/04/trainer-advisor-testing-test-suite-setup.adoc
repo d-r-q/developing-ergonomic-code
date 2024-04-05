@@ -2,6 +2,7 @@
 title: "Тестирование Trainer Advisor: сетап набора тестов (test suite)/ тестируемой системы (system under test)"
 date: 2024-04-04T08:25:37+07:00
 draft: false
+tags: trainer-advisor
 ---
 :source-highlighter: rouge
 :rouge-theme: github
