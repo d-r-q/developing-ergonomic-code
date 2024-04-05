@@ -19,7 +19,7 @@ draft: false
 == Введение
 
 Это второй пост о тестировании link:++{{<ref "/microposts/23/11/qyoga">}}++[Trainer Advisor].
-Перед прочтением этого поста стоит ознакомиться с общими идеями и принципами, описанными в первом посте.
+Перед прочтением этого поста стоит ознакомиться с общими идеями и принципами, описанными в link:++{{<ref "/microposts/24/03/trainer-advisor-testing-theory">}}++[первом посте].
 А в этом посте я начал описывать работу с самой замороченной частью тестирования — фикстурой в самом общем смысле этого слова - запуск и приведение system under test (sut) к предопределённому состоянию (этот пост) и создание тестовых данных и наполнение ими БД (следующий пост).
 
 На самом верхнем уровне весь процесс состоит из следующих шагов:
@@ -362,7 +362,7 @@ class TestsConfig
 Здесь:
 
 * https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/main/kotlin/pro/qyoga/app/QYogaApp.kt#L43[QYogaApp] - собственно та самая продовая конфигурация приложения;
-* https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/backgrounds/BackgroundsConfig.kt#L9[BackgroundsConfig] - конфиг, создающий бины бэкграундов (link:++{{< ref "microposts/24/03/trainer-advisor-testing-theory/#_виды_тестового_кода_и_их_общая_структура">}}++[теория]);
+* https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/backgrounds/BackgroundsConfig.kt#L9[BackgroundsConfig] - конфиг, создающий бины бэкграундов (link:++{{<ref "/microposts/24/03/trainer-advisor-testing-theory#_виды_тестового_кода_и_их_общая_структура">}}++[теория]);
 * https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/testFixtures/kotlin/pro/qyoga/tests/infra/test_config/spring/auth/TestPasswordEncoderConfig.kt[TestPasswordEncoderConfig] - конфиг, переопределяющий PasswordEncoder в продовом контексте на Noop, так как продовый BCrypt хэширует пароли при логине по 300мс, а у меня практически каждый тест начинается с логина;
 * https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/testFixtures/kotlin/pro/qyoga/tests/infra/test_config/spring/db/TestDataSourceConfig.kt[TestDataSourceConfig] и https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/testFixtures/kotlin/pro/qyoga/tests/infra/test_config/spring/minio/TestMinioConfig.kt[TestMinioConfig] - конфиги, переопределяющие DataSource и MinioClient в продовом контексте, на объекты, созданные руками.
 +
