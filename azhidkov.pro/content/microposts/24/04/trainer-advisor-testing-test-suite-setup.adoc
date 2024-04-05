@@ -1,0 +1,461 @@
+---
+title: "Тестирование Trainer Advisor: сетап набора тестов (test suite)/ тестируемой системы (system under test)"
+date: 2024-04-04T08:25:37+07:00
+draft: false
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:sectlinks:
+:imagesdir: /microposts/24/04/images/
+
+[NOTE]
+--
+Этот материал является "микропостом" - текстом, написанным в режиме потока сознания без особой редактуры.
+
+Следить за обновлениями блога можно в Telegram-канале: https://t.me/ergonomic_code[Эргономичный код].
+--
+
+== Введение
+
+Это второй пост о тестировании link:++{{<ref "/microposts/23/11/qyoga">}}++[Trainer Advisor].
+Перед прочтением этого поста стоит ознакомиться с общими идеями и принципами, описанными в link:++{{< ref "/microposts/24/03/trainer-advisor-testing-theory">}}++[первом посте].
+А в этом посте я начал описывать работу с самой замороченной частью тестирования — фикстурой в самом общем смысле этого слова - запуск и приведение system under test (sut) к предопределённому состоянию (этот пост) и создание тестовых данных и наполнение ими БД (следующий пост).
+
+На самом верхнем уровне весь процесс состоит из следующих шагов:
+
+. Запустить инфраструктуру (сейчас - Postgres и Minio) или сделать для предзапущенной инфраструктуры "factory reset";
+. Запустить приложение;
+. Проинициализировать инфраструктуру (схему и бакеты);
+. Для каждого тест кейса:
+.. Привести данные в БД к эталонным;
+.. Сформировать специфичные данные, которые sut загружает из хранилищ неявно в процессе испытания (вызова метода в блоке Then);
+.. Вставить эти данные в хранилища.
+
+== Запуск инфраструктуры
+
+Исходя из принципа "тестирование системы в конфигурации максимально приближенной к боевой" всю инфраструктуру, которой я сам управляю в проде (в случае TA - это Postgres и Minio, но в общем случае это могут быть очереди сообщений, управляемые сервисы и т.д.) я запускаю для тестов в Docker-контейнерах.
+
+Однако так как я работаю по TDD и запускаю тесты по нескольку раз в минуту, мне надо чтобы на запуск теста уходило не более 10 секунд, поэтому пришлось изобрести несколько трюков, сокращающих время инициализации инфраструктуры.
+
+Например — в отличие от (как мне кажется) общепринятой практики, я не использую правила JUnit-а, а создаю контейнеры руками.
+
+=== Запуск контейнеров с помощью testcontainers
+
+.Создание контейнеров. https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/testFixtures/kotlin/pro/qyoga/tests/infra/db/Containers.kt#L6[Смотреть на GitHub]
+[source,kotlin]
+----
+val pgContainer: PostgreSQLContainer<*> by lazy {
+    PostgreSQLContainer("postgres:15.2")
+        .withExposedPorts(5432)
+        .withUsername("postgres")
+        .withPassword("password")
+        .withDatabaseName("postgres")
+        .withTmpFs(mapOf("/var" to "rw"))
+        .withEnv("PGDATA", "/var/lib/postgresql/data-no-mounted")
+        .withReuse(true)
+        .withInitScript("db/qyoga-db-init.sql")
+        .apply {
+            start()
+            // Сначала подключаемся к postgres, пересоздаём qyoga для обнуления фикстуры и подключаемся к ней
+            this.withDatabaseName("qyoga")
+        }
+}
+
+val minioContainer: MinIOContainer by lazy {
+    MinIOContainer("minio/minio")
+        .withExposedPorts(9000)
+        .withUserName("user")
+        .withPassword("password")
+        .withTmpFs(mapOf("/tmp" to "rw"))
+        .withReuse(true)
+        .withEnv("MINIO_VOLUMES", "/tmp/minio")
+        .withCommand("server")
+        .apply {
+            start()
+        }
+}
+----
+
+Я так делаю, потому что это единственный известный мне способ использовать один контейнер во всех тестах Test Suite-а.
+А это позволяет существенно (на вскидку - от двух секунд на тест кейс) сэкономить время за счёт экономии на запуске контейнера и Spring-контекста, который косит на этот контейнер.
+
+Следующая пара оптимизаций реализуется с помощью этих параметров контейнеров:
+
+. withTmpFs - создаёт в файловой системе контейнера директорию, которая мапится на оперативную память;
+. withEnv - настраивает хранилище, на хранение данных в этой директории.
+  Вместе эти две опции превращают реальный боевой Postgres, например, в фактически in-memory БД.
+  И благодаря этому выполнение 22 текущих миграций проекта выполняется за 45 миллисекунд, а самый быстрый тест, выполняющий по 3 SELECT-а и INSERT-а, проходит за 20 +/- 5 миллисекунд.
+. withReuse - настраивает testcontainers на переиспользование контейнер между запусками Test Suite.
+  Эта настройка изначально позволяла сэкономить несколько секунд на запуске контейнеров, но сейчас стала пережитком и по большому счёту её можно удалить.
+
+Потому что даже с ней просто инициализация testcontainers, чтобы посмотреть, что контейнер уже запущен, занимает порядка 0.5 секунды (или 5% всего временнОго бюджета на тест) на моей машине.
+И чтобы срезать эти 0.5 секунды при девелопменте, инфраструктуру для тестов на рабочей машине я запускаю руками.
+
+=== Предзапуск контейнеров руками
+
+Для этого у меня есть специализированный Docker Compose проект, который создаёт сервисы на RAM-дисках:
+
+.docker-compose-infra-tests.yml. https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/deploy/qyoga/docker-compose-infra-tests.yml[Смотреть на Github]
+[source,yaml]
+----
+# Проект test-инфраструктуры
+# test-инфраструктура хранит данные на docker tmpfs volume (данные не переживают перезапуск контейнера)
+# Тесты настроены таким образом, что на старте пытаются подключиться к тестовой инфраструктуре и
+# запускают контейнеры через testcontainers только если не получается
+
+version: '3.8'
+
+name: qyoga-tests-infra
+
+services:
+
+  postgres:
+    extends:
+      file: docker-compose-infra-base.yml
+      service: postgres
+
+    container_name: qg-pg-tests
+
+    environment:
+      PGDATA: /tmp/pgdata
+
+    tmpfs:
+      - /tmp
+
+    ports:
+      - "54502:5432"
+
+  minio:
+    extends:
+      file: docker-compose-infra-base.yml
+      service: minio
+
+    container_name: qg-minio-tests
+
+    environment:
+      MINIO_VOLUMES: /tmp/minio
+
+    tmpfs:
+      - /tmp
+
+    ports:
+      - "50001:9000"
+      - "9020:9020"
+
+    command: server --console-address ":9020"
+----
+
+Запускается он командой:
+
+[source,bash]
+----
+docker compose -f deploy/qyoga/docker-compose-infra-tests.yml up --detach
+----
+
+Для которой у меня в https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/.run/Infra%20-%20Tests%20-%20Up.run.xml[проекте хранится] IDEA-вская Shell Script Run Configuration:
+
+image::2024-03-31-16-31-06.png[]
+
+[NOTE]
+====
+Вообще, у IDEA есть специализированные Run Configuration для Docker Compose, однако на момент сетапа этой штуки (конец 2023 года) на моей машине (Manjaro Linux) эти конфиги приводили к рандомным крэшам всей идеи, поэтому тогда от них пришлось отказаться.
+Но сейчас, возможно, уже всё хорошо и можно будет перейти на них с оказией.
+====
+
+Совсем переходить на предзапущенную инфраструктуру я не хочу потому что:
+
+. Придётся что-то выдумывать на CI;
+. Это усложнит опыт новых разработчиков — сейчас разработку можно начать буквально за три действия — зачекаутить проект, открыть его в идее, запустить main-метод или нужный тест.
+
+Поэтому у меня есть ещё кусочек специализированного кода, для определения URL-ов подключения к инфраструктуре.
+
+=== Поиск контейнера в рантайме
+
+Например, определение URL подключения к Postgres выглядит так:
+
+.Выбор URL Postgres. https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/testFixtures/kotlin/pro/qyoga/tests/infra/db/TestDb.kt[Смотреть на GitHub]
+[source,kotlin]
+----
+const val PROVIDED_DB_URL = "jdbc:postgresql://localhost:54502/qyoga"
+
+object TestDb
+
+private val log = LoggerFactory.getLogger(TestDb::class.java)
+
+private const val DB_USER = "postgres"
+private const val DB_PASSWORD = "password"
+
+val jdbcUrl: String by lazy {
+    try {
+        log.info("Checking for provided db")
+        val con = DriverManager.getConnection(
+            PROVIDED_DB_URL.replace("qyoga", DB_USER),
+            DB_USER,
+            DB_PASSWORD
+        )
+        log.info("Provided db found, recreating it")
+        con.prepareStatement(
+            """
+                DROP DATABASE IF EXISTS qyoga;
+                CREATE DATABASE qyoga;
+            """.trimIndent()
+        )
+            .execute()
+        log.info("Provided db found, recreated")
+        PROVIDED_DB_URL
+    } catch (e: SQLException) {
+        log.info("Provided Db not found: ${e.message}")
+        pgContainer.jdbcUrl
+    }
+}
+
+val testDataSource by lazy {
+    val config = HikariConfig().apply {
+        this.jdbcUrl = pro.qyoga.tests.infra.db.jdbcUrl
+        this.username = DB_USER
+        this.password = DB_PASSWORD
+    }
+    HikariDataSource(config)
+}
+----
+
+[NOTE]
+====
+Код выше - это Kotlin-файл c top level declarations, по большому счёту синтаксическому сахару поверх статических элементов.
+Он будет скомпилирован в байт-код примерно соответствующий такому Java-коду:
+[source,java]
+----
+public final class TestDbKt {
+   public static final String PROVIDED_DB_URL = "jdbc:postgresql://localhost:54502/qyoga";
+   private static final Logger log = LoggerFactory.getLogger(TestDb.class);
+   private static final String DB_USER = "postgres";
+   private static final String DB_PASSWORD = "password";
+   private static final Lazy jdbcUrl$delegate;
+   private static final Lazy testDataSource$delegate;
+
+   public static final String getJdbcUrl() {
+     // ..
+   }
+
+   public static final HikariDataSource getTestDataSource() {
+     // ..
+   }
+
+   static {
+      jdbcUrl$delegate = LazyKt.lazy((Function0)null.INSTANCE);
+      testDataSource$delegate = LazyKt.lazy((Function0)null.INSTANCE);
+   }
+}
+----
+
+
+Ленивая переменная (свойство) в Котлин - это переменная которая инициализируется при первом чтении, а не при загрузке класса/создании объекта.
+
+Соответственно, если где-то написать, например, `println(jdbcUrl)`, то при этом класс TestDbKt будет загружен, его статические свойства будут проинициализированы и Lazy-обёртка `jdbcUrl$delegate` будет проинициализирована с запуском контейнера или пересозданием БД.
+Но Lazy-обёртка `testDataSource$delegate` с созданием HikariDataSource при этом не будет проинициализирована.
+====
+
+Здесь определяется несколько констант подключения к предзапущенному Postgres и две ленивых переменных - `jdbcUrl` и `testDataSource`.
+
+Вся магия происходит при инициализации `jdbcUrl`.
+Сначала выполняется попытка подключения к предзапущенному Postgres.
+Если подключение проходит - в этом Postgres-е пересоздаётся БД и далее для подключения к БД используется URL предзапущенного Postgres.
+
+Если нет - идёт обращение к URL тест-контейнера через также ленивую переменную `pgContainer`.
+В этот момент фактически запускается контейнер, и Postgres в нём инициализируется скриптом, создающим пустую БД qyoga.
+
+В итоге, обратившись к `jdbcUrl`, мы получаем URL, который косит на запущенный Postgres с пустой БД qyoga.
+
+Далее этот URL используется для создания экземпляра DataSource, который через специальный Spring-конфиг будет подложен бином в контекст приложения, запущенного в тестах.
+
+В случае Minio схема практически такая же:
+
+.Выбор контейнера Minio. https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/testFixtures/kotlin/pro/qyoga/tests/infra/db/TestMinio.kt#L9[Смотреть на GitHub]
+[source,kotlin]
+----
+const val MINIO_URL = "http://localhost:50001"
+
+object TestMinio
+
+private val log = LoggerFactory.getLogger(TestMinio::class.java)
+
+private const val MINIO_USER = "user"
+private const val MINIO_PASSWORD = "password"
+
+val minioUrl: String by lazy {
+    try {
+        log.info("Checking for provided minio")
+        val con = MinioClient.builder()
+            .endpoint(MINIO_URL)
+            .credentials(MINIO_USER, MINIO_PASSWORD)
+            .build()
+        con.listBuckets()
+        log.info("Provided minio found, cleaning it")
+        dropBuckets(con)
+        log.info("Provided minio cleaned")
+
+        MINIO_URL
+    } catch (e: ConnectException) {
+        log.info("minio container not found: ${e.message}")
+        log.info("http://" + minioContainer.host + ":" + minioContainer.firstMappedPort)
+
+        log.info("Cleaning testcontainers minio")
+        dropBuckets(
+            MinioClient.builder()
+                .endpoint(minioContainer.s3URL)
+                .credentials(minioContainer.userName, minioContainer.password)
+                .build()
+        )
+        log.info("Minio cleaned")
+
+        "http://" + minioContainer.host + ":" + minioContainer.firstMappedPort
+    }
+}
+
+val testMinioClient: MinioClient by lazy {
+    MinioClient.builder()
+        .endpoint(minioUrl)
+        .credentials(MINIO_USER, MINIO_PASSWORD)
+        .build()
+}
+
+fun dropBuckets(client: MinioClient) {
+    client.listBuckets().forEach { bucket ->
+        client.listObjects(ListObjectsArgs.builder().bucket(bucket.name()).build()).forEach {
+            client.removeObject(
+                RemoveObjectArgs.builder().bucket(bucket.name()).`object`(it.get().objectName())
+                    .build()
+            )
+        }
+    }
+}
+----
+
+Единственное что, для Minio удаление бакетов выполняется руками в обоих случаях.
+
+Фух... Это было сложнее, чем мне казалось.
+
+== Запуск приложения
+
+С запуском приложения примерно та же история, что и с инфраструктурой - я запускаю практически такой же Spring-контекст, как и в проде, но с некоторыми приседаниями во имя скорости запуска.
+
+=== Конфигурация приложения для тестов
+
+Конфигурация приложения для тестов выглядит так:
+
+.Конфигурация приложения для тестов. https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/testFixtures/kotlin/pro/qyoga/tests/infra/test_config/spring/TestsConfig.kt#L29[Смотреть на GitHub]
+[source,kotlin]
+----
+@Import(
+    QYogaApp::class,
+    BackgroundsConfig::class,
+    TestPasswordEncoderConfig::class,
+    TestDataSourceConfig::class,
+    TestMinioConfig::class,
+    FailingController::class
+)
+@Configuration
+class TestsConfig
+----
+
+Здесь:
+
+* https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/main/kotlin/pro/qyoga/app/QYogaApp.kt#L43[QYogaApp] - собственно та самая продовая конфигурация приложения;
+* https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/backgrounds/BackgroundsConfig.kt#L9[BackgroundsConfig] - конфиг, создающий бины бэкграундов (link:++{{< ref "microposts/24/03/trainer-advisor-testing-theory/#_виды_тестового_кода_и_их_общая_структура">}}++[теория]);
+* https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/testFixtures/kotlin/pro/qyoga/tests/infra/test_config/spring/auth/TestPasswordEncoderConfig.kt[TestPasswordEncoderConfig] - конфиг, переопределяющий PasswordEncoder в продовом контексте на Noop, так как продовый BCrypt хэширует пароли при логине по 300мс, а у меня практически каждый тест начинается с логина;
+* https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/testFixtures/kotlin/pro/qyoga/tests/infra/test_config/spring/db/TestDataSourceConfig.kt[TestDataSourceConfig] и https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/testFixtures/kotlin/pro/qyoga/tests/infra/test_config/spring/minio/TestMinioConfig.kt[TestMinioConfig] - конфиги, переопределяющие DataSource и MinioClient в продовом контексте, на объекты, созданные руками.
++
+[NOTE]
+====
+Сейчас уже думаю, что можно было обойтись без этих конфигов и без самих testDataSource и testMinioClient, а прокинуть нужные URL-ы в окружение контекста, но... это сделано как есть — уверен, в каждом живом проекте есть такие места:)
+====
+* FailingController - определяет контроллер, который всегда 500-ит, используется для https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/test/kotlin/pro/qyoga/tests/cases/app/error_handling/ErrorHandlingTest.kt#L15[теста конфигурации обработчика ошибок].
++
+[NOTE]
+====
+В целом это — фикстура одного теста в общем контексте ,— наверное, не очень масштабируемый подход и подложить этот контроллер вроде бы можно https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html#mvc-ann-requestmapping-registration[динамически].
+Однако прецедент пока только один и такая конструкция проще, поэтому пока так.
+====
+
+=== Запуск приложения
+
+Запуск приложения выполняется с помощью стандартной Boot-овой ручки:
+
+.Запуск приложения. https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/testFixtures/kotlin/pro/qyoga/tests/infra/test_config/spring/TestsConfig.kt#L17[Смотреть на Github]
+[source,kotlin]
+----
+val context: ConfigurableApplicationContext by lazy {
+    SpringApplicationBuilder(TestsConfig::class.java)
+        .profiles("test")
+        .build()
+        .run()
+}
+----
+
+Контекст создаётся и переменная `context` инициализируется при инициализации первого теста, наследующего QYogaAppBaseTest:
+
+.QYogaAppBaseTest. https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/testFixtures/kotlin/pro/qyoga/tests/infra/web/QYogaAppBaseTest.kt[Смотреть на GitHub]
+[source,kotlin]
+----
+open class QYogaAppBaseTest {
+
+    private val dataSource: DataSource = context.getBean(DataSource::class.java)
+
+    protected val port: Int = context.getBean(ServerProperties::class.java).port
+
+    protected val backgrounds: Backgrounds = context.getBean(Backgrounds::class.java)
+
+    inline fun <reified T> getBean(): T =
+        context.getBean(T::class.java)
+
+    @BeforeEach
+    fun setupTestData() {
+        dataSource.setupDb()
+    }
+
+}
+----
+
+=== Инициализация хранилищ
+
+При запуске приложения аналогичным продовому образом выполняется инициализация хранилищ - создание схемы БД Postgres и бакетов Minio.
+Создание схемы БД выполняется https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto.data-initialization.migration-tool.flyway[автомагически].
+
+А бакеты инициализируют бины, отвечающие за эти бакеты в своих @PostConstruct-методе:
+
+.Инициализация бакетов Minio. https://github.com/d-r-q/QYoga/blob/48b80738904a957f6e7d4f96900ce20694ce5400/app/src/main/kotlin/pro/azhidkov/platform/file_storage/internal/MinioFilesStorage.kt#L22[Смотреть на GitHub]
+[source,kotlin]
+----
+open class MinioFilesStorage(
+    // ...
+    private val bucket: String
+) : FilesStorage {
+
+    @PostConstruct
+    fun init() {
+        if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucket).build())) {
+            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucket).build())
+        }
+    }
+
+    // ...
+
+}
+----
+
+[NOTE]
+====
+Тут стоит пояснить, что у меня для каждого бакета (сейчас - exercise.steps и client.files), создаётся по своему FilesStorage-бину - это сделано в рамках принципа, что за каждый кусочек состояния отвечает один объект внутри одного компонента.
+====
+
+---
+
+Итого перед началом выполнения первого метода тест кейса мы имеем:
+
+. Запущенные контейнеры Postgres и Minio, состояние которых сброшено до исходного (как минимум перед запуском текущего набора тестов);
+. Запущенное приложение, в конфигурации, максимально приближенной к боевой;
+. Заранее детерминированное и всегда идентичное исходное наполнение БД.
+
+Теперь остался последний этап сетапа фикстуры — создание и, при необходимости, вставка данных, специфичных для теста.
+Его я рассмотрю в следующем посте.
