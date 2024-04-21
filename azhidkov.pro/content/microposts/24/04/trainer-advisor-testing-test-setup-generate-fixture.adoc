@@ -1,0 +1,947 @@
+---
+title: "Тестирование Trainer Advisor: сетап теста, подготовка хранилищ"
+date: 2024-04-20T08:25:37+07:00
+draft: false
+tags: trainer-advisor
+---
+
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:sectlinks:
+:imagesdir: /microposts/24/04/images/
+:toc:
+:toclevels: 4
+
+[NOTE]
+--
+Этот материал является "микропостом" - текстом, написанным в режиме потока сознания без особой редактуры.
+
+Следить за обновлениями блога можно в Telegram-канале: https://t.me/ergonomic_code[Эргономичный код].
+--
+
+== Введение
+
+Это третий пост о тестировании link:++{{<ref "/microposts/23/11/qyoga">}}++[Trainer Advisor].
+Перед прочтением этого поста стоит ознакомиться с общими идеями и принципами, описанными в link:++{{< ref "/microposts/24/03/trainer-advisor-testing-theory">}}++[первом посте] и с сетапом инфраструктуры и приложения во link:++{{< ref "/microposts/24/04/trainer-advisor-testing-test-suite-setup">}}++[втором].
+В этом посте я продолжаю описание работы с самой замороченной частью тестирования - фикстурой.
+
+На самом верхнем уровне этот процесс состоит из следующих шагов:
+
+. Один раз на запуск набора тестов:
+.. Запустить или сбросить состояние запущенной инфраструктуры (сейчас - Postgres и Minio);
+.. Запустить приложение;
+.. Проинициализировать инфраструктуру (схему и бакеты);
+. Для каждого тест кейса из набора:
+.. Подготовить хранилища;
+... Привести данные в БД к эталонным;
+... Сформировать специфичные данные, которые sut загрузит из хранилищ неявно в процессе испытания (вызова метода в блоке Then);
+... Вставить эти данные в хранилища.
+.. Подготовить тестовые дубли.
+
+Шага сетапа набора тестов я рассмотрел в предыдущем посте, а в этом посте рассмотрю первый шаг сетапа отдельного теста - подготовка хранилищ.
+
+[NOTE]
+====
+Этот пост получился огромным, и я не нашёл вменяемого способа его разбить на части.
+Сейчас все три шага — вставка разделяемой фикстуры, генерация фикстуры тестов и её вставка в БД — неразрывно связаны друг с другом.
+Возможно, это наведено использованием ИДов сущностей, генерируемых БД и если бы я использовал для этих целей UUID-ы — можно было бы разделить генерацию тестовых графов объектов и их вставку в БД и, как следствие, разделить этот пост на два.
+
+Это к вопросу о неожиданных проявлениях сцепленности в коде и как можно оторванные от кода вещи использовать для её поиска:)
+====
+
+== Сброс состояния БД
+
+Для того чтобы интеграционные тесты работали стабильно, они должны работать со стабильным (от запуска к запуску) окружением — состоянием внешних систем.
+В случае TA - это состояние Postgres и [line-through]#Minio#*.
+В общем же случае это могут быть так же очереди сообщений, внешние сервисы с состоянием, почтовые серверы и т.п.
+
+[NOTE]
+====
+^*^ Minio я сейчас не чищу между тестами.
+Но у меня ни разу и не было падения теста из-за "грязного" состояния — как только поймаю — добавлю чистку в сетап теста.
+====
+
+Для сброса состояния PostgreSQL я использую небольшой SQL-скрипт:
+
+.Скрипт сброса состояния БД. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/resources/db/shared-fixture.sql[Смотреть на GitHub]
+[source,sql]
+----
+TRUNCATE
+    users, clients, therapists, exercises, exercise_steps, therapeutic_tasks, journal_entries, files, client_files, programs, program_exercises, appointments, appointment_types
+    RESTART IDENTITY;
+
+INSERT INTO users (email, password_hash, roles, created_at, version)
+VALUES ('therapist@qyoga.pro', 'password', '{"ROLE_THERAPIST"}', now(), 1);
+
+INSERT INTO therapists(id, first_name, last_name, created_at, version)
+VALUES (1, 'Елена (тест)', 'Маркова', now(), 1);
+
+INSERT INTO users (email, password_hash, roles, created_at, version)
+VALUES ('admin@ta.pro', 'password', '{"ROLE_ADMIN"}', now(), 1);
+
+INSERT INTO therapists(id, first_name, last_name, created_at, version)
+VALUES (2, 'Админ (тест)', 'Адамов', now(), 1);
+----
+
+Здесь первым шагом удаляются рабочие данные из всех таблиц, а потом заново вставляется пользователь-терапевт.
+Пользователя терапевта я добавляю в этом скрипте во имя экономии как в скорости запуска, так и в скорости разработки тестов - сейчас терапевт так или иначе требуется практически каждому тесту.
+
+А зачем я добавляю админа - я не знаю.
+Надо удалить.
+
+Далее, так как я не использую Spring-овую автомагию тестирования (так как она съедает 5-10% временнОго бюджета на запуск теста), этот скрипт я выполняю в @BeforeEach-методе корневого класса теста с помощью небольшой самописной утилитки, поверх Spring-овой утилитки:
+
+.Выполнение скрипта сброса состояния БД. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/infra/web/QYogaAppBaseTest.kt#L24[Смотреть на GitHub]
+[source,kotlin]
+----
+open class QYogaAppBaseTest {
+
+    private val dataSource: DataSource = context.getBean(DataSource::class.java)
+
+    @BeforeEach
+    fun setupTestData() {
+        dataSource.setupDb()
+    }
+
+}
+----
+
+.Утилита выполнения SQL-скриптов. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/infra/db/DbInitializer.kt#L7[Смотреть на GitHub]
+[source,kotlin]
+----
+class DbInitializer(
+    private val dataSource: DataSource
+) {
+
+    fun executeScripts(vararg scripts: String) {
+        dataSource.connection.use {
+            scripts.forEach { script ->
+                ScriptUtils.executeSqlScript(it, ClassPathResource(script))
+            }
+        }
+    }
+
+}
+
+fun DataSource.setupDb() {
+    DbInitializer(this).executeScripts("/db/shared-fixture.sql")
+}
+----
+
+Наконец, у меня есть несколько констант, для использования этого представленного терапевта:
+
+.Users.kt. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapists/Users.kt#L7[Смотреть на GitHub]
+[source,kotlin]
+----
+const val THE_THERAPIST_ID = 1L
+
+const val THE_THERAPIST_LOGIN = "therapist@qyoga.pro"
+const val THE_THERAPIST_PASSWORD = "password"
+
+const val THE_THERAPIST_FIRST_NAME = "Елена (тест)"
+
+val THE_THERAPIST_REF = AggregateReference.to<Therapist, Long>(THE_THERAPIST_ID)
+----
+
+После сетапа разделяемой фикстуры, следующим шагом идёт сетап фикстуры, специфичной для теста.
+В общем случае этот шаг делится на две части — генерация тестовых данных и их вставка в БД.
+
+== Генерация тестовых данных
+
+Раньше я для генерации случайных тестовых данных (примитивных значений) писал генераторы руками:
+
+.Генераторы случайных данных. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/data/Text.kt#L5[Смотреть на GitHub]
+[source,kotlin]
+----
+val lowerCaseCyrillicLetters = ('а'..'я').toList()
+val upperCaseCyrillicLetters = ('А'..'Я').toList()
+val cyrillicLetters = lowerCaseCyrillicLetters + upperCaseCyrillicLetters
+
+val lowerCaseLatinLetters = ('a'..'z').toList()
+
+fun randomWord(letters: List<Char>, minLength: Int = 1, maxLength: Int = 12) =
+    buildString {
+        val length = Random.nextInt(minLength, maxLength)
+        repeat(length) {
+            append(letters[Random.nextInt(letters.size)])
+        }
+        check(this.length in minLength..maxLength)
+    }
+
+fun randomCyrillicWord(minLength: Int = 1, maxLength: Int = 12) =
+    randomWord(cyrillicLetters, minLength, maxLength)
+----
+
+Но недавно наткнулся на библиотеку https://www.datafaker.net/[Datafaker] и теперь стараюсь использовать её (пока что использовал только три раза, поэтому не могу написать отзыв на неё).
+
+== Генерация тестовых доменных объектов
+
+В генерации тестовых доменных объектов у меня один из двух самых больших бардаков сейчас.
+
+Пока что я могу сформулировать только две общих идеи, которых стараюсь придерживаться:
+
+. Все данные, нерелевантные для данного теста, должны генерироваться случайно;
+. Если у объекта есть нуллабельные поля - должно быть два отдельных метода для генерации объектов только с обязательными полями и со всеми полями.
+
+Код генерации объектов раскидан по https://martinfowler.com/bliki/ObjectMother.html[Object Mother-ам], у которых общего только то, что они содержат методы с кучей параметров, со случайными дефолтными значениями:
+
+.Object Mother объектов типа Client. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/clients/ClientsObjectMother.kt#L12[Смотреть на GitHub]
+[source,kotlin]
+----
+object ClientsObjectMother {
+
+  fun createClientCardDto(
+      firstName: String = faker.name().firstName(),
+      lastName: String = faker.name().lastName(),
+      middleName: String? = faker.name().nameWithMiddle().split(" ")[1],
+      birthDate: LocalDate = randomBirthDate(),
+      phone: String = randomPhoneNumber(),
+      email: String? = randomEmail(),
+      address: String? = randomCyrillicWord(),
+      complains: String = randomCyrillicWord(),
+      anamnesis: String? = randomSentence(),
+      distributionSource: DistributionSource = randomDistributionSource(),
+  ): ClientCardDto = createClientCardDtoMinimal(
+      firstName,
+      lastName,
+      middleName,
+      birthDate,
+      phone,
+      email,
+      address,
+      complains,
+      anamnesis,
+      distributionSource,
+  )
+
+  fun createClientCardDtoMinimal(
+      firstName: String = randomCyrillicWord(),
+      lastName: String = randomCyrillicWord(),
+      middleName: String? = null,
+      birthDate: LocalDate? = null,
+      phone: String = randomPhoneNumber(),
+      email: String? = null,
+      address: String? = null,
+      complains: String? = null,
+      anamnesis: String? = null,
+      distributionSource: DistributionSource? = null
+  ): ClientCardDto = ClientCardDto(
+      firstName,
+      lastName,
+      middleName,
+      birthDate,
+      phone,
+      email,
+      address,
+      complains,
+      anamnesis,
+      distributionSource?.type,
+      distributionSource?.comment,
+  )
+  
+}
+----
+
+[NOTE]
+====
+Притом сейчас Object Mother-ы я создаю только для агрегатов - все сущности, ДТОшки и прочие штуки помещаются в Object Mother агрегата, с которыми они (на мой субъективный взгляд) связаны сильнее всего.
+====
+
+Клиенты таких методов (в основном тест кейсы) при вызове передают только релевантные для данного случая параметры:
+
+.Пример использования Object Mother. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/test/kotlin/pro/qyoga/tests/cases/app/therapist/clients/card/CreateClientPageTest.kt#L43[Смотреть на GitHub]
+[source,kotlin]
+----
+@Test
+fun `Null distribution source comment should be persisted as null`() {
+    // Given
+    val therapist = TherapistClient.loginAsTheTherapist()
+    val newClientRequest = ClientsObjectMother.createClientCardDto(
+        distributionSource = DistributionSource(DistributionSourceType.OTHER, null)
+    )
+
+    // When
+    therapist.clients.createClient(newClientRequest)
+
+    // Then
+    val clients = backgrounds.clients.getAllClients()
+    clients.content.forAny { it shouldMatch newClientRequest }
+}
+----
+
+Этот тест проверяет, что после создания карточки клиента со значением поля "Откуда вы о нас узнали" равным "Другое" и без комментария, комментарий должен сохраниться в БД как null.
+А не как пустая строка, видимо - я сейчас наверняка уже не помню, но скорее всего, этот тест я написал, когда при ручном тестировании словил какую-то проблему, связанную с сохранением пустого коммента пустой строкой.
+
+Зачастую тесту вообще не важно значение атрибутов сущности:
+
+.Генерация произвольного клиента с помощью Object Mother. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/test/kotlin/pro/qyoga/tests/cases/app/therapist/clients/ClientViewPageTest.kt#L30[Смотреть на GitHub]
+[source,kotlin]
+----
+@Test
+fun `Edit page for just created client should be rendered correctly and contain empty log`() {
+    // Given
+    val therapist = TherapistClient.loginAsTheTherapist()
+    val newClientRequest = createClientCardDto()
+    val client = backgrounds.clients.createClients(listOf(newClientRequest), THE_THERAPIST_ID).first()
+
+    // When
+    val document = therapist.clients.getClientEditPage(client.id)
+
+    // Then
+    document shouldBe EmptyClientJournalPage
+}
+----
+
+Тут стоит пояснить, что, по историческим причинам, за названием "страница редактирования клиента" скрывается таб-панель со всей информацией о клиенте, в которой по умолчанию открывается таб с журналом клиента:
+
+image:client-journal-page-screenshot.png[]
+
+И тест выше проверяет, что "страница редактирования клиента" корректно открывается для только что созданного клиента - в данном случае нам не важны конкретные значения атрибутов клиента.
+
+В этом примере в передаче `THE_THERAPIST_ID` в метод `createClients` также видна одна из моих стратегий работы с референсными данными - ссылки на разделяемую фикстуру.
+
+=== Референсные данные
+
+Подавляющее большинство доменных объектов ссылаются на другие доменные объекты.
+У меня ссылки между доменными объектами реализованы в виде свойств типа https://docs.spring.io/spring-data/jdbc/docs/current/api/org/springframework/data/jdbc/core/mapping/AggregateReference.html[AggregateReference] из Spring Data JDBC, который, по сути, является обёрткой над примитивным идентификатором.
+Но само значение этого идентификатора надо как-то получить, и я сейчас использую три способа:
+
+* Захардкоженные идентификаторы;
+* Внедрённые идентификаторы;
+* Фейковые идентификаторы.
+
+==== Захардкоженные идентификаторы
+
+Сейчас у меня захардкоженный идентификатор только один — `THE_THERAPIST_ID` — идентификатор терапевта.
+Так сделано потому, что практически каждый тест требует существование терапевта как минимум для того, чтобы аутентифицироваться и иметь возможность выполнять запросы.
+Кроме того, большинство других доменных объектов прямо или транзитивно привязаны к терапевту.
+
+И для того, чтобы немного сэкономить на времени сетапа фикстуры, терапевт с этим идентификатором вставляется в БД через SQL.
+
+[NOTE]
+====
+Сейчас подумал, что эта экономия не подтверждена цифрами и, возможно, стоит от неё отказаться.
+Потому что...
+====
+
+\... link:++{{<ref "/posts/23/10/project-e-part2/#_хрупкость_тестов">}}++[печальный опыт Проекта Э] показал, что злоупотреблять разделяемой фикстурой нельзя.
+
+Во-первых, это приведёт к титаническим усилиям по обновлению скриптов после рефакторинга схемы БД.
+
+А во-вторых, это снизит наглядность теста - входные данные придётся искать в другом месте и в них невозможно будет отличить атрибуты, которые влияют на результат теста, от тех, что нет.
+
+Поэтому подавляющее большинство референсных данных я генерируют и вставляю с помощью Object Mother-ов и Background-ов.
+
+==== Внедрённые идентификаторы
+
+В случае если мне нужна просто ссылка, чтобы создать целевой объект, я использую бэкграунды, чтобы сгенерировать случайный доменный объект, вставить его в БД и получить идентификатор для ссылки.
+При необходимости, проделав эту процедуру рекурсивно:
+
+.Вставка произвольных референсных данных. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/test/kotlin/pro/qyoga/tests/cases/app/therapist/appointments/core/EditAppointmentPageTest.kt#L69[Смотреть на GitHub]
+[source,kotlin,highlight="4,8,10,12"]
+----
+@Test
+fun `Edit of minimal appointment to full should be persistent`() {
+    // Given
+    val appointment = backgrounds.appointments.create() // <1>
+    val newAppointmentType = backgrounds.appointmentTypes.createAppointmentType()
+    val therapeuticTask = backgrounds.therapeuticTasks.createTherapeuticTask()
+    val editedAppointment =
+        AppointmentsObjectMother.appointmentPatchRequest( // <2>
+            appointment,
+            newAppointmentType.ref(), // <3>
+            newAppointmentType.name,
+            therapeuticTask = therapeuticTask.ref(), // <4>
+            cost = randomAppointmentCost(),
+            payed = true,
+            place = randomCyrillicWord(),
+            comment = randomCyrillicWord()
+        )
+----
+
+Это тест на то, что после редактирования минимального приёма с указанием значений опциональных атрибутов, все атрибуты имеют то же значение, при последующих запросах.
+Приём ссылается на терапевта, клиента, тип приёма и необязательную терапевтическую задачу.
+
+И здесь создаётся произвольный, но минимальный приём, со ссылкой на THE_THERAPIST и произвольными клиентами и типом (*1*).
+
+Затем, на базе созданного приёма создаётся ДТОшка обновления приёма (*2*), в которую внедряется сгенерённые с помощью бэкграундов ссылки на тип (*3*) и задачу приёма (*4*).
+
+==== Фейковые идентификаторы
+
+Наконец, в некоторых случаях можно ссылаться на фейковые (или, скорее, transient) доменные объекты.
+
+Первым видом таких случаев является опция "сошлись или создай".
+Например, в UI при создании приёма можно тип приёма либо прописать новый, либо выбрать существующий из выпадающего списка.
+
+И это активно используется в тестах на создание приёмов.
+Настолько активно, что сейчас при генерации приёма внедрить его тип невозможно - в генераторе захардкожено использование фейкового типа:
+
+[source,kotlin,highlight=42]
+----
+object AppointmentTypesObjectMother {
+
+    fun fakeAppointmentType() = AggregateReferenceTarget(
+        AppointmentType(THE_THERAPIST_REF, "Тренировка", id = -1)
+    )
+
+}
+
+object AppointmentsObjectMother {
+
+    fun randomAppointment(
+        therapistRef: TherapistRef = THE_THERAPIST_REF,
+        client: ClientRef = ClientsObjectMother.fakeClientRef,
+        typeId: AppointmentTypeRef? = null,
+        typeTitle: String = randomCyrillicWord(),
+        therapeuticTask: TherapeuticTaskRef? = null,
+        dateTime: LocalDateTime = randomAppointmentDate(),
+        timeZone: ZoneId = randomTimeZone(),
+        duration: Duration = randomAppointmentDuration(),
+        place: String? = null,
+        cost: Int? = null,
+        payed: Boolean? = null,
+        appointmentStatus: AppointmentStatus = AppointmentStatus.entries.random(),
+        comment: String? = null
+    ): Appointment {
+        return Appointment(
+            therapistRef,
+            randomEditAppointmentRequest(
+                client,
+                typeId,
+                typeTitle,
+                therapeuticTask,
+                dateTime,
+                timeZone,
+                duration,
+                place,
+                cost,
+                payed,
+                appointmentStatus,
+                comment
+            ),
+            AppointmentTypesObjectMother.fakeAppointmentType()
+        )
+    }
+}
+----
+
+Второй случай, когда можно использовать фейковые ссылки на доменные объекты - когда эти ссылки не доберутся до БД.
+
+Это, в свою очередь, также может быть по двум причинам.
+
+Первой причиной является то, что обработка операции может прерваться (из-за ошибки) раньше обращения к БД:
+
+[source,kotlin,highlight=24]
+----
+object ClientsObjectMother {
+
+    val fakeClientRef: ClientRef = AggregateReferenceTarget(
+        Client(THE_THERAPIST_ID, createClientCardDtoMinimal())
+    )
+
+}
+
+class CreateAppointmentPageControllerTest : QYogaAppBaseTest() {
+
+    @Test
+    fun `Creation of appointment, that intersects with an appointment in another time zone should fail`() {
+        // Given
+        val existingAppointmentTimeZone = asiaNovosibirsk
+        val newAppointmentTimeZone = europeMoscow
+        val existingAppointmentLocalDateTime = aDateTime
+
+        backgrounds.appointments.create(
+            dateTime = existingAppointmentLocalDateTime,
+            timeZone = existingAppointmentTimeZone
+        )
+
+        val createNewAppointmentRequest = randomEditAppointmentRequest(
+            client = ClientsObjectMother.fakeClientRef,
+            dateTime = aDate.atTime(existingAppointmentLocalDateTime.get(ChronoField.HOUR_OF_DAY) - timeZonesDiff, 0),
+            timeZone = newAppointmentTimeZone
+        )
+
+        // When
+        val result = controller.createAppointment(
+            createNewAppointmentRequest,
+            theTherapistUserDetails
+        )
+
+        // Then
+        result.shouldBeIntersectionError()
+        backgrounds.appointments.getDaySchedule(aDate) shouldHaveSize 1
+    }
+
+}
+----
+
+Этот тест проверяет систему на соответствие требованию "Система должна исключить создание приёмов, пересекающихся по времени, даже если время для них указано в разных часовых поясах".
+И здесь фейковая ссылка на клиента в приёме до БД не дойдёт - до вставки приёма в БД выполнится проверка на пересечение, которая не пройдёт и выполнение метода прервётся выбросом исключения.
+
+Вторая причина, по которой фейковая может не дойти до БД - она используется в юнит-тесте чистой логики:
+
+[source,kotlin]
+----
+object AppointmentsObjectMother {
+
+    fun randomAppointment(
+        therapistRef: TherapistRef = THE_THERAPIST_REF,
+        client: ClientRef = ClientsObjectMother.fakeClientRef, // по умолчанию используется фейковый клиент
+        // остальные параметры
+    ): Appointment {
+        return // ...
+    }
+}
+
+class CalendarPageModelTest {
+
+    @Test
+    fun `Calendar should start at first appointment time`() {
+        // Given
+        val firstAppointmentStartTime = LocalTime.of(2, 0)
+        val today = LocalDate.now()
+        val appointments = listOf(
+            randomAppointment( // при вызове не указывается значение параметра client
+                dateTime = today.atTime(firstAppointmentStartTime), timeZone = asiaNovosibirskTimeZone
+            ),
+            randomAppointment(
+                dateTime = today.atTime(8, 0), timeZone = asiaNovosibirskTimeZone
+            )
+        )
+
+        // When
+        val calendarPageModel = CalendarPageModel.of(today, appointments)
+
+        // Then
+        calendarPageModel.timeMarks.first().time shouldBe firstAppointmentStartTime
+    }
+
+}
+----
+
+В коде выше приведён один из двух на данный момент юнит-тестов в проекте.
+Этот тест проверяет соответствие системы требованию "Календарь должен начинаться со времени первого приёма".
+Тут также надо немного пояснить устройство системы.
+Расписание отображается терапевту в виде календаря — сетки с днями в столбцах и временем дня в строках:
+
+image::2024-03-16-15-36-31.png[]
+
+По умолчанию отображается время с 7 до 22 часов.
+И тест выше проверяет, что если есть приём, который начинается раньше 7 утра, то в модели этой страницы сетка времени начинается со времени самого раннего приёма.
+
+Код построения модели страницы, спрятанный за `CalendarPageModel.of` — чистый.
+Он получает на вход дату и список приёмов и возвращает сетку календаря с приёмами в ячейках.
+
+И клиенты приёмов в данном случае совершенно не важны и не попадут в БД, но требуются для того, чтобы банально создать экземпляр объекта приёма.
+Поэтому я спокойно использую фейковые объекты (один и тот же, на самом деле).
+
+==== Бонус трэк - отключение проверки внешних ключей
+
+Сам я так никогда не делал, но теоретически проблему ссылочных данных можно решить кардинально - с помощью отключения контроля целостности внешних ключей.
+
+Сейчас не получается быстро нагуглить пример того, как это делать при тестировании и, воспользовавшись форматом микропоста, я не буду его изобретать сам и описывать.
+
+Но это совершенно точно решаемая задача, при желании.
+
+=== Генерация рандомных доменных данных
+
+Стоит упомянуть, что при генерации случайных данных я стараюсь, чтоб значения попадали в область реальных значений.
+Например, время начала примера - это не случайная пара часов и минут, а время в интервале с 8 до 21 часа и минуты кратные 5.
+И код генерации таких данных хоть и является, по сути, генератором примитивных данных - я его складываю рядом с Object Mother сущности, для генерации значений атрибутов которой он используется.
+
+.Генераторы случайных данных приёма. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/appointments/AppointmentsObjectMother.kt#L140[Смотреть на GitHub].
+[source,kotlin]
+----
+object AppointmentsObjectMother {
+// ...
+}
+
+fun randomAppointmentDate(): LocalDateTime =
+    // ...
+
+fun randomAppointmentCost(): Int = 
+    // ...
+
+fun randomAppointmentDuration(): Duration =
+    // ...
+----
+
+[NOTE]
+====
+На случай если вы и правда посмотрели на GitHub-е - надо отметить, что стараться я мог бы и получше.
+Для большего реализма стоимость приёма надо сделать положительной и кратной 50 рублям.
+
+Но это лишь делает пример ещё больше приближенным к реальным проектам, не всегда совпадающим с идеалами собственных авторов:)
+====
+
+=== Генерация коллекций доменных объектов
+
+Благодаря тому, что доменные объекты генерируются случайно — их можно генерировать в любых количествах.
+
+Но сейчас это используется только в тестах просмотра списка объектов.
+
+[source,kotlin]
+----
+@Test
+fun `Clients list page should render 10 rows when enough clients exists`() {
+    // Given
+    // Дублирование этой константы в тесте - спорная техника
+    // С одной стороны - если поменять её в продовом коде - это потребует
+    // изменений и в тесте, что, может показаться снижением устойчивости теста к рефакторингу
+    // С другой стороны, изменение кол-ва записей на странице - это изменение в требованиях,
+    // и в этом случае я ожидаю, что тест будет изменён
+    val pageSize = 10
+    val therapist = TherapistClient.loginAsTheTherapist()
+    val clients = ClientsObjectMother.createClientCardDtos(pageSize + 1)
+    // Это может показаться тавтологией — повтором продовой логики в тесте
+    // но в проде этот же результат (данные отсортированы и ограничены) достигается
+    // средствами SQL, и если заменить код на явное перечисление записей,
+    // то, во-первых, это замусорит код тест кейса и, во-вторых, потребует
+    // комментария, который объяснит суть ожидаемого результата и фактически будет аналогом этого кода на естественном языке
+    val firstPage = clients.sortedBy { it.lastName.lowercase() }.take(pageSize)
+    backgrounds.clients.createClients(clients)
+
+    // When
+    val document = therapist.clients.getClientsListPage()
+
+    // Then
+    document shouldBe ClientsListPage
+    ClientsListPage.clientRows(document) shouldHaveSize pageSize
+    firstPage.forAll {
+        document shouldHave ClientsListPage.clientRow(Client(THE_THERAPIST_ID, it))
+    }
+}
+----
+
+=== Генерация сложных агрегатов
+
+Сейчас самым сложным агрегатом в TA является упражнение.
+У упражнения есть от 0 до нескольких шагов, у каждого шага есть необязательное изображение, а само изображение, из соображений производительности, вынесено в отдельный link:++{{<ref "microposts/23/11/immutable-relation-data-model-v2#_неизменяемая_er_модель">}}++[физический агрегат].
+
+И, из соображений скорости выполнения тестов, хочется генерировать изображения только в тех тестах, где они нужны.
+Для решения этой задачи я завёл фабрику изображений:
+
+.ImagesGenerationMode. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapy/exercises/ImagesGenerationMode.kt#L7[Смотреть на GitHub]
+[source,kotlin]
+----
+// Сейчас смотрю на этот код и не особо понимаю, зачем я сделал sealed интерфейс, а не fun
+sealed interface ImagesGenerationMode {
+
+    fun generateImages(steps: Int): Map<Int, StoredFile>
+
+}
+
+// тут data тоже выглядит подозрительно, но на этом настаивает IDEA
+data object AllSteps : ImagesGenerationMode {
+
+    override fun generateImages(steps: Int): Map<Int, StoredFile> =
+        (1..steps).associateWith { FilesObjectMother.randomImage() }
+
+}
+
+data object None : ImagesGenerationMode {
+
+    override fun generateImages(steps: Int): Map<Int, StoredFile> = emptyMap()
+
+}
+----
+
+[NOTE]
+====
+Сейчас я, пожалуй, переписал бы этот код так:
+[source,kotlin]
+----
+fun interface ImagesGenerationMode {
+    fun generateImages(steps: Int): Map<Int, StoredFile>
+}
+
+val allSteps = ImagesGenerationMode {
+    steps -> (1..steps).associateWith { FilesObjectMother.randomImage() }
+}
+----
+====
+
+Затем экземпляр этой фабрики передаётся в функцию генерации упражнения с None в качестве дефолта:
+
+Генерация упражнения. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapy/exercises/ExercisesObjectMother.kt#L62[Смотреть на GitHub]
+[source,kotlin]
+----
+fun randomExercise(
+    stepsCount: Int = 0,
+    imagesGenerationMode: ImagesGenerationMode = None,
+    therapistId: Long = THE_THERAPIST_ID,
+    id: Long = 0
+): Pair<Exercise, Map<Int, StoredFile>> {
+    val exercise = Exercise(
+        randomCyrillicWord(),
+        randomSentence(),
+        randomExerciseDuration(),
+        ExerciseType.entries.random(),
+        therapistId,
+        steps = exerciseSteps(stepsCount),
+        id = id
+    )
+    val images = imagesGenerationMode.generateImages(stepsCount)
+    return exercise to images
+}
+----
+
+=== Дедупликация фикстуры одной логики, доступной через разные эндпоинты
+
+Иногда бывает так, что одна и та же операция ядра "выставляется" наружу в нескольких операциях системы.
+И в этом случае в тестах этих операций можно использовать одну и ту же фикстуру.
+В TA такой операцией является https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/main/kotlin/pro/qyoga/core/therapy/therapeutic_tasks/TherapeuticTasksRepo.kt#L69[поиск терапевтической задачи по имени], который используется на странице списка терапевтических задач и в компоненте выбора терапевтической задачи на странице карточки записи в журнале.
+
+Эти две штуки покрыты тестами https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/test/kotlin/pro/qyoga/tests/cases/app/therapist/therapy/therapeutic_tasks/TherapeuticTasksPageTest.kt[TherapeuticTasksPageTest] и https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/test/kotlin/pro/qyoga/tests/cases/app/therapist/clients/journal/SearchTherapeuticTaskTest.kt[SearchTherapeuticTaskTest].
+
+И оба эти теста используют одну и ту же фикстуру и ожидаемый результат и я их вытащил в отдельный объект:
+
+.SearchTherapeuticTasksFixture. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapy/therapeutic_tasks/SearchTherapeuticTasksFixture.kt[Смотреть на GitHub]
+[source,kotlin]
+----
+object SearchTherapeuticTasksFixture {
+
+    const val searchKey = "лор"
+
+    val matchingTaskNames = listOf(
+        "лорМобилизация ПОП",
+        "Лор Снятие компрессии с ПОП",
+        "лор Коррекция кифолордотической осанки",
+        "ЙТЛоргастрита",
+        "ЙТ травмы лор медиального мениска",
+        "Коррекция С-образного сколеозаЛор",
+        "Коррекция жёсткости ГОП лор"
+    )
+
+    val notMatchingTaskNames = listOf(
+        "Коррекция протракции головы",
+        "Деротация ГОП",
+        "Терапия ГЭРБ"
+    )
+
+    fun getExpectedSearchResult(
+        allTasks: List<TherapeuticTask>,
+        searchKey: String,
+        pageSize: Int
+    ) =
+        allTasks
+            .filter { it.name.lowercase().contains(searchKey.lowercase()) }
+            .sortedWith { o1, o2 -> systemCollator.compare(o1.name, o2.name) }
+            .take(pageSize)
+}
+----
+
+=== Вставка фикстуры теста
+
+После генерации фикстурных объектов, для интеграционных тестов их необходимо вставить в БД.
+Для этого я использую бэкграунды.
+
+==== Единичный объект
+
+Проще всего выполняется вставка единичного объекта:
+
+.Генерация и вставка произвольного объекта (референсные данные). https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapy/therapeutic_tasks/SearchTherapeuticTasksFixture.kt#L6[Смотреть на GitHub]
+[source,kotlin,highlight="4,9..10,18"]
+----
+ fun `Edit of minimal appointment to full should be persistent`() {
+    // Given
+    // ...
+    val newAppointmentType = backgrounds.appointmentTypes.createAppointmentType() // <1>
+    // ...
+    val editedAppointment =
+        AppointmentsObjectMother.appointmentPatchRequest(
+            // ...
+            newAppointmentType.ref(), // <2>
+            newAppointmentType.name,
+            // ...
+        )
+
+    // Then
+    // ...
+    val persistedAppointment =
+            backgrounds.appointments.getDaySchedule(editedAppointment.dateTime.toLocalDate()).single()
+    persistedAppointment shouldMatch editedAppointment <3>
+}
+----
+
+Это тест на то, что редактирование приёма обновляет все данные приёма, включая ссылку на тип приёма.
+В данном случае для теста не важно как именно назван тип приёма, важно, что после редактирования приёма он ссылается на верный тип.
+
+Поэтому здесь в методе `createAppointmentType` выполняется генерация и вставка в БД произвольного типа приёма (*1*), затем он используется в объекте запроса на редактирования приёма (*2*), после чего в блоке верификации в методе `shouldMatch` выполняется проверка, что `persistedAppointment` ссылается на `newAppointmentType` (*3*).
+
+Следующий же тест проверяет функциональность поиска типа приёма по имени и в нём нам уже важно значение поля имени:
+
+.Генерация и вставка специфичного объекта. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapy/therapeutic_tasks/SearchTherapeuticTasksFixture.kt#L6[Смотреть на GitHub]
+[source,kotlin,highlight=5-8]
+----
+fun `AppointmentTypesComboBox should return items that contain keyword in title`() {
+    // Given
+    val searchKey = "Трен"
+    val appointmentType =
+        backgrounds.appointmentTypes.createAppointmentType(
+            AppointmentTypesObjectMother.randomAppointmentType(name = searchKey + randomCyrillicWord())
+        )
+----
+
+[NOTE]
+======
+Теоретически, тут можно было пойти обратным путём - сгенерировать произвольный тип, программно вытащить из него середину имени и выполнить поиск по этой подстроке.
+Не могу решить какой из этих вариантов лучше.
+======
+
+Реализация же метода `createAppointmentType` очевидная и тривиальная:
+
+.AppointmentTypesBackgrounds.createAppointmentType. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapy/therapeutic_tasks/SearchTherapeuticTasksFixture.kt#L6[Смотреть на GitHub]
+[source,kotlin]
+----
+fun createAppointmentType(
+    appointmentType: AppointmentType = AppointmentTypesObjectMother.randomAppointmentType()
+): AppointmentType {
+    return appointmentTypesRepo.save(appointmentType)
+}
+----
+
+[NOTE]
+======
+Сейчас я придерживаюсь позиции, что бэкграунды должны взаимодействовать с системой через контроллеры.
+Это согласуется с правилом "тестировать систему через публичное API" и снижает вероятность необходимости изменений в тестовом коде после рефакторинга продового кода и повышает вероятность выявления регрессии, если в результате рефакторинга сервиса сломается контроллер.
+======
+
+==== Дерево произвольных объектов
+
+В разделе <<Внедрённые идентификаторы,"Внедрённые идентификаторы">> я уже приводил пример использования генерации произвольного дерева объектов (приёма в данном случае), теперь посмотрим как это реализованно.
+
+У приёма есть три различных по характеру ссылки:
+
+. на клиента - обязательная, целевой клиент должен существовать на момент создания приёма;
+. на тип - обязательная, целевой тип можно создать одновременно с приёмом;
+. на задачу - необязательная, но если указана, то должна существовать, на момент создания приёма.
+
+И двигаясь по пути наименьшего сопротивления, при создании произвольного приёма я:
+
+. использую бэкграунд для генерации клиента;
+. использую генератор случайных данных для генерации имени типа приёма, который будет создан одновременно с приёмом;
+. не указываю задачу.
+
+В коде это выглядит так:
+
+.Генерация приёма. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapy/therapeutic_tasks/SearchTherapeuticTasksFixture.kt#L6[Смотреть на GitHub]
+[source,kotlin]
+----
+fun create(
+    dateTime: LocalDateTime = randomAppointmentDate(),
+    timeZone: ZoneId = randomTimeZone(),
+    duration: Duration = randomAppointmentDuration(),
+    place: String? = null,
+    cost: Int? = null,
+    payed: Boolean? = null,
+    comment: String? = null,
+    therapist: TherapistRef = THE_THERAPIST_REF,
+    therapeuticTaskRef: TherapeuticTaskRef? = null
+): Appointment {
+    val clientRef = clientsBackgrounds.createClients(1, therapist.id!!).single().ref()
+    val appointment = createAppointment(
+        therapist,
+        AppointmentsObjectMother.randomEditAppointmentRequest(
+            client = clientRef,
+            therapeuticTask = therapeuticTaskRef,
+            dateTime = dateTime,
+            timeZone = timeZone,
+            duration = duration,
+            place = place,
+            cost = cost,
+            payed = payed,
+            comment = comment
+        )
+    )
+    return appointmentsRepo.findById(appointment.id, Appointment.Fetch.editableRefs)!!
+}
+----
+
+==== Коллекции объектов
+
+Периодически тестам требуется вставка нескольких объектов одного типа.
+Притом бывает так, что тесту важно, контролировать значения свойств этих объектов, а бывает, что нет — нужна просто безликая массовка.
+
+Решаются эти задачи тривиально - коллекция специфичных объектов вставляется простой делегацией в метод создания в продовый код, а массовка генерируется посредством генерации N случайных объектов и делегацией её вставки в метод вставки коллекции специфичных объектов:
+
+.Вставка коллекций клиентов. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapy/therapeutic_tasks/SearchTherapeuticTasksFixture.kt#L6[Смотреть на GitHub]
+[source,kotlin]
+----
+fun createClients(clients: List<ClientCardDto>, therapistId: Long = THE_THERAPIST_ID): Iterable<Client> {
+    return clientsRepo.saveAll(clients.map { ClientsObjectMother.createClient(therapistId, it) })
+}
+
+fun createClients(count: Int, therapistId: Long = THE_THERAPIST_ID): Iterable<Client> {
+    return createClients(ClientsObjectMother.createClientCardDtos(count), therapistId)
+}
+----
+
+[NOTE]
+====
+Тут у вас может возникнуть вопрос "А если у меня нет продового кода для вставки?".
+Если его *ещё* нет (например, вы начинаете реализацию новой фичи с теста метода чтения) - напишите его.
+Если его *в принципе нет* - тогда у меня встречный вопрос - "А как эти объекты появляются в системе на проде?".
+Единственный приходящий мне в голову ответ "админы/внешняя система INSERT-ами вставляют" - в этом случае сделайте так же в бэкграунде.
+====
+
+==== Коллекция уникальных объектов
+
+Иногда "массовка" должна быть не совсем безликой - вам всё ещё не важны конкретные значения полей объектов, но важны свойства распределения значений этих полей в коллекции.
+Самым частым примером является уникальность какого-то поля в БД и, как следствие, уникальность его значений в выборке.
+
+Очень часто (например, в случае телефона клиента) это свойство достаточно надёжно обеспечивается просто случайной генерацией значений - в TA (за несколько тысяч запусков тестов, я думаю) я ещё ни разу не сталкивался с тем, чтобы тест упал из-за генерации клиентов с одинаковыми телефонами.
+
+Однако, область (разумных) значений поля бывает не такой широкой и коллизии уникальных полей могут стать проблемой.
+В ТА таким полем стала дата записи журнала, которая, по требованиям, должна быть уникальной в рамках одного клиента.
+
+Решил я эту проблему так:
+
+.Генерация коллекции записей журнала с уникальными датами. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapy/therapeutic_tasks/SearchTherapeuticTasksFixture.kt#L6[Смотреть на GitHub]
+[source,kotlin]
+----
+fun createEntries(clientId: Long, therapist: QyogaUserDetails, count: Int): List<JournalEntry> {
+    val uniqueDates = generateSequence { randomRecentLocalDate() }
+        .distinct()
+        .asIterable()
+    return (1..count).zip(uniqueDates).map { (_, date) ->
+        createJournalEntry(clientId, JournalEntriesObjectMother.journalEntry(date = date), therapist)
+    }
+}
+----
+
+[NOTE]
+====
+У этой реализации есть пара проблем.
+
+Во-первых, если `count` окажется больше длины периода `recent` (365, в данном случае), то этот метод зациклится навечно.
+
+Во-вторых, реализация сама по себе у меня каким-то образом получилась замороченнее чем могла бы быть, и сейчас я её переписал так:
+
+[source,kotlin]
+----
+return generateSequence { randomRecentLocalDate() }
+    .distinct()
+    .take(count)
+    .map { date -> createJournalEntry(clientId, journalEntry(date = date), therapist) }
+    .toList()
+----
+====
+
+== Заключение
+
+Фух, это было долго.
+Спасибо, что вы ещё со мной.
+
+Суммируя всё вышесказанное:
+
+. Подготовка БД для тестов состоит из двух больших частей - формирование объектов и их вставка в БД;
+. За формирование объектов отвечают Object Mother-ы, за их вставку в БД - Background-ы;
+. Объекты я формирую преимущественно случайные, задавая определённые значения только тем атрибутам, которые важны для данного теста;
+. Формирование ссылочных данных — объектов, у которых нам важны не значения атрибутов, а их идентификаторов — выполняется совместной работой Object Mother-а (генерация произвольного объекта) и Background-а (его вставка в БД);
+. Помимо этого для формирования ссылочных данных я использую ещё две стратегии:
+.. Разделяемая фикстура - вставляется в БД SQL-скриптом перед каждым тестом;
+.. Фейковые объекты - используется только в том случае, если ссылающийся объект не дойдёт до БД - в юнит-тестах чистой логики или в интеграционных тестах негативных сценариев.
+
+В следующем посте мы ещё разберём подготовку нескольких видов тестовых дублей и наконец можно будет перейти к испытаниям.

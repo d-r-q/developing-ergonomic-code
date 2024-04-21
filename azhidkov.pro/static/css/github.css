@@ -206,3 +206,11 @@
 .highlight {
   background-color: #f8f8f8;
 }
+
+pre.rouge .hll {
+  background-color: #fffadc;
+  display: block;
+}
+pre.rouge .hll * {
+  background-color: initial;
+}
