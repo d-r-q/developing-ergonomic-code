@@ -43,6 +43,9 @@
  8
  9
 10
+11
+12
+13
 </pre></td><td class=code><pre><span class=kd>public</span> <span class=n>record</span> <span class=nf>MultiLangValue</span><span class=o>(</span><span class=nc>String</span> <span class=n>ru</span><span class=o>,</span> <span class=nc>String</span> <span class=n>en</span><span class=o>)</span> <span class=o>{</span>
 <span class=o>}</span>
 
@@ -50,9 +53,12 @@
 <span class=o>}</span>
 
 <span class=kd>public</span> <span class=nd>@NotNull</span> <span class=nc>String</span> <span class=nf>getRuValue</span><span class=o>(</span><span class=nd>@Nullable</span> <span class=nc>ValueHolder</span> <span class=n>valueHolder</span><span class=o>)</span> <span class=o>{</span>
-    <span class=k>return</span> <span class=nc>Optional</span><span class=o>.</span><span class=na>ofNullable</span><span class=o>(</span><span class=n>valueHolder</span><span class=o>).</span><span class=na>map</span><span class=o>(</span><span class=nl>ValueHolder:</span><span class=o>:</span><span class=n>value</span><span class=o>).</span><span class=na>map</span><span class=o>(</span><span class=nl>MultiLangValue:</span><span class=o>:</span><span class=n>ru</span><span class=o>).</span><span class=na>orElse</span><span class=o>(</span><span class=s>&#34;&#34;</span><span class=o>);</span>
+    <span class=k>return</span> <span class=nc>Optional</span><span class=o>.</span><span class=na>ofNullable</span><span class=o>(</span><span class=n>valueHolder</span><span class=o>)</span>
+        <span class=o>.</span><span class=na>flatMap</span><span class=o>(</span><span class=n>holder</span> <span class=o>-&gt;</span> <span class=nc>Optional</span><span class=o>.</span><span class=na>ofNullable</span><span class=o>(</span><span class=n>holder</span><span class=o>.</span><span class=na>value</span><span class=o>()))</span>
+        <span class=o>.</span><span class=na>map</span><span class=o>(</span><span class=nl>MultiLangValue:</span><span class=o>:</span><span class=n>ru</span><span class=o>)</span>
+        <span class=o>.</span><span class=na>orElse</span><span class=o>(</span><span class=s>&#34;&#34;</span><span class=o>);</span>
 <span class=o>}</span>
-</pre></td></tr></tbody></table></code></pre></div></td></tr></tbody></table></div><section class="doc-section level-2"><h3 id=_упражнение_2_группировка_элементов_списка_по_ключу><a class=link href=#_упражнение_2_группировка_элементов_списка_по_ключу>Упражнение №2 - Группировка элементов списка по ключу</a></h3><div class="table-block layout"><table class="frame-all grid-all stretch"><col style=width:50%><col style=width:50%><thead><tr><th class="halign-left valign-top">Kotlin</th><th class="halign-left valign-top">Java</th></tr></thead><tbody><tr><td class="halign-left valign-top"><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><table class=linenotable><tbody><tr><td class="linenos gl"><pre class=lineno>1
+</pre></td></tr></tbody></table></code></pre></div></td></tr></tbody></table></div><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Я выражаю благодарность <a href=https://t.me/ProfessorNik>Николаю Балясникову</a> за исправление ошибки в Java-версии с Optional.</p></aside><section class="doc-section level-2"><h3 id=_упражнение_2_группировка_элементов_списка_по_ключу><a class=link href=#_упражнение_2_группировка_элементов_списка_по_ключу>Упражнение №2 - Группировка элементов списка по ключу</a></h3><div class="table-block layout"><table class="frame-all grid-all stretch"><col style=width:50%><col style=width:50%><thead><tr><th class="halign-left valign-top">Kotlin</th><th class="halign-left valign-top">Java</th></tr></thead><tbody><tr><td class="halign-left valign-top"><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><table class=linenotable><tbody><tr><td class="linenos gl"><pre class=lineno>1
 2
 3
 </pre></td><td class=code><pre><span class=k>fun</span> <span class=nf>groupBy</span><span class=p>(</span><span class=n>values</span><span class=p>:</span> <span class=nc>List</span><span class=p>&lt;</span><span class=nc>ValueHolder</span><span class=p>&gt;):</span> <span class=nc>Map</span><span class=p>&lt;</span><span class=nc>String</span><span class=p>,</span> <span class=nc>List</span><span class=p>&lt;</span><span class=nc>ValueHolder</span><span class=p>&gt;&gt;</span> <span class=p>{</span>
@@ -136,7 +142,7 @@
     <span class=k>if</span> <span class=o>(!(</span><span class=n>value</span> <span class=k>instanceof</span> <span class=nc>MultiLangValue3</span><span class=o>))</span> <span class=o>{</span>
         <span class=k>return</span> <span class=kc>null</span><span class=o>;</span>
     <span class=o>}</span>
-    <span class=k>return</span> <span class=o>((</span><span class=nc>MultiLangValue3</span><span class=o>)</span> <span class=n>value</span><span class=o>).</span><span class=na>en</span><span class=o>;</span>
+    <span class=k>return</span> <span class=n>value</span><span class=o>.</span><span class=na>en</span><span class=o>;</span>
 <span class=o>}</span>
 </pre></td></tr></tbody></table></code></pre></div></td></tr><tr><td class="halign-left valign-top"></td><td class="halign-left valign-top"><div class=listing-block><pre class="rouge highlight"><code data-lang=java><table class=linenotable><tbody><tr><td class="linenos gl"><pre class=lineno> 1
  2
@@ -162,8 +168,6 @@
 22
 23
 24
-25
-26
 </pre></td><td class=code><pre><span class=kd>public</span> <span class=kd>interface</span> <span class=nc>Value</span> <span class=o>{</span>
     <span class=nc>String</span> <span class=nf>getValue</span><span class=o>();</span>
 <span class=o>}</span>
@@ -184,13 +188,11 @@
 
 <span class=kd>public</span> <span class=kd>static</span> <span class=nc>String</span> <span class=nf>getIfInstanceOfSwitch</span><span class=o>(</span><span class=nc>Value</span> <span class=n>value</span><span class=o>)</span> <span class=o>{</span>
     <span class=k>return</span> <span class=nf>switch</span> <span class=o>(</span><span class=n>value</span><span class=o>)</span> <span class=o>{</span>
-        <span class=k>case</span> <span class=nc>MultiLangValue3</span> <span class=nl>multiLangValue3:</span>
-            <span class=n>yield</span> <span class=n>multiLangValue3</span><span class=o>.</span><span class=na>en</span><span class=o>;</span>
-        <span class=k>default</span><span class=o>:</span>
-            <span class=n>yield</span> <span class=kc>null</span><span class=o>;</span>
+        <span class=k>case</span> <span class=nf>MultiLangValue</span><span class=o>(</span><span class=kt>var</span> <span class=n>_</span><span class=o>,</span> <span class=kt>var</span> <span class=n>en</span><span class=o>)</span> <span class=o>-&gt;</span> <span class=n>en</span><span class=o>;</span>
+        <span class=k>default</span> <span class=o>-&gt;</span> <span class=kc>null</span><span class=o>;</span>
     <span class=o>};</span>
 <span class=o>}</span>
-</pre></td></tr></tbody></table></code></pre></div></td></tr></tbody></table></div></section><section class="doc-section level-2"><h3 id=_упражнение_5_маппинг_списков><a class=link href=#_упражнение_5_маппинг_списков>Упражнение №5 - маппинг списков</a></h3><p>Маппинг списков в Java уже почти догнал Kotlin, но всё равно чуть более многословный.</p><div class="table-block layout"><table class="frame-all grid-all stretch"><col style=width:50%><col style=width:50%><thead><tr><th class="halign-left valign-top">Kotlin</th><th class="halign-left valign-top">Java</th></tr></thead><tbody><tr><td class="halign-left valign-top"><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><table class=linenotable><tbody><tr><td class="linenos gl"><pre class=lineno>1
+</pre></td></tr></tbody></table></code></pre></div></td></tr></tbody></table></div><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Я выражаю благодарность <a href=https://t.me/ProfessorNik>Николаю Балясникову</a> за предложение более лаконичной Java-версии со switch-ем.</p></aside></section><section class="doc-section level-2"><h3 id=_упражнение_5_маппинг_списков><a class=link href=#_упражнение_5_маппинг_списков>Упражнение №5 - маппинг списков</a></h3><p>Маппинг списков в Java уже почти догнал Kotlin, но всё равно чуть более многословный.</p><div class="table-block layout"><table class="frame-all grid-all stretch"><col style=width:50%><col style=width:50%><thead><tr><th class="halign-left valign-top">Kotlin</th><th class="halign-left valign-top">Java</th></tr></thead><tbody><tr><td class="halign-left valign-top"><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><table class=linenotable><tbody><tr><td class="linenos gl"><pre class=lineno>1
 2
 3
 4
