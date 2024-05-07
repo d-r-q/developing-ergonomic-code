@@ -67,10 +67,18 @@ public record ValueHolder(@Nullable MultiLangValue value) {
 }
 
 public @NotNull String getRuValue(@Nullable ValueHolder valueHolder) {
-    return Optional.ofNullable(valueHolder).map(ValueHolder::value).map(MultiLangValue::ru).orElse("");
+    return Optional.ofNullable(valueHolder)
+        .flatMap(holder -> Optional.ofNullable(holder.value()))
+        .map(MultiLangValue::ru)
+        .orElse("");
 }
 ----
 |===
+
+[NOTE]
+====
+Я выражаю благодарность https://t.me/ProfessorNik[Николаю Балясникову] за исправление ошибки в Java-версии с Optional.
+====
 
 === Упражнение №2 - Группировка элементов списка по ключу
 
@@ -161,7 +169,7 @@ public static String getIfInstanceOf(Value value) {
     if (!(value instanceof MultiLangValue3)) {
         return null;
     }
-    return ((MultiLangValue3) value).en;
+    return value.en;
 }
 ----
 |
@@ -188,14 +196,17 @@ public record MultiLangValue3(String ru, String en) implements Value {
 
 public static String getIfInstanceOfSwitch(Value value) {
     return switch (value) {
-        case MultiLangValue3 multiLangValue3:
-            yield multiLangValue3.en;
-        default:
-            yield null;
+        case MultiLangValue(var _, var en) -> en;
+        default -> null;
     };
 }
 ----
 |===
+
+[NOTE]
+====
+Я выражаю благодарность https://t.me/ProfessorNik[Николаю Балясникову] за предложение более лаконичной Java-версии со switch-ем.
+====
 
 === Упражнение №5 - маппинг списков
 
