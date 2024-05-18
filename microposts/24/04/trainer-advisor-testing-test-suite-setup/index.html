@@ -249,4 +249,188 @@
     <span class=c1>// ...</span>
 
 <span class=p>}</span></code></pre></figure><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Тут стоит пояснить, что у меня для каждого бакета (сейчас - exercise.steps и client.files), создаётся по своему FilesStorage-бину - это сделано в рамках принципа, что за каждый кусочек состояния отвечает один объект внутри одного компонента.</p></aside><hr><p>Итого перед началом выполнения первого метода тест кейса мы имеем:</p><div class="olist arabic"><ol class=arabic><li>Запущенные контейнеры Postgres и Minio, состояние которых сброшено до исходного (как минимум перед запуском текущего набора тестов);</li><li>Запущенное приложение, в конфигурации, максимально приближенной к боевой;</li><li>Заранее детерминированное и всегда идентичное исходное наполнение БД.</li></ol></div><p>Теперь остался последний этап сетапа фикстуры — создание и, при необходимости, вставка данных, специфичных для теста.
-Его я рассмотрю в следующем посте.</p></section></section></article></section></div></main><script src=/js/app.js></script></body></html>
+Его я рассмотрю в следующем посте.</p></section></section><section class="doc-section level-1"><h2 id=_бонус_трэк><a class=link href=#_бонус_трэк>Бонус-трэк</a></h2><p>В Trainer Advisor всей это инфраструктуры (пока?) нет, но 2024 году пост об интеграционном тестировании, без описания тестирования интеграций с внешними сервисами и брокерами сообщений нельзя считать полноценным.
+Поэтому в качестве бонус-трека, я расскажу о том, как мы тестировали такие интеграции в <a href=https://azhidkov.pro/ergo-approach/landing/##_проект_э>Проекте Э</a>.</p><section class="doc-section level-2"><h3 id=_запуск_wiremock><a class=link href=#_запуск_wiremock>Запуск WireMock</a></h3><p>В Проекте Э, как и всех других своих проектах за последние четыре года, для тестирования кода, работающего с внешними системами по HTTP, я использовал <a href=https://wiremock.org/>WireMock</a>.</p><p>C JUnit 5 он интегрируется достаточно просто.</p><p>В первую очередь, необходимо настроить sut на обращение к <code>localhost:&lt;wireMockPort></code>.</p><p>В Spring Boot это можно сделать с помощью <code>application-test.yaml</code>-файла - файла конфигурации, который будет загружен при запуске приложения с профилем test и переопределит настройки из основного <code>application.yaml</code>:</p><figure class=listing-block><figcaption>application-test.yaml</figcaption><pre class="rouge highlight"><code data-lang=yaml><span class=na>smtp</span><span class=pi>:</span>
+  <span class=na>base-url</span><span class=pi>:</span> <span class=s>http://localhost:8081</span>
+  <span class=na>from</span><span class=pi>:</span> <span class=s>no-reply@project-e.com</span>
+  <span class=na>api-key</span><span class=pi>:</span> <span class=s>api-key</span></code></pre></figure><p>А затем, с помощью стандартного расширения для JUnit надо настроить запуск WireMock-сервера на том же порту, что прописан в тестовой конфигурации:</p><figure class=listing-block><figcaption>Запуск WireMock-сервера</figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@WireMockTest</span><span class=p>(</span><span class=n>httpPort</span> <span class=p>=</span> <span class=mi>8081</span><span class=p>)</span>
+<span class=nd>@ActiveProfiles</span><span class=p>(</span><span class=s>&#34;test&#34;</span><span class=p>)</span>
+<span class=kd>class</span> <span class=nc>SmtpBzTest</span> <span class=p>{</span>
+    <span class=c1>// ...</span>
+<span class=p>}</span></code></pre></figure><p>После чего, к методам тест-кейсов можно будет добавить параметр типа <code>WireMockRuntimeInfo</code> и использовать его для сетапа моков запросов:</p><figure class=listing-block><figcaption>Передача WireMockRuntimeInfo в метод тест-кейса</figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@Test</span>
+<span class=k>fun</span> <span class=nf>`EmailSender</span> <span class=n>should</span> <span class=n>send</span> <span class=n>correct</span> <span class=n>http</span> <span class=n>request</span> <span class=n>to</span> <span class=nc>SmtpBz`</span><span class=p>(</span><span class=n>wm</span><span class=p>:</span> <span class=nc>WireMockRuntimeInfo</span><span class=p>)</span> <span class=p>{</span>
+    <span class=c1>// Given</span>
+    <span class=n>wm</span><span class=p>.</span><span class=nf>register</span><span class=p>(</span><span class=nc>SMTPBZ_POST_EMAIL_URL</span><span class=p>,</span> <span class=nc>HttpStatus</span><span class=p>.</span><span class=nc>OK</span><span class=p>)</span>
+    <span class=c1>// ...</span>
+<span class=p>}</span></code></pre></figure><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Тестов с WireMock-ом у нас было на порядок меньше, чем юнит-тестов и тестов с БД, поэтому им я уделил наименьшее внимание.
+Поэтому, в частности, я сейчас не могу сказать, будет ли переиспользован сервер WireMock-а с таким подходом и какой оверхэд это даст.</p></aside></section><section class="doc-section level-2"><h3 id=_запуск_rabbitmq_для_тестов><a class=link href=#_запуск_rabbitmq_для_тестов>Запуск RabbitMQ для тестов</a></h3><p>В Проекте Э по историческим причинам значительная часть общения внутри приложения шла через RabbitMQ.
+Соответственно, многим тестам для работы нужен Кролик и он запускается практически так же, как и Postgres в Trainer Advisor:</p><figure class=listing-block><figcaption>Запуск контейнера RabbitMQ в тестах Проекта Э</figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>val</span> <span class=py>rabbitMqContainer</span> <span class=k>by</span> <span class=nf>lazy</span> <span class=p>{</span>
+    <span class=nf>with</span><span class=p>(</span><span class=nc>RabbitMQContainer</span><span class=p>(</span><span class=s>&#34;rabbitmq:3-management-alpine&#34;</span><span class=p>))</span> <span class=p>{</span>
+        <span class=nf>withAdminPassword</span><span class=p>(</span><span class=s>&#34;password&#34;</span><span class=p>)</span>
+        <span class=nf>withExposedPorts</span><span class=p>(</span><span class=mi>5672</span><span class=p>)</span>
+        <span class=nf>withReuse</span><span class=p>(</span><span class=n>reuse</span><span class=p>)</span>
+        <span class=nf>withEnv</span><span class=p>(</span>
+            <span class=nf>mapOf</span><span class=p>(</span>
+                <span class=c1>// Это не получается задать через АПИ</span>
+                <span class=s>&#34;RABBITMQ_DEFAULT_USER&#34;</span> <span class=n>to</span> <span class=s>&#34;eventbus&#34;</span><span class=p>,</span>
+                <span class=s>&#34;RABBITMQ_DEFAULT_VHOST&#34;</span> <span class=n>to</span> <span class=s>&#34;eventbus&#34;</span><span class=p>,</span>
+            <span class=p>)</span>
+        <span class=p>)</span>
+    <span class=p>}</span>
+    <span class=p>.</span><span class=nf>apply</span> <span class=p>{</span> <span class=nf>start</span><span class=p>()</span> <span class=p>}</span>
+<span class=p>}</span></code></pre></figure><p>Тут контейнер создаётся не на RAM-диске.
+Сейчас наверняка не помню - было ли это осознанное решение, или контейнер сетапил юниор в мыле старта реинжиниринга и так и осталось.</p><p>Далее используется Spring Context Initializer, который прокидывает параметры подключения (в первую очередь - случайный порт) в контекст:</p><figure class=listing-block><figcaption>RabbitMQ Spring Context Initializer</figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>TestContainerMqContextInitializer</span> <span class=p>:</span> <span class=nc>ApplicationContextInitializer</span><span class=p>&lt;</span><span class=nc>ConfigurableApplicationContext</span><span class=p>&gt;</span> <span class=p>{</span>
+
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>initialize</span><span class=p>(</span><span class=n>applicationContext</span><span class=p>:</span> <span class=nc>ConfigurableApplicationContext</span><span class=p>)</span> <span class=p>{</span>
+        <span class=n>applicationContext</span><span class=p>.</span><span class=n>environment</span><span class=p>.</span><span class=n>propertySources</span><span class=p>.</span><span class=nf>addFirst</span><span class=p>(</span>
+            <span class=nc>MapPropertySource</span><span class=p>(</span>
+                <span class=s>&#34;Integration rabbit mq test properties&#34;</span><span class=p>,</span>
+                <span class=nf>mapOf</span><span class=p>(</span>
+                    <span class=s>&#34;spring.rabbitmq.port&#34;</span> <span class=n>to</span> <span class=n>rabbitMqContainer</span><span class=p>.</span><span class=nf>getMappedPort</span><span class=p>(</span><span class=mi>5672</span><span class=p>),</span>
+                    <span class=s>&#34;spring.rabbitmq.host&#34;</span> <span class=n>to</span> <span class=n>rabbitMqContainer</span><span class=p>.</span><span class=n>host</span><span class=p>,</span>
+                    <span class=s>&#34;spring.rabbitmq.password&#34;</span> <span class=n>to</span> <span class=s>&#34;password&#34;</span><span class=p>,</span>
+                    <span class=s>&#34;spring.rabbitmq.virtual-host&#34;</span> <span class=n>to</span> <span class=s>&#34;eventbus&#34;</span><span class=p>,</span>
+                    <span class=s>&#34;spring.rabbitmq.username&#34;</span> <span class=n>to</span> <span class=s>&#34;eventbus&#34;</span><span class=p>,</span>
+                <span class=p>)</span>
+            <span class=p>)</span>
+        <span class=p>)</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></figure><p>При этом Кролик будет запущен при первом обращении к <code>rabbitMqContainer</code>.</p><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Параметры прокидываются через ApplicationContextInitializer, а не через @DynamicPropertySource потому, что второй вариант ведёт к запуску контекста для каждого тест-кейса, а это ведёт к медленным тестам.</p></aside><p>Далее, этот инициалайзер прописывается в базовом классе тестов:</p><figure class=listing-block><figcaption>Настройка базового класса тестов</figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@ContextConfiguration</span><span class=p>(</span>
+    <span class=n>classes</span> <span class=p>=</span> <span class=p>[</span><span class=nc>ProjectEApp</span><span class=o>::</span><span class=k>class</span><span class=p>,</span> <span class=cm>/* ... */</span><span class=p>],</span>
+    <span class=n>initializers</span> <span class=p>=</span> <span class=p>[</span><span class=nc>TestContainerDbContextInitializer</span><span class=o>::</span><span class=k>class</span><span class=p>,</span> <span class=nc>TestContainerMqContextInitializer</span><span class=o>::</span><span class=k>class</span><span class=p>]</span>
+<span class=p>)</span>
+<span class=nd>@SpringBootTest</span><span class=p>(</span>
+    <span class=n>webEnvironment</span> <span class=p>=</span> <span class=nc>SpringBootTest</span><span class=p>.</span><span class=nc>WebEnvironment</span><span class=p>.</span><span class=nc>RANDOM_PORT</span>
+<span class=p>)</span>
+<span class=kd>class</span> <span class=nc>ProjectEBaseTest</span><span class=p>(</span><span class=cm>/* ... */) { /* ... */</span> <span class=p>}</span></code></pre></figure><p>После чего тесты, которым нужен Кролик, наследуются от него, регистрируют своего слушателя и через него смотрят, что SUT отправил то, что надо - подробнее об этом в следующем посте.</p></section><section class="doc-section level-2"><h3 id=_запуск_kafka_для_тестов><a class=link href=#_запуск_kafka_для_тестов>Запуск Kafka для тестов</a></h3><p>Фичу, которая включала отправку данных в Кафку внешней системы, делал юниор и под давлением сроков, поэтому в тестировании этой фичи есть нюанс: в отличие от тестов с Кроликом, тестовый слушатель сделан Spring Bean-ом и, соответственно, один общий на все тесты.</p><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Как показывает практика тестов с Кроликом - это приводит к сложно диагностируемым и решаемым падениям тестов из-за общего состояния - именно поэтому с Кроликом я перешёл на вариант ручного создания слушателя каждым тестом.</p><p>Но в данном случае это не так критично, так как фича реализована в отдельном небольшом сервисе, в котором на слушателя завязано четыре теста.</p></aside><p>Сама Кафка запускается в контейнере практически так же, как и Кролик:</p><figure class=listing-block><figcaption>Запуск Kafka в тестах в Проекте Э</figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>val</span> <span class=py>kafkaContainer</span> <span class=k>by</span> <span class=nf>lazy</span> <span class=p>{</span>
+    <span class=nc>KafkaContainer</span><span class=p>(</span><span class=nc>DockerImageName</span><span class=p>.</span><span class=nf>parse</span><span class=p>(</span><span class=s>&#34;confluentinc/cp-kafka:6.2.1&#34;</span><span class=p>))</span>
+        <span class=p>.</span><span class=nf>apply</span> <span class=p>{</span>
+            <span class=nf>withReuse</span><span class=p>(</span><span class=k>true</span><span class=p>)</span>
+            <span class=nf>start</span><span class=p>()</span>
+        <span class=p>}</span>
+<span class=p>}</span></code></pre></figure><p>Далее в дело также вступает Context Initializer:</p><figure class=listing-block><figcaption>Kafka Spring Context Initializer</figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>TestContainerKafkaContextInitializer</span> <span class=p>:</span> <span class=nc>ApplicationContextInitializer</span><span class=p>&lt;</span><span class=nc>ConfigurableApplicationContext</span><span class=p>&gt;</span> <span class=p>{</span>
+
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>initialize</span><span class=p>(</span><span class=n>applicationContext</span><span class=p>:</span> <span class=nc>ConfigurableApplicationContext</span><span class=p>)</span> <span class=p>{</span>
+        <span class=n>applicationContext</span><span class=p>.</span><span class=n>environment</span><span class=p>.</span><span class=n>propertySources</span><span class=p>.</span><span class=nf>addFirst</span><span class=p>(</span>
+            <span class=nc>MapPropertySource</span><span class=p>(</span>
+                <span class=s>&#34;Integration kafka test properties&#34;</span><span class=p>,</span>
+                <span class=nf>mapOf</span><span class=p>(</span>
+                    <span class=s>&#34;external-system.client.kafka.broker&#34;</span> <span class=n>to</span> <span class=n>kafkaContainer</span><span class=p>.</span><span class=n>bootstrapServers</span><span class=p>.</span><span class=nf>substringAfterLast</span><span class=p>(</span><span class=s>&#34;//&#34;</span><span class=p>),</span>
+                <span class=p>)</span>
+            <span class=p>)</span>
+        <span class=p>)</span>
+        <span class=nc>AdminClient</span><span class=p>.</span><span class=nf>create</span><span class=p>(</span><span class=nf>mapOf</span><span class=p>(</span><span class=nc>AdminClientConfig</span><span class=p>.</span><span class=nc>BOOTSTRAP_SERVERS_CONFIG</span> <span class=n>to</span> <span class=n>kafkaContainer</span><span class=p>.</span><span class=n>bootstrapServers</span><span class=p>)).</span><span class=nf>use</span> <span class=p>{</span>
+            <span class=n>it</span><span class=p>.</span><span class=nf>deleteTopics</span><span class=p>(</span><span class=nf>listOf</span><span class=p>(</span><span class=n>applicationContext</span><span class=p>.</span><span class=n>environment</span><span class=p>.</span><span class=nf>getProperty</span><span class=p>(</span><span class=s>&#34;external-system.client.kafka.topic&#34;</span><span class=p>)))</span>
+        <span class=p>}</span>
+    <span class=p>}</span>
+
+<span class=p>}</span></code></pre></figure><p>Здесь, помимо проброса параметров подключения к Кафке, перед каждым запуском набора тестов удаляется единственный топик, в который отправляются сообщения для сброса состояния.</p><p>А вот дальше начинаются отличия от сетапа тестов с Кроликом.</p><p>Во-первых, в тестах определяется общий бин слушателя:</p><figure class=listing-block><figcaption>TestKafkaListener</figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@Component</span>
+<span class=kd>class</span> <span class=nc>TestKafkaListener</span><span class=p>(</span>
+    <span class=k>private</span> <span class=kd>val</span> <span class=py>objectMapper</span><span class=p>:</span> <span class=nc>ObjectMapper</span>
+<span class=p>)</span> <span class=p>{</span>
+
+    <span class=k>private</span> <span class=kd>val</span> <span class=py>log</span> <span class=p>=</span> <span class=nc>LoggerFactory</span><span class=p>.</span><span class=nf>getLogger</span><span class=p>(</span><span class=n>javaClass</span><span class=p>)</span>
+
+    <span class=k>private</span> <span class=kd>val</span> <span class=py>events</span> <span class=p>=</span> <span class=nc>ConcurrentLinkedQueue</span><span class=p>&lt;</span><span class=nc>ExternalSystemEventMessage</span><span class=p>&gt;()</span>
+
+    <span class=nd>@KafkaListener</span><span class=p>(</span><span class=n>topics</span> <span class=p>=</span> <span class=p>[</span><span class=s>&#34;\${external-system.client.kafka.topic}&#34;</span><span class=p>])</span>
+    <span class=k>fun</span> <span class=nf>externalSystemEvents</span><span class=p>(</span><span class=nd>@Payload</span> <span class=n>message</span><span class=p>:</span> <span class=nc>String</span><span class=p>)</span> <span class=p>{</span>
+        <span class=nf>assertThat</span><span class=p>(</span><span class=n>message</span><span class=p>,</span> <span class=nf>matchesJsonSchemaInClasspath</span><span class=p>(</span><span class=s>&#34;kafka-message-scheme.json&#34;</span><span class=p>))</span>
+
+        <span class=kd>val</span> <span class=py>event</span> <span class=p>=</span> <span class=n>objectMapper</span><span class=p>.</span><span class=nf>readValue</span><span class=p>(</span><span class=n>message</span><span class=p>,</span> <span class=nc>ExternalSystemEventMessage</span><span class=o>::</span><span class=k>class</span><span class=p>.</span><span class=n>java</span><span class=p>)</span>
+        <span class=n>log</span><span class=p>.</span><span class=nf>info</span><span class=p>(</span><span class=s>&#34;Consuming {}&#34;</span><span class=p>,</span> <span class=n>event</span><span class=p>)</span>
+        <span class=n>events</span><span class=p>.</span><span class=nf>add</span><span class=p>(</span><span class=n>event</span><span class=p>)</span>
+    <span class=p>}</span>
+
+    <span class=k>fun</span> <span class=nf>getEvents</span><span class=p>()</span> <span class=p>=</span> <span class=n>events</span><span class=p>.</span><span class=nf>toList</span><span class=p>()</span>
+
+    <span class=k>fun</span> <span class=nf>clearEvents</span><span class=p>()</span> <span class=p>{</span>
+        <span class=n>log</span><span class=p>.</span><span class=nf>info</span><span class=p>(</span><span class=s>&#34;Clearing events&#34;</span><span class=p>)</span>
+        <span class=n>events</span><span class=p>.</span><span class=nf>clear</span><span class=p>()</span>
+    <span class=p>}</span>
+
+<span class=p>}</span></code></pre></figure><p>Во-вторых, определяется конфиг, который добавляет в контекст Кафковую инфраструктуру и этот слушатель:</p><figure class=listing-block><figcaption>KafkaTestConfig</figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@EnableKafka</span>
+<span class=nd>@ComponentScan</span>
+<span class=kd>class</span> <span class=nc>KafkaTestConfig</span><span class=p>(</span>
+    <span class=k>private</span> <span class=kd>val</span> <span class=py>kafkaClientProps</span><span class=p>:</span> <span class=nc>ExternalSystemKafkaClientProps</span>
+<span class=p>)</span> <span class=p>{</span>
+    <span class=nd>@Bean</span>
+    <span class=k>fun</span> <span class=nf>kafkaListenerContainerFactory</span><span class=p>(</span>
+        <span class=n>consumerFactory</span><span class=p>:</span> <span class=nc>ConsumerFactory</span><span class=p>&lt;</span><span class=nc>String</span><span class=p>,</span> <span class=nc>String</span><span class=p>&gt;</span>
+    <span class=p>):</span> <span class=nc>KafkaListenerContainerFactory</span><span class=p>&lt;</span><span class=nc>ConcurrentMessageListenerContainer</span><span class=p>&lt;</span><span class=nc>String</span><span class=p>,</span> <span class=nc>String</span><span class=p>&gt;&gt;</span> <span class=p>{</span>
+        <span class=kd>val</span> <span class=py>factory</span> <span class=p>=</span> <span class=nc>ConcurrentKafkaListenerContainerFactory</span><span class=p>&lt;</span><span class=nc>String</span><span class=p>,</span> <span class=nc>String</span><span class=p>&gt;()</span>
+        <span class=n>factory</span><span class=p>.</span><span class=nf>setConcurrency</span><span class=p>(</span><span class=mi>1</span><span class=p>)</span>
+        <span class=n>factory</span><span class=p>.</span><span class=n>consumerFactory</span> <span class=p>=</span> <span class=n>consumerFactory</span>
+        <span class=n>factory</span><span class=p>.</span><span class=n>containerProperties</span><span class=p>.</span><span class=n>pollTimeout</span> <span class=p>=</span> <span class=mi>1000</span>
+        <span class=k>return</span> <span class=n>factory</span>
+    <span class=p>}</span>
+
+    <span class=nd>@Bean</span>
+    <span class=k>fun</span> <span class=nf>consumerFactory</span><span class=p>(</span><span class=n>map</span><span class=p>:</span> <span class=nc>Map</span><span class=p>&lt;</span><span class=nc>String</span><span class=p>,</span> <span class=nc>Any</span><span class=p>&gt;):</span> <span class=nc>ConsumerFactory</span><span class=p>&lt;</span><span class=nc>String</span><span class=p>,</span> <span class=nc>String</span><span class=p>&gt;</span> <span class=p>{</span>
+        <span class=k>return</span> <span class=nc>DefaultKafkaConsumerFactory</span><span class=p>(</span><span class=n>map</span><span class=p>)</span>
+    <span class=p>}</span>
+
+    <span class=nd>@Bean</span>
+    <span class=k>fun</span> <span class=nf>consumerConfigs</span><span class=p>():</span> <span class=nc>Map</span><span class=p>&lt;</span><span class=nc>String</span><span class=p>,</span> <span class=nc>Any</span><span class=p>&gt;</span> <span class=p>{</span>
+        <span class=kd>val</span> <span class=py>props</span><span class=p>:</span> <span class=nc>MutableMap</span><span class=p>&lt;</span><span class=nc>String</span><span class=p>,</span> <span class=nc>Any</span><span class=p>&gt;</span> <span class=p>=</span> <span class=n>java</span><span class=p>.</span><span class=n>util</span><span class=p>.</span><span class=nc>HashMap</span><span class=p>()</span>
+        <span class=n>props</span><span class=p>[</span><span class=nc>ConsumerConfig</span><span class=p>.</span><span class=nc>BOOTSTRAP_SERVERS_CONFIG</span><span class=p>]</span> <span class=p>=</span> <span class=n>kafkaClientProps</span><span class=p>.</span><span class=n>broker</span>
+        <span class=n>props</span><span class=p>[</span><span class=nc>ConsumerConfig</span><span class=p>.</span><span class=nc>GROUP_ID_CONFIG</span><span class=p>]</span> <span class=p>=</span> <span class=s>&#34;the-only-group&#34;</span>
+        <span class=n>props</span><span class=p>[</span><span class=nc>ConsumerConfig</span><span class=p>.</span><span class=nc>ENABLE_AUTO_COMMIT_CONFIG</span><span class=p>]</span> <span class=p>=</span> <span class=k>false</span>
+        <span class=n>props</span><span class=p>[</span><span class=nc>ConsumerConfig</span><span class=p>.</span><span class=nc>KEY_DESERIALIZER_CLASS_CONFIG</span><span class=p>]</span> <span class=p>=</span> <span class=nc>StringDeserializer</span><span class=o>::</span><span class=k>class</span><span class=p>.</span><span class=n>java</span>
+        <span class=n>props</span><span class=p>[</span><span class=nc>ConsumerConfig</span><span class=p>.</span><span class=nc>VALUE_DESERIALIZER_CLASS_CONFIG</span><span class=p>]</span> <span class=p>=</span> <span class=nc>StringDeserializer</span><span class=o>::</span><span class=k>class</span><span class=p>.</span><span class=n>java</span>
+        <span class=k>return</span> <span class=n>props</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></figure><p>Далее, контейнер запускается так же, как и в Кролике - через регистрацию Context Initializer в базовом тесте, а в конкретных тестах дополнительно прописывается конфиг Кафки и инжектится тестовый лисенер:</p><figure class=listing-block><figcaption>SendEventsTest</figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@ContextConfiguration</span><span class=p>(</span>
+    <span class=n>classes</span> <span class=p>=</span> <span class=p>[</span><span class=nc>KafkaTestConfig</span><span class=o>::</span><span class=k>class</span><span class=p>],</span>
+<span class=p>)</span>
+<span class=kd>class</span> <span class=nc>SendEventsTest</span><span class=p>(</span>
+    <span class=nd>@Autowired</span> <span class=k>private</span> <span class=kd>val</span> <span class=py>testKafkaListener</span><span class=p>:</span> <span class=nc>TestKafkaListener</span>
+<span class=p>)</span> <span class=p>:</span> <span class=nc>ExternalSystemAppBaseTest</span><span class=p>()</span> <span class=p>{</span>
+<span class=p>}</span></code></pre></figure></section><section class="doc-section level-2"><h3 id=_запуск_mqtt_брокера_для_тестов><a class=link href=#_запуск_mqtt_брокера_для_тестов>Запуск Mqtt-брокера для тестов</a></h3><p>Запуск MQTT-брокера практически не отличается от запуска Кролика.</p><p>Лениво запускаем контейнер:</p><figure class=listing-block><figcaption>Запуск контейнера MQTT-брокера в тестах Проекта Э</figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>val</span> <span class=py>mqttServerContainer</span> <span class=k>by</span> <span class=nf>lazy</span> <span class=p>{</span>
+    <span class=nc>HiveMQContainer</span><span class=p>(</span><span class=nc>DockerImageName</span><span class=p>.</span><span class=nf>parse</span><span class=p>(</span><span class=s>&#34;hivemq/hivemq-ce:latest&#34;</span><span class=p>).</span><span class=nf>withTag</span><span class=p>(</span><span class=s>&#34;2021.3&#34;</span><span class=p>))</span>
+        <span class=p>.</span><span class=nf>withReuse</span><span class=p>(</span><span class=k>true</span><span class=p>)</span>
+        <span class=p>.</span><span class=nf>apply</span> <span class=p>{</span> <span class=nf>start</span><span class=p>()</span> <span class=p>}</span>
+<span class=p>}</span></code></pre></figure><p>Прокидываем параметры подключения в контекст с помощью Context Initializer:</p><figure class=listing-block><figcaption>MQTT-брокер Spring Context Initializer</figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>TestContainerMqttServerContextInitializer</span> <span class=p>:</span> <span class=nc>ApplicationContextInitializer</span><span class=p>&lt;</span><span class=nc>ConfigurableApplicationContext</span><span class=p>&gt;</span> <span class=p>{</span>
+
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>initialize</span><span class=p>(</span><span class=n>applicationContext</span><span class=p>:</span> <span class=nc>ConfigurableApplicationContext</span><span class=p>)</span> <span class=p>{</span>
+        <span class=n>applicationContext</span><span class=p>.</span><span class=nf>overrideProperties</span><span class=p>(</span>
+            <span class=s>&#34;project-e.integrations.external-system.address&#34;</span> <span class=n>to</span> <span class=s>&#34;tcp://${mqttServerContainer.host}:${mqttServerContainer.mqttPort}&#34;</span><span class=p>,</span>
+            <span class=s>&#34;project-e.integrations.external-system.enabled&#34;</span> <span class=n>to</span> <span class=s>&#34;true&#34;</span>
+        <span class=p>)</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></figure><p>И прописываем его в базовом классе тестов:</p><div class="olist arabic"><ol class=arabic><li>ProjectEIntegrationTest</li></ol></div><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@ContextConfiguration</span><span class=p>(</span>
+    <span class=n>classes</span> <span class=p>=</span> <span class=p>[</span>
+        <span class=nc>ProjectEApp</span><span class=o>::</span><span class=k>class</span><span class=p>,</span> <span class=cm>/* ... */</span><span class=p>,</span>
+    <span class=p>],</span>
+    <span class=n>initializers</span> <span class=p>=</span> <span class=p>[</span>
+        <span class=nc>TestContainerDbContextInitializer</span><span class=o>::</span><span class=k>class</span><span class=p>,</span>
+        <span class=nc>TestContainerMqttServerContextInitializer</span><span class=o>::</span><span class=k>class</span>
+    <span class=p>]</span>
+<span class=p>)</span>
+<span class=nd>@SpringBootTest</span><span class=p>(</span>
+    <span class=n>webEnvironment</span> <span class=p>=</span> <span class=nc>SpringBootTest</span><span class=p>.</span><span class=nc>WebEnvironment</span><span class=p>.</span><span class=nc>RANDOM_PORT</span><span class=p>,</span>
+<span class=p>)</span>
+<span class=nd>@ActiveProfiles</span><span class=p>(</span><span class=s>&#34;test&#34;</span><span class=p>)</span>
+<span class=kd>class</span> <span class=nc>ProjectEIntegrationTest</span><span class=p>(</span><span class=cm>/* ... */</span><span class=p>)</span></code></pre></div></section><section class="doc-section level-2"><h3 id=_запуск_внутреннего_сервиса><a class=link href=#_запуск_внутреннего_сервиса>Запуск внутреннего сервиса</a></h3><p>По историческим причинам одна из фич в ядре Проекта Э зависит от другого внутреннего сервиса, написанного на Node.js.
+Сам сервис собирается в контейнер и публикуется в приватный реестр.</p><p>Поэтому для тестов этой фичи он запускается по стандартной уже схеме:</p><figure class=listing-block><figcaption>Ленивый контейнер</figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>val</span> <span class=py>internalServiceContainer</span> <span class=k>by</span> <span class=nf>lazy</span> <span class=p>{</span>
+    <span class=nc>GenericContainer</span><span class=p>(</span><span class=s>&#34;project-docker-registry/project-e/internal-service:latest&#34;</span><span class=p>)</span>
+        <span class=p>.</span><span class=nf>withExposedPorts</span><span class=p>(</span><span class=mi>5000</span><span class=p>)</span>
+        <span class=p>.</span><span class=nf>withReuse</span><span class=p>(</span><span class=k>true</span><span class=p>)</span>
+        <span class=p>.</span><span class=nf>apply</span> <span class=p>{</span> <span class=nf>start</span><span class=p>()</span> <span class=p>}</span>
+<span class=p>}</span></code></pre></figure><figure class=listing-block><figcaption>ContextInitializer</figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>TestContainerInternalServiceContextInitializer</span> <span class=p>:</span> <span class=nc>ApplicationContextInitializer</span><span class=p>&lt;</span><span class=nc>ConfigurableApplicationContext</span><span class=p>&gt;</span> <span class=p>{</span>
+
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>initialize</span><span class=p>(</span><span class=n>applicationContext</span><span class=p>:</span> <span class=nc>ConfigurableApplicationContext</span><span class=p>)</span> <span class=p>{</span>
+        <span class=n>applicationContext</span><span class=p>.</span><span class=nf>overrideProperties</span><span class=p>(</span>
+            <span class=s>&#34;project-e.internal-service.url&#34;</span> <span class=n>to</span> <span class=n>internalServiceContainer</span><span class=p>.</span><span class=nf>serviceUrl</span><span class=p>()</span>
+        <span class=p>)</span>
+    <span class=p>}</span>
+
+<span class=p>}</span>
+
+<span class=k>fun</span> <span class=nf>GenericContainer</span><span class=p>&lt;*&gt;.</span><span class=nf>serviceUrl</span><span class=p>()</span> <span class=p>=</span>
+    <span class=s>&#34;http://${internalServiceContainer.host}:${getMappedPort(5000)}&#34;</span></code></pre></figure><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p><code>applicationContext.overrideProperties</code> - это наша утилитная функция-расширения:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=k>fun</span> <span class=nc>ConfigurableApplicationContext</span><span class=p>.</span><span class=nf>overrideProperties</span><span class=p>(</span><span class=k>vararg</span> <span class=n>properties</span><span class=p>:</span> <span class=nc>Pair</span><span class=p>&lt;</span><span class=nc>String</span><span class=p>,</span> <span class=nc>String</span><span class=p>&gt;)</span> <span class=p>{</span>
+    <span class=nc>TestPropertyValues</span>
+        <span class=p>.</span><span class=nf>of</span><span class=p>(</span><span class=n>properties</span><span class=p>.</span><span class=nf>toMap</span><span class=p>())</span>
+        <span class=p>.</span><span class=nf>applyTo</span><span class=p>(</span><span class=k>this</span><span class=p>)</span>
+<span class=p>}</span></code></pre></div></aside><figure class=listing-block><figcaption>Добавление инициалайзера к конфигу теста</figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@ContextConfiguration</span><span class=p>(</span><span class=n>initializers</span> <span class=p>=</span> <span class=p>[</span><span class=nc>TestContainerInternalServiceContextInitializer</span><span class=o>::</span><span class=k>class</span><span class=p>])</span>
+<span class=kd>class</span> <span class=nc>ReportsServiceTest</span><span class=p>(</span><span class=cm>/* ... */</span><span class=p>)</span> <span class=p>:</span> <span class=nc>ProjectEAppWithFakeInfraBaseTest</span><span class=p>()</span></code></pre></figure></section></section></article></section></div></main><script src=/js/app.js></script></body></html>
