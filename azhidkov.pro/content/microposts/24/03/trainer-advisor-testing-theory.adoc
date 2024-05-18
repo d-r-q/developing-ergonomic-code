@@ -9,6 +9,9 @@ tags: trainer-advisor
 :icons: font
 :sectlinks:
 :imagesdir: /microposts/24/03/images/
+:toc:
+:toclevels: 4
+:toc-title: Содержание
 
 [NOTE]
 --
