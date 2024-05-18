@@ -461,3 +461,389 @@ open class MinioFilesStorage(
 
 Теперь остался последний этап сетапа фикстуры — создание и, при необходимости, вставка данных, специфичных для теста.
 Его я рассмотрю в следующем посте.
+
+== Бонус-трэк
+
+В Trainer Advisor всей это инфраструктуры (пока?) нет, но 2024 году пост об интеграционном тестировании, без описания тестирования интеграций с внешними сервисами и брокерами сообщений нельзя считать полноценным.
+Поэтому в качестве бонус-трека, я расскажу о том, как мы тестировали такие интеграции в link:++{{<ref "/ergo-approach/landing##_проект_э">}}++[Проекте Э].
+
+=== Запуск WireMock
+
+В Проекте Э, как и всех других своих проектах за последние четыре года, для тестирования кода, работающего с внешними системами по HTTP, я использовал https://wiremock.org/[WireMock].
+
+C JUnit 5 он интегрируется достаточно просто.
+
+В первую очередь, необходимо настроить sut на обращение к `localhost:<wireMockPort>`.
+
+В Spring Boot это можно сделать с помощью `application-test.yaml`-файла - файла конфигурации, который будет загружен при запуске приложения с профилем test и переопределит настройки из основного `application.yaml`:
+
+.application-test.yaml
+[source,yaml]
+----
+smtp:
+  base-url: http://localhost:8081
+  from: no-reply@project-e.com
+  api-key: api-key
+----
+
+А затем, с помощью стандартного расширения для JUnit надо настроить запуск WireMock-сервера на том же порту, что прописан в тестовой конфигурации:
+
+.Запуск WireMock-сервера
+[source,kotlin]
+----
+@WireMockTest(httpPort = 8081)
+@ActiveProfiles("test")
+class SmtpBzTest {
+    // ...
+}
+----
+
+После чего, к методам тест-кейсов можно будет добавить параметр типа `WireMockRuntimeInfo` и использовать его для сетапа моков запросов:
+
+.Передача WireMockRuntimeInfo в метод тест-кейса
+[source,kotlin]
+----
+@Test
+fun `EmailSender should send correct http request to SmtpBz`(wm: WireMockRuntimeInfo) {
+    // Given
+    wm.register(SMTPBZ_POST_EMAIL_URL, HttpStatus.OK)
+    // ...
+}
+----
+
+[NOTE]
+====
+Тестов с WireMock-ом у нас было на порядок меньше, чем юнит-тестов и тестов с БД, поэтому им я уделил наименьшее внимание.
+Поэтому, в частности, я сейчас не могу сказать, будет ли переиспользован сервер WireMock-а с таким подходом и какой оверхэд это даст.
+====
+
+=== Запуск RabbitMQ для тестов
+
+В Проекте Э по историческим причинам значительная часть общения внутри приложения шла через RabbitMQ.
+Соответственно, многим тестам для работы нужен Кролик и он запускается практически так же, как и Postgres в Trainer Advisor:
+
+.Запуск контейнера RabbitMQ в тестах Проекта Э
+
+[source,kotlin]
+----
+val rabbitMqContainer by lazy {
+    with(RabbitMQContainer("rabbitmq:3-management-alpine")) {
+        withAdminPassword("password")
+        withExposedPorts(5672)
+        withReuse(reuse)
+        withEnv(
+            mapOf(
+                // Это не получается задать через АПИ
+                "RABBITMQ_DEFAULT_USER" to "eventbus",
+                "RABBITMQ_DEFAULT_VHOST" to "eventbus",
+            )
+        )
+    }
+    .apply { start() }
+}
+----
+
+Тут контейнер создаётся не на RAM-диске.
+Сейчас наверняка не помню - было ли это осознанное решение, или контейнер сетапил юниор в мыле старта реинжиниринга и так и осталось.
+
+Далее используется Spring Context Initializer, который прокидывает параметры подключения (в первую очередь - случайный порт) в контекст:
+
+.RabbitMQ Spring Context Initializer
+[source,kotlin]
+----
+class TestContainerMqContextInitializer : ApplicationContextInitializer<ConfigurableApplicationContext> {
+
+    override fun initialize(applicationContext: ConfigurableApplicationContext) {
+        applicationContext.environment.propertySources.addFirst(
+            MapPropertySource(
+                "Integration rabbit mq test properties",
+                mapOf(
+                    "spring.rabbitmq.port" to rabbitMqContainer.getMappedPort(5672),
+                    "spring.rabbitmq.host" to rabbitMqContainer.host,
+                    "spring.rabbitmq.password" to "password",
+                    "spring.rabbitmq.virtual-host" to "eventbus",
+                    "spring.rabbitmq.username" to "eventbus",
+                )
+            )
+        )
+    }
+}
+----
+
+При этом Кролик будет запущен при первом обращении к `rabbitMqContainer`.
+
+[NOTE]
+====
+Параметры прокидываются через ApplicationContextInitializer, а не через @DynamicPropertySource потому, что второй вариант ведёт к запуску контекста для каждого тест-кейса, а это ведёт к медленным тестам.
+====
+
+Далее, этот инициалайзер прописывается в базовом классе тестов:
+
+.Настройка базового класса тестов
+
+[source,kotlin]
+----
+@ContextConfiguration(
+    classes = [ProjectEApp::class, /* ... */],
+    initializers = [TestContainerDbContextInitializer::class, TestContainerMqContextInitializer::class]
+)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+)
+class ProjectEBaseTest(/* ... */) { /* ... */ }
+----
+
+После чего тесты, которым нужен Кролик, наследуются от него, регистрируют своего слушателя и через него смотрят, что SUT отправил то, что надо - подробнее об этом в следующем посте.
+
+=== Запуск Kafka для тестов
+
+Фичу, которая включала отправку данных в Кафку внешней системы, делал юниор и под давлением сроков, поэтому в тестировании этой фичи есть нюанс: в отличие от тестов с Кроликом, тестовый слушатель сделан Spring Bean-ом и, соответственно, один общий на все тесты.
+
+[NOTE]
+====
+Как показывает практика тестов с Кроликом - это приводит к сложно диагностируемым и решаемым падениям тестов из-за общего состояния - именно поэтому с Кроликом я перешёл на вариант ручного создания слушателя каждым тестом.
+
+Но в данном случае это не так критично, так как фича реализована в отдельном небольшом сервисе, в котором на слушателя завязано четыре теста.
+====
+
+Сама Кафка запускается в контейнере практически так же, как и Кролик:
+
+.Запуск Kafka в тестах в Проекте Э
+
+[source,kotlin]
+----
+val kafkaContainer by lazy {
+    KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1"))
+        .apply {
+            withReuse(true)
+            start()
+        }
+}
+----
+
+Далее в дело также вступает Context Initializer:
+
+.Kafka Spring Context Initializer
+[source,kotlin]
+----
+class TestContainerKafkaContextInitializer : ApplicationContextInitializer<ConfigurableApplicationContext> {
+
+    override fun initialize(applicationContext: ConfigurableApplicationContext) {
+        applicationContext.environment.propertySources.addFirst(
+            MapPropertySource(
+                "Integration kafka test properties",
+                mapOf(
+                    "external-system.client.kafka.broker" to kafkaContainer.bootstrapServers.substringAfterLast("//"),
+                )
+            )
+        )
+        AdminClient.create(mapOf(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG to kafkaContainer.bootstrapServers)).use {
+            it.deleteTopics(listOf(applicationContext.environment.getProperty("external-system.client.kafka.topic")))
+        }
+    }
+
+}
+----
+
+Здесь, помимо проброса параметров подключения к Кафке, перед каждым запуском набора тестов удаляется единственный топик, в который отправляются сообщения для сброса состояния.
+
+А вот дальше начинаются отличия от сетапа тестов с Кроликом.
+
+Во-первых, в тестах определяется общий бин слушателя:
+
+.TestKafkaListener
+[source,kotlin]
+----
+@Component
+class TestKafkaListener(
+    private val objectMapper: ObjectMapper
+) {
+
+    private val log = LoggerFactory.getLogger(javaClass)
+
+    private val events = ConcurrentLinkedQueue<ExternalSystemEventMessage>()
+
+    @KafkaListener(topics = ["\${external-system.client.kafka.topic}"])
+    fun externalSystemEvents(@Payload message: String) {
+        assertThat(message, matchesJsonSchemaInClasspath("kafka-message-scheme.json"))
+
+        val event = objectMapper.readValue(message, ExternalSystemEventMessage::class.java)
+        log.info("Consuming {}", event)
+        events.add(event)
+    }
+
+    fun getEvents() = events.toList()
+
+    fun clearEvents() {
+        log.info("Clearing events")
+        events.clear()
+    }
+
+}
+----
+
+Во-вторых, определяется конфиг, который добавляет в контекст Кафковую инфраструктуру и этот слушатель:
+
+.KafkaTestConfig
+[source,kotlin]
+----
+@EnableKafka
+@ComponentScan
+class KafkaTestConfig(
+    private val kafkaClientProps: ExternalSystemKafkaClientProps
+) {
+    @Bean
+    fun kafkaListenerContainerFactory(
+        consumerFactory: ConsumerFactory<String, String>
+    ): KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, String>> {
+        val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
+        factory.setConcurrency(1)
+        factory.consumerFactory = consumerFactory
+        factory.containerProperties.pollTimeout = 1000
+        return factory
+    }
+
+    @Bean
+    fun consumerFactory(map: Map<String, Any>): ConsumerFactory<String, String> {
+        return DefaultKafkaConsumerFactory(map)
+    }
+
+    @Bean
+    fun consumerConfigs(): Map<String, Any> {
+        val props: MutableMap<String, Any> = java.util.HashMap()
+        props[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = kafkaClientProps.broker
+        props[ConsumerConfig.GROUP_ID_CONFIG] = "the-only-group"
+        props[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
+        props[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
+        props[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
+        return props
+    }
+}
+----
+
+Далее, контейнер запускается так же, как и в Кролике - через регистрацию Context Initializer в базовом тесте, а в конкретных тестах дополнительно прописывается конфиг Кафки и инжектится тестовый лисенер:
+
+.SendEventsTest
+[source,kotlin]
+----
+@ContextConfiguration(
+    classes = [KafkaTestConfig::class],
+)
+class SendEventsTest(
+    @Autowired private val testKafkaListener: TestKafkaListener
+) : ExternalSystemAppBaseTest() {
+}
+----
+
+=== Запуск Mqtt-брокера для тестов
+
+Запуск MQTT-брокера практически не отличается от запуска Кролика.
+
+Лениво запускаем контейнер:
+
+.Запуск контейнера MQTT-брокера в тестах Проекта Э
+
+[source,kotlin]
+----
+val mqttServerContainer by lazy {
+    HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce:latest").withTag("2021.3"))
+        .withReuse(true)
+        .apply { start() }
+}
+----
+
+Прокидываем параметры подключения в контекст с помощью Context Initializer:
+
+.MQTT-брокер Spring Context Initializer
+
+[source,kotlin]
+----
+class TestContainerMqttServerContextInitializer : ApplicationContextInitializer<ConfigurableApplicationContext> {
+
+    override fun initialize(applicationContext: ConfigurableApplicationContext) {
+        applicationContext.overrideProperties(
+            "project-e.integrations.external-system.address" to "tcp://${mqttServerContainer.host}:${mqttServerContainer.mqttPort}",
+            "project-e.integrations.external-system.enabled" to "true"
+        )
+    }
+}
+----
+
+И прописываем его в базовом классе тестов:
+
+. ProjectEIntegrationTest
+
+[source,kotlin]
+----
+@ContextConfiguration(
+    classes = [
+        ProjectEApp::class, /* ... */,
+    ],
+    initializers = [
+        TestContainerDbContextInitializer::class,
+        TestContainerMqttServerContextInitializer::class
+    ]
+)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+)
+@ActiveProfiles("test")
+class ProjectEIntegrationTest(/* ... */)
+----
+
+=== Запуск внутреннего сервиса
+
+По историческим причинам одна из фич в ядре Проекта Э зависит от другого внутреннего сервиса, написанного на Node.js.
+Сам сервис собирается в контейнер и публикуется в приватный реестр.
+
+Поэтому для тестов этой фичи он запускается по стандартной уже схеме:
+
+.Ленивый контейнер
+
+[source,kotlin]
+----
+val internalServiceContainer by lazy {
+    GenericContainer("project-docker-registry/project-e/internal-service:latest")
+        .withExposedPorts(5000)
+        .withReuse(true)
+        .apply { start() }
+}
+----
+
+.ContextInitializer
+
+[source,kotlin]
+----
+class TestContainerInternalServiceContextInitializer : ApplicationContextInitializer<ConfigurableApplicationContext> {
+
+    override fun initialize(applicationContext: ConfigurableApplicationContext) {
+        applicationContext.overrideProperties(
+            "project-e.internal-service.url" to internalServiceContainer.serviceUrl()
+        )
+    }
+
+}
+
+fun GenericContainer<*>.serviceUrl() =
+    "http://${internalServiceContainer.host}:${getMappedPort(5000)}"
+----
+
+[NOTE]
+====
+`applicationContext.overrideProperties` - это наша утилитная функция-расширения:
+[source,kotlin]
+----
+fun ConfigurableApplicationContext.overrideProperties(vararg properties: Pair<String, String>) {
+    TestPropertyValues
+        .of(properties.toMap())
+        .applyTo(this)
+}
+----
+====
+
+.Добавление инициалайзера к конфигу теста
+[source,kotlin]
+----
+@ContextConfiguration(initializers = [TestContainerInternalServiceContextInitializer::class])
+class ReportsServiceTest(/* ... */) : ProjectEAppWithFakeInfraBaseTest()
+----
