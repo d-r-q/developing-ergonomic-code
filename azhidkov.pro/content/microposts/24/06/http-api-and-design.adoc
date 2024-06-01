@@ -1,0 +1,253 @@
+---
+title: "Влияние дизайна HTTP API на дизайн модели"
+date: 2024-06-01T08:25:37+07:00
+draft: false
+tags: project-mariotte, http-api, functional-architecture, parse-dont-validate, make-invalid-states-unrepresentible
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:sectlinks:
+:imagesdir: /microposts/24/06/images/
+:toc:
+:toclevels: 4
+:toc-title: Содержание
+
+[NOTE]
+--
+Этот материал является "микропостом" - текстом, написанным в режиме потока сознания без особой редактуры.
+
+Следить за обновлениями блога можно в Telegram-канале: https://t.me/ergonomic_code[Эргономичный код].
+--
+
+== Введение
+
+Мне недавно попалось на глаза тестовое задание, где соискателю давался (паршивый) код реализации операции бронирования номера в отеле и предлагалось его отрефакторить.
+
+И я подумал, что это отличный повод продемонстрировать рефакторинг проекта к Эргономичному подходу.
+Так родился Проект Мариотт - демонстрационный проект Эргономичного подхода на базе вымышленного сервиса бронирования номеров в отелях.
+
+Я ещё полторы недели назад https://t.me/ergonomic_code/423[писал], что забацал проект и написал мясо поста с его и не могу написать только введение.
+
+Но ни проект, ни пост до сих пор не опубликованы.
+Написать введение я отчаялся, поэтому решил вместо поста просто тщательно задокументировать код.
+И по ходу дела внёс пачку правок, часть которых описал в этом посте.
+
+== Первая версия HTTP API
+
+В оригинальном коде на вход методу подавалось такое тело запроса:
+
+[source]
+----
+{
+  "hotel_id": <number>
+  "room_type_id": <number>
+  "email": <string:email>
+  "from": <string:iso-8601 timestamp>
+  "to": <string:iso-8601 timestamp>
+}
+----
+
+Обратите внимание, на способ передачи интервала брони — моменты времени от и до.
+
+А из ошибок была только 500-ка в случае отсутствия свободных номеров.
+
+== Вторая версия API
+
+Взявшись за рефакторинг АПИ, перовое что я сделал — сузил формат границ интервала до дат (так как далее это в коде всё равно происходило):
+
+[source]
+----
+{
+  "hotel_id": <number>
+  "room_type_id": <number>
+  "email": <string:email>
+  "from": <string:iso-8601 date>
+  "to": <string:iso-8601 date>
+}
+----
+
+Это снижает вероятность формирования некорректных ожиданий у разработчиков клиентов этого АПИ о том, что комнаты можно бронировать с точностью до секунд.
+
+Вторым делом я расписал возможные ошибки АПИ исходя из https://github.com/ergonomic-code/Ergo-Approach-Guideline/wiki/Проектирование-HTTP-API#коды-ошибок[текущей стратегии сигнализации об ошибках в Эргономичном подходе]:
+
+[source]
+----
+  400
+    <RequestFailed.type=reservation-dates-in-past> // до даты начала резервации осталось менее дня  
+
+  400
+    <RequestFailed.type=invalid-reservation-dates> // дата резервации "до" меньше либо равна дате "от"
+
+  400
+    <RequestFailed // некорректный зарос
+
+  409
+    <RequestFailed.type=hotel-not-found> // отель с указанным идентификатором не найден
+
+  409
+    <RequestFailed.type=room-type-not-found> // номер указанного типа в отеле с указанным идентификатором не найден
+
+  409
+    <RequestFailed.type=no-available-rooms> // за запрошенные даты в отеле нет свободных комнат запрошенного типа
+    
+  500
+    <RequestFailed> // при обработке запроса произошла ошибка
+----
+
+Тут я исправил две вещи:
+
+. В целом точнее прописал контракт метода;
+. Привёл код ошибки отсутствия свободных комнат в соответствие со спецификацией (https://www.rfc-editor.org/rfc/rfc9110.html#name-500-internal-server-error[500 - это неожиданные условия]).
+
+И с таким АПИ я приступил к реализации проекта по ЭП.
+
+== Первая версия модели
+
+Для реализации этого АПИ я завёл DTO запроса:
+
+[source,kotlin]
+----
+data class RoomReservationRequest(
+    val hotelId: Int,
+    val roomType: RoomType,
+    val email: String,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    val from: LocalDate,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    val to: LocalDate
+)
+----
+
+Сущность бронирования:
+
+[source,kotlin]
+----
+@Table("reservations")
+data class Reservation(
+    @JsonProperty("hotel")
+    val hotelRef: HotelRef,
+    val roomType: RoomType,
+    val email: String,
+    val from: LocalDate,
+    val to: LocalDate,
+
+    @Id
+    val id: Int = 0
+)
+----
+
+И функцию парсинга ДТО в сущность (в духе https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/[parse don't validate]):
+
+[source,kotlin]
+----
+object Reservations {
+
+    fun reservationFromRequest(request: RoomReservationRequest, now: LocalDate): Result<Reservation> {
+        if (request.from > request.to) {
+            return Result.failure(InvalidReservationDatesException(request.from, request.to))
+        }
+
+        if (request.from <= now) {
+            return Result.failure(ReservationDatesInPastException(request.from))
+        }
+
+        val reservation =
+            Reservation(Hotel.ref(request.hotelId), request.roomType, request.email, request.from, request.to)
+        
+        return Result.success(reservation)
+    }
+
+}
+----
+
+Далее с такой версией реализации сервиса я пошёл писать пост, а потом документировать код.
+
+== Третья версия АПИ
+
+В процессе рефакторинга мне на интуитивном уровне стало не нравиться то, что проверка даты начала резервации (что она в будущем) находилась в функции парсинга запроса.
+
+Размышляя о том, где должна находиться эта логика, я перечитал пост https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/[parse don't validate] и полистал https://pragprog.com/titles/swdddf/domain-modeling-made-functional/[Domain Modeling Made Functional], но не нашёл ответа ни в посте, ни в книге.
+
+Внезапно финальным доводом в пользу переноса проверки в операцию для меня стал собственный гайдлайн выбора 400-ого статуса ошибки: _... Эту ошибку можно выявить, основываясь только на запросе_.
+
+Мою же ошибку нельзя было выявить, только основываясь на запросе — один и тот же запрос может быть валидным и невалидными в разные моменты времени.
+
+Эти рассуждения привели меня к тому, чтобы, помимо собственно правки статуса этой ошибки, ещё и вынести проверку даты из функции парсинга запроса в функцию операции резервации (ака метода юз-кейса).
+И я считаю, что это повысило наглядность кода и упростило понимание бизнес-логики операции резервации.
+
+А потом у меня случился приступ https://www.youtube.com/watch?v=f84n5oFoZBc[Hammock Driven Development].
+
+Спустя два-три часа после упражнений с проверкой даты, в пол-одиннадцатого ночи, посреди чтения перед сном https://pragprog.com/titles/uboop/from-objects-to-functions/[From objects to functions] мне в голову пришла ещё одна идея, как улучшить АПИ.
+
+== Четвёртая версия АПИ
+
+Мысль заключалась в том, что DTO-шка допускает представление невалидного состояния, когда дата начала брони больше даты конца и этого можно избежать.
+
+Для этого надо поменять дату окончания брони на её длительность.
+
+Но какой тип использовать для представления длительности?
+
+Просто Int будет не сильно лучше - он может быть отрицательным и мы получим ту же проблему.
+
+В Kotlin есть беззнаковый UInt - это уже лучше, но всё равно допускает невалидное значение (0) и в целом слишком... эээммм... примитивный.
+
+В Java есть тип Period - он уже точно отражает смысл того, что мы хотим передавать, но всё ещё допускает невалидное состояние в виде длительности в 0 дней.
+
+Поэтому я решил завести вокруг периода value class с проверкой на то, что период непустой:
+
+[source,kotlin]
+----
+@JvmInline
+value class ReservationPeriod(
+    val period: Period
+) {
+
+    val days: UInt
+        get() = period.days.toUInt()
+
+    init {
+        require(period.days > 0) { "Reservation period should more than 0 days" }
+    }
+
+}
+----
+
+[NOTE]
+====
+К моему удивлению, что Jackson, что Spring Data JDBC практически без проблем подхватили Kotlin value class.
+
+Только Jackson, почему-то начал игнорировать аннотацию @JsonFormat и рендерить LocalDate в массив, но это удалось полечить перевесив ещё на backing field - `@field:JsonFormat`.
+====
+
+И только закончив с АПИ, я осознал и поправил ту же проблему в модели.
+
+В итоге мне удалось свести конвертацию DTO в сущность просто до вызова конструктора:
+
+[source,kotlin]
+----
+object Reservations {
+    fun reservationFromRequest(request: RoomReservationRequest): Reservation =
+        Reservation(Hotel.ref(request.hotelId), request.roomType, request.email, request.from, request.period)
+}
+----
+
+И избавиться от одного из типов ошибок (InvalidReservationDatesException).
+Хотя справедливости ради я немного считерил в этой версии, перенеся проверку в конструктор ReservationPeriod, и избавиться от этого типа ошибки можно было и в оригинальном варианте.
+
+Любопытно, что Trainer Advisor, фактически аналогичную штуку в виде приёма я https://github.com/d-r-q/Trainer-Advisor/commit/df468ba120e37965b05356e3580c2117b52f9eb9[сразу сделал в виде даты начала и длительности].
+Это к тому, насколько наши проектные решения продиктованы средой.
+
+== Заключение
+
+Итого в стремлении сделать АПИ пуленепробиваемым и соответствующим стандартам я попутно существенно улучшил дизайн модели:
+
+. Исключил даже теоретическую возможность создать невалидный объект резервации;
+. Перенёс важное бизнес-правило в правильное место;
+. Существенно упростил код конвертации DTO в сущность;
+. Вынес один из типов ошибок за пределы прикладного кода.
+
+Профит?
+Я считаю профит.
+
+Надеюсь, на следующей неделе у меня процесс сойдётся и я опубликую весь проект целиком.
