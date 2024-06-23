@@ -88,21 +88,22 @@ a|
 override operator fun invoke(roomReservationRequest: RoomReservationRequest): ReservationSuccess {
     log.info("Processing room reservation request: {}", roomReservationRequest)
 
-    val reservation = reservationFromRequest(roomReservationRequest) // 1
+    val reservation = reservationFromRequest(roomReservationRequest) 
 
-    val reservationRequestDate = LocalDate.now() // 2
+    // Ввод
+    val reservationRequestDate = LocalDate.now() 
 
-    if (!ReservationRules.canAcceptAt(reservation, reservationRequestDate)) { // 3
+    if (!ReservationRules.canAcceptAt(reservation, reservationRequestDate)) { 
         throw ReservationDatesInPastException(reservation.from)
     }
 
-    val hotel = hotelsService.findById(roomReservationRequest.hotelId) // 4
+    val hotel = hotelsService.findById(roomReservationRequest.hotelId) 
     log.info("Hotel: {}", hotel)
     if (hotel == null) {
         throw EntityNotFoundException(Hotel::class, roomReservationRequest.hotelId)
     }
 
-    val capacity = hotelsService.getCapacityForUpdate(hotel.ref(), reservation.roomType) // 5
+    val capacity = hotelsService.getCapacityForUpdate(hotel.ref(), reservation.roomType) 
     log.info("Capacity: {}", capacity)
     if (capacity == null) {
         throw EntityNotFoundException(RoomType::class, hotel to reservation.roomType)
@@ -117,13 +118,15 @@ override operator fun invoke(roomReservationRequest: RoomReservationRequest): Re
         )
     log.info("Reservations by date: {}", reservationsByDate)
 
-    if (!ReservationRules.hasRequiredFreeRooms(capacity, reservationsByDate)) { // 6
+    // Трансформация/чистая функция/бизнес-логика
+    if (!ReservationRules.hasRequiredFreeRooms(capacity, reservationsByDate)) { 
         throw NoAvailableRoomsException(hotel.ref(), reservation.roomType, reservation.from, reservation.to)
     }
 
-    val persistedOrder = reservationsRepo.save(reservation) // 7
+    // Вывод
+    val persistedOrder = reservationsRepo.save(reservation) 
 
-    return ReservationSuccess(persistedOrder.id) // 8
+    return ReservationSuccess(persistedOrder.id) 
 }
 ----
 a|
@@ -170,8 +173,11 @@ a|
 ----
 @Transactional
 open fun repackage(boxIds: List<Long>, osgPeriods: List<OsgPeriodDto>) {
+   // Ввод 
    val boxes = boxRepo.findByIdIn(boxIds)
+   // Трансформация/чистая функция/бизнес-логика
    val (repackedBoxes, boxOsgBoxLinks) = repackageBoxes(boxes, osgPeriods)
+   // Вывод
    boxRepo.saveAll(repackedBoxes)
    osgRepo.insertBoxesToOsgsLinks(boxOsgBoxLinks.boxIds, boxOsgBoxLinks.osgBoxIds)
 }
@@ -218,8 +224,11 @@ class AnalysisService(
 ) {
 
     fun getAnalysisReport(userId: Int, start: Instant, end: Instant): AnalysisReport {
+        // Ввод
         val reportEvents = diaryService.getReportEvents(userId, start, end)
+        // Трансформация/чистая функция/бизнес-логика
         val analysisReport = analysisReportCalculator.calculateAnalysisReport(reportEvents, start, end)
+        // Вывод
         return analysisReport
     }
 
