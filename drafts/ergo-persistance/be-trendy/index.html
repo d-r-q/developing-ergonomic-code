@@ -7,21 +7,22 @@
 <span class=k>override</span> <span class=k>operator</span> <span class=k>fun</span> <span class=nf>invoke</span><span class=p>(</span><span class=n>roomReservationRequest</span><span class=p>:</span> <span class=nc>RoomReservationRequest</span><span class=p>):</span> <span class=nc>ReservationSuccess</span> <span class=p>{</span>
     <span class=n>log</span><span class=p>.</span><span class=nf>info</span><span class=p>(</span><span class=s>&#34;Processing room reservation request: {}&#34;</span><span class=p>,</span> <span class=n>roomReservationRequest</span><span class=p>)</span>
 
-    <span class=kd>val</span> <span class=py>reservation</span> <span class=p>=</span> <span class=nf>reservationFromRequest</span><span class=p>(</span><span class=n>roomReservationRequest</span><span class=p>)</span> <span class=c1>// 1</span>
+    <span class=kd>val</span> <span class=py>reservation</span> <span class=p>=</span> <span class=nf>reservationFromRequest</span><span class=p>(</span><span class=n>roomReservationRequest</span><span class=p>)</span>
 
-    <span class=kd>val</span> <span class=py>reservationRequestDate</span> <span class=p>=</span> <span class=nc>LocalDate</span><span class=p>.</span><span class=nf>now</span><span class=p>()</span> <span class=c1>// 2</span>
+    <span class=c1>// Ввод</span>
+    <span class=kd>val</span> <span class=py>reservationRequestDate</span> <span class=p>=</span> <span class=nc>LocalDate</span><span class=p>.</span><span class=nf>now</span><span class=p>()</span>
 
-    <span class=k>if</span> <span class=p>(!</span><span class=nc>ReservationRules</span><span class=p>.</span><span class=nf>canAcceptAt</span><span class=p>(</span><span class=n>reservation</span><span class=p>,</span> <span class=n>reservationRequestDate</span><span class=p>))</span> <span class=p>{</span> <span class=c1>// 3</span>
+    <span class=k>if</span> <span class=p>(!</span><span class=nc>ReservationRules</span><span class=p>.</span><span class=nf>canAcceptAt</span><span class=p>(</span><span class=n>reservation</span><span class=p>,</span> <span class=n>reservationRequestDate</span><span class=p>))</span> <span class=p>{</span>
         <span class=k>throw</span> <span class=nc>ReservationDatesInPastException</span><span class=p>(</span><span class=n>reservation</span><span class=p>.</span><span class=n>from</span><span class=p>)</span>
     <span class=p>}</span>
 
-    <span class=kd>val</span> <span class=py>hotel</span> <span class=p>=</span> <span class=n>hotelsService</span><span class=p>.</span><span class=nf>findById</span><span class=p>(</span><span class=n>roomReservationRequest</span><span class=p>.</span><span class=n>hotelId</span><span class=p>)</span> <span class=c1>// 4</span>
+    <span class=kd>val</span> <span class=py>hotel</span> <span class=p>=</span> <span class=n>hotelsService</span><span class=p>.</span><span class=nf>findById</span><span class=p>(</span><span class=n>roomReservationRequest</span><span class=p>.</span><span class=n>hotelId</span><span class=p>)</span>
     <span class=n>log</span><span class=p>.</span><span class=nf>info</span><span class=p>(</span><span class=s>&#34;Hotel: {}&#34;</span><span class=p>,</span> <span class=n>hotel</span><span class=p>)</span>
     <span class=k>if</span> <span class=p>(</span><span class=n>hotel</span> <span class=p>==</span> <span class=k>null</span><span class=p>)</span> <span class=p>{</span>
         <span class=k>throw</span> <span class=nc>EntityNotFoundException</span><span class=p>(</span><span class=nc>Hotel</span><span class=o>::</span><span class=k>class</span><span class=p>,</span> <span class=n>roomReservationRequest</span><span class=p>.</span><span class=n>hotelId</span><span class=p>)</span>
     <span class=p>}</span>
 
-    <span class=kd>val</span> <span class=py>capacity</span> <span class=p>=</span> <span class=n>hotelsService</span><span class=p>.</span><span class=nf>getCapacityForUpdate</span><span class=p>(</span><span class=n>hotel</span><span class=p>.</span><span class=nf>ref</span><span class=p>(),</span> <span class=n>reservation</span><span class=p>.</span><span class=n>roomType</span><span class=p>)</span> <span class=c1>// 5</span>
+    <span class=kd>val</span> <span class=py>capacity</span> <span class=p>=</span> <span class=n>hotelsService</span><span class=p>.</span><span class=nf>getCapacityForUpdate</span><span class=p>(</span><span class=n>hotel</span><span class=p>.</span><span class=nf>ref</span><span class=p>(),</span> <span class=n>reservation</span><span class=p>.</span><span class=n>roomType</span><span class=p>)</span>
     <span class=n>log</span><span class=p>.</span><span class=nf>info</span><span class=p>(</span><span class=s>&#34;Capacity: {}&#34;</span><span class=p>,</span> <span class=n>capacity</span><span class=p>)</span>
     <span class=k>if</span> <span class=p>(</span><span class=n>capacity</span> <span class=p>==</span> <span class=k>null</span><span class=p>)</span> <span class=p>{</span>
         <span class=k>throw</span> <span class=nc>EntityNotFoundException</span><span class=p>(</span><span class=nc>RoomType</span><span class=o>::</span><span class=k>class</span><span class=p>,</span> <span class=n>hotel</span> <span class=n>to</span> <span class=n>reservation</span><span class=p>.</span><span class=n>roomType</span><span class=p>)</span>
@@ -36,13 +37,15 @@
         <span class=p>)</span>
     <span class=n>log</span><span class=p>.</span><span class=nf>info</span><span class=p>(</span><span class=s>&#34;Reservations by date: {}&#34;</span><span class=p>,</span> <span class=n>reservationsByDate</span><span class=p>)</span>
 
-    <span class=k>if</span> <span class=p>(!</span><span class=nc>ReservationRules</span><span class=p>.</span><span class=nf>hasRequiredFreeRooms</span><span class=p>(</span><span class=n>capacity</span><span class=p>,</span> <span class=n>reservationsByDate</span><span class=p>))</span> <span class=p>{</span> <span class=c1>// 6</span>
+    <span class=c1>// Трансформация/чистая функция/бизнес-логика</span>
+    <span class=k>if</span> <span class=p>(!</span><span class=nc>ReservationRules</span><span class=p>.</span><span class=nf>hasRequiredFreeRooms</span><span class=p>(</span><span class=n>capacity</span><span class=p>,</span> <span class=n>reservationsByDate</span><span class=p>))</span> <span class=p>{</span>
         <span class=k>throw</span> <span class=nc>NoAvailableRoomsException</span><span class=p>(</span><span class=n>hotel</span><span class=p>.</span><span class=nf>ref</span><span class=p>(),</span> <span class=n>reservation</span><span class=p>.</span><span class=n>roomType</span><span class=p>,</span> <span class=n>reservation</span><span class=p>.</span><span class=n>from</span><span class=p>,</span> <span class=n>reservation</span><span class=p>.</span><span class=n>to</span><span class=p>)</span>
     <span class=p>}</span>
 
-    <span class=kd>val</span> <span class=py>persistedOrder</span> <span class=p>=</span> <span class=n>reservationsRepo</span><span class=p>.</span><span class=nf>save</span><span class=p>(</span><span class=n>reservation</span><span class=p>)</span> <span class=c1>// 7</span>
+    <span class=c1>// Вывод</span>
+    <span class=kd>val</span> <span class=py>persistedOrder</span> <span class=p>=</span> <span class=n>reservationsRepo</span><span class=p>.</span><span class=nf>save</span><span class=p>(</span><span class=n>reservation</span><span class=p>)</span>
 
-    <span class=k>return</span> <span class=nc>ReservationSuccess</span><span class=p>(</span><span class=n>persistedOrder</span><span class=p>.</span><span class=n>id</span><span class=p>)</span> <span class=c1>// 8</span>
+    <span class=k>return</span> <span class=nc>ReservationSuccess</span><span class=p>(</span><span class=n>persistedOrder</span><span class=p>.</span><span class=n>id</span><span class=p>)</span>
 <span class=p>}</span></code></pre></div></td><td class="halign-left valign-top"><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>object</span> <span class=nc>ReservationRules</span> <span class=p>{</span>
     <span class=k>fun</span> <span class=nf>hasRequiredFreeRooms</span><span class=p>(</span><span class=n>capacity</span><span class=p>:</span> <span class=nc>Int</span><span class=p>,</span> <span class=n>actualReservations</span><span class=p>:</span> <span class=nc>Map</span><span class=p>&lt;</span><span class=nc>LocalDate</span><span class=p>,</span> <span class=nc>Int</span><span class=p>&gt;):</span> <span class=nc>Boolean</span> <span class=p>{</span>
             <span class=k>return</span> <span class=n>actualReservations</span><span class=p>.</span><span class=nf>all</span> <span class=p>{</span> <span class=n>it</span><span class=p>.</span><span class=n>value</span> <span class=p>&lt;</span> <span class=n>capacity</span> <span class=p>}</span>
@@ -66,8 +69,11 @@
     <span class=kd>val</span> <span class=py>version</span><span class=p>:</span> <span class=nc>Int</span> <span class=p>=</span> <span class=mi>0</span>
 <span class=p>)</span></code></pre></div></td></tr></tbody></table></div><p>И этот:</p><div class=table-block><table class="frame-all grid-all stretch"><col style=width:50%><col style=width:50%><tbody><tr><td class="halign-left valign-top"><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@Transactional</span>
 <span class=k>open</span> <span class=k>fun</span> <span class=nf>repackage</span><span class=p>(</span><span class=n>boxIds</span><span class=p>:</span> <span class=nc>List</span><span class=p>&lt;</span><span class=nc>Long</span><span class=p>&gt;,</span> <span class=n>osgPeriods</span><span class=p>:</span> <span class=nc>List</span><span class=p>&lt;</span><span class=nc>OsgPeriodDto</span><span class=p>&gt;)</span> <span class=p>{</span>
+   <span class=c1>// Ввод</span>
    <span class=kd>val</span> <span class=py>boxes</span> <span class=p>=</span> <span class=n>boxRepo</span><span class=p>.</span><span class=nf>findByIdIn</span><span class=p>(</span><span class=n>boxIds</span><span class=p>)</span>
+   <span class=c1>// Трансформация/чистая функция/бизнес-логика</span>
    <span class=kd>val</span> <span class=p>(</span><span class=py>repackedBoxes</span><span class=p>,</span> <span class=py>boxOsgBoxLinks</span><span class=p>)</span> <span class=p>=</span> <span class=nf>repackageBoxes</span><span class=p>(</span><span class=n>boxes</span><span class=p>,</span> <span class=n>osgPeriods</span><span class=p>)</span>
+   <span class=c1>// Вывод</span>
    <span class=n>boxRepo</span><span class=p>.</span><span class=nf>saveAll</span><span class=p>(</span><span class=n>repackedBoxes</span><span class=p>)</span>
    <span class=n>osgRepo</span><span class=p>.</span><span class=nf>insertBoxesToOsgsLinks</span><span class=p>(</span><span class=n>boxOsgBoxLinks</span><span class=p>.</span><span class=n>boxIds</span><span class=p>,</span> <span class=n>boxOsgBoxLinks</span><span class=p>.</span><span class=n>osgBoxIds</span><span class=p>)</span>
 <span class=p>}</span></code></pre></div></td><td class="halign-left valign-top"><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=k>private</span> <span class=k>fun</span> <span class=nf>repackageBoxes</span><span class=p>(</span>
@@ -95,8 +101,11 @@
 <span class=p>)</span> <span class=p>{</span>
 
     <span class=k>fun</span> <span class=nf>getAnalysisReport</span><span class=p>(</span><span class=n>userId</span><span class=p>:</span> <span class=nc>Int</span><span class=p>,</span> <span class=n>start</span><span class=p>:</span> <span class=nc>Instant</span><span class=p>,</span> <span class=n>end</span><span class=p>:</span> <span class=nc>Instant</span><span class=p>):</span> <span class=nc>AnalysisReport</span> <span class=p>{</span>
+        <span class=c1>// Ввод</span>
         <span class=kd>val</span> <span class=py>reportEvents</span> <span class=p>=</span> <span class=n>diaryService</span><span class=p>.</span><span class=nf>getReportEvents</span><span class=p>(</span><span class=n>userId</span><span class=p>,</span> <span class=n>start</span><span class=p>,</span> <span class=n>end</span><span class=p>)</span>
+        <span class=c1>// Трансформация/чистая функция/бизнес-логика</span>
         <span class=kd>val</span> <span class=py>analysisReport</span> <span class=p>=</span> <span class=n>analysisReportCalculator</span><span class=p>.</span><span class=nf>calculateAnalysisReport</span><span class=p>(</span><span class=n>reportEvents</span><span class=p>,</span> <span class=n>start</span><span class=p>,</span> <span class=n>end</span><span class=p>)</span>
+        <span class=c1>// Вывод</span>
         <span class=k>return</span> <span class=n>analysisReport</span>
     <span class=p>}</span>
 
