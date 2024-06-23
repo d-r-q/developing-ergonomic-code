@@ -1,0 +1,533 @@
+---
+title: "Почем функциональный персистанс для народа?"
+date: 2024-05-21T08:25:37+07:00
+draft: false
+tags: ergo-persistance spring-data-jdbc jpa functional-architecture immutable-data-model
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:sectlinks:
+:imagesdir: /drafts/ergo-persistance/images
+:toc: macro
+:toc-levels: 6
+:toc-title: Содержание
+
+== Аннотация
+
+Идёт 24-ый год: анкл Боб написал https://www.amazon.com/Functional-Design-Principles-Patterns-Practices/dp/0138176396["Functional Design: Principles, Patterns, and Practices"], в Java планомерно завозят фичи из ФП языков - лямбды, рекорды, паттерн матчинг, закрытые иерархии -, функцоинальный стиль можно теперь встретить не только в хипстерском стартапе, но и https://www.youtube.com/watch?v=YBsihlkI1E8&list=PLVe-2wcL84b88Ec7BFQZ5aEcu_h6U9isn&index=4[крупном банке].
+
+Уже можно констатировать, что хайп ФП прошёл, а ФП осталось.
+
+Однако в разработке бакендов в ФП стиле, есть слон, который лёгким движением хобота может разнести всю лавку к чертям - JPA.
+
+В этом докладе я расскажу, что вас ждёт, если вы решите быть в тренде и, потренировавшись писать неизменямые списки и функции с хвостовой рекурсией, пойдёте писать в ФП-стиле свою обычную молотилку данных, лежащих в РСУБД.
+
+И как жить, если у вас отобрали контекст транзакции, ленивую загрузку и даже оператор "=", а вы не знаете что такое "моноид в категории эндофункторов" и знать не хотите.
+
+toc::[]
+
+== ФП шагает по планете
+
+Анкл Боб написал Functional Design: Principles, Patterns, and Practices.
+
+В Джаву планамерно завозят фичи из ФП - от лямбд, через рекорды к паттерн матчингу.
+
+ФП код можно встретить не только в хипстерском стартапе, но и в крупном банке ((#todo: тут хорошо бы дать ссылку на Макса Морева#)).
+
+На мой взгляд, уже очевидно, что хайп прошёл, а ФП осталось.
+
+А ты всё ещё пишешь JPA-энтити с конструктром по умолчанию и сеттерами?
+
+== Почему ФП
+
+Объяснить чем ФП хорошо - ещё сложнее, чем объяснить что такое "моноид в категории эндофункторов".
+
+Постов и докладов на эту тему миллион, среди которых есть и https://azhidkov.pro/posts/23/10/why-fp/[мой].
+
+В своём я апеллирую к исследованиями 60-ых годов, которые показали сильную корреляцию структуры программ, похожей на функциональную и низкой стоимостью их разработки:
+
+[quote, Larry Constantine, "Structured Design, p. 144"]
+____
+It [transform-centered model] was derived empirically from a careful review of the morphology of systems, comparing systems that *had proven* to be *cheap to implement, to maintain, and to modify* with ones that had been expensive.
+
+ [...]
+
+The umpteenth round in this game produced what came to be called the transform-centered model.
+*Most of the cheap systems had it* - none of the costly systems did!
+
+---
+
+Она [модель, ориентированная на трансформацию] была получена эмпирически на основе тщательного анализа морфологии систем со сравнением систем, которые *были доказано дёшевы в разработки, обслуживании и модификации*, с системами, которые были дорогостоящими.
+
+ [...]
+
+Энный раунд этой игры породил то, что стало называться моделью, ориентированной на трансформации.
+*Она присутствовала в большинстве дешёвых систем* - ни одна из дорогостоящих систем не имела её!
+____
+
+То есть ФП экономит ваши нервы и деньги бизнеса.
+
+Есть ещё хороший вариант от Рича Хикки - создателя Clojure и бывшего адепта C++:
+
+[quote, attribution, https://www.youtube.com/watch?v=ScEPu1cs4l0&t=3976s]
+____
+I'm just trying to program without going crazy
+____
+
+При этом под ФП я понимаю лишь (практически) полный отказ от оператора "=" и архитектурный контроль над вводом-выводом (запросами к БД) - вы не обязаны изучать, объяснять другим и перекладывать на код монады и теорию категорий, чтобы получить львиную долю бонусов ФП.
+
+Поэтому вот этот код для меня ФП:
+
+[cols=2]
+|===
+a|
+[source,kotlin]
+----
+@Transactional
+override operator fun invoke(roomReservationRequest: RoomReservationRequest): ReservationSuccess {
+    log.info("Processing room reservation request: {}", roomReservationRequest)
+
+    val reservation = reservationFromRequest(roomReservationRequest) // 1
+
+    val reservationRequestDate = LocalDate.now() // 2
+
+    if (!ReservationRules.canAcceptAt(reservation, reservationRequestDate)) { // 3
+        throw ReservationDatesInPastException(reservation.from)
+    }
+
+    val hotel = hotelsService.findById(roomReservationRequest.hotelId) // 4
+    log.info("Hotel: {}", hotel)
+    if (hotel == null) {
+        throw EntityNotFoundException(Hotel::class, roomReservationRequest.hotelId)
+    }
+
+    val capacity = hotelsService.getCapacityForUpdate(hotel.ref(), reservation.roomType) // 5
+    log.info("Capacity: {}", capacity)
+    if (capacity == null) {
+        throw EntityNotFoundException(RoomType::class, hotel to reservation.roomType)
+    }
+
+    val reservationsByDate =
+        reservationsRepo.getReservationsAmountPerDate(
+            hotel.ref(),
+            reservation.roomType,
+            reservation.from,
+            reservation.to
+        )
+    log.info("Reservations by date: {}", reservationsByDate)
+
+    if (!ReservationRules.hasRequiredFreeRooms(capacity, reservationsByDate)) { // 6
+        throw NoAvailableRoomsException(hotel.ref(), reservation.roomType, reservation.from, reservation.to)
+    }
+
+    val persistedOrder = reservationsRepo.save(reservation) // 7
+
+    return ReservationSuccess(persistedOrder.id) // 8
+}
+----
+a|
+
+[source,kotlin]
+----
+object ReservationRules {
+    fun hasRequiredFreeRooms(capacity: Int, actualReservations: Map<LocalDate, Int>): Boolean {
+            return actualReservations.all { it.value < capacity }
+    }
+}
+----
+
+[source,kotlin]
+----
+@Table("reservations")
+data class Reservation(
+    @Column("hotel_ref")
+    val hotel: HotelRef,
+    val roomType: RoomType,
+    val email: String,
+    val from: LocalDate,
+    val period: ReservationPeriod,
+
+    @Id
+    val id: Int = 0,
+    @CreatedDate
+    val createdAt: Instant = Instant.now(),
+    @LastModifiedDate
+    val modifiedAt: Instant? = null,
+    @Version
+    val version: Int = 0
+)
+----
+|===
+
+И этот:
+
+[cols=2]
+|===
+
+a|
+[source,kotlin]
+----
+@Transactional
+open fun repackage(boxIds: List<Long>, osgPeriods: List<OsgPeriodDto>) {
+   val boxes = boxRepo.findByIdIn(boxIds)
+   val (repackedBoxes, boxOsgBoxLinks) = repackageBoxes(boxes, osgPeriods)
+   boxRepo.saveAll(repackedBoxes)
+   osgRepo.insertBoxesToOsgsLinks(boxOsgBoxLinks.boxIds, boxOsgBoxLinks.osgBoxIds)
+}
+----
+a|
+
+[source,kotlin]
+----
+
+// Чистая функция без IO и присваивания
+private fun repackageBoxes(
+   boxes: List<Box>,
+   osgPeriods: List<OsgPeriodDto>
+): Pair<List<Box>, BoxOsgBoxLinks> = when {
+   boxes.size == 1 && osgPeriods.all { it.periods.isEmpty() } -> {
+       val box = boxes[0]
+       listOf(box.unlinkReportingIntervalsFromOsg()) to NoLinks
+   }
+   boxes.size == 1 && osgPeriods.all { it.periods.isNotEmpty() } -> {
+       val box = boxes[0]
+       val newReportingIntervals = osgPeriodsDtosToReportingIntervals(box.id!!, osgPeriods)
+       listOf(box.withReportingIntervals(newReportingIntervals)) to NoLinks
+   }
+   else -> {
+       val repackedBoxes = boxes.map { box ->
+           val newReportingIntervals = osgPeriodsDtosToReportingIntervals(box.id!!, osgPeriods)
+           box.withReportingIntervals(newReportingIntervals)
+       }
+       repackedBoxes to extractLinks(boxes, osgPeriods)
+   }
+----
+|===
+
+И это:
+
+[cols=2]
+|===
+a|
+[source,kotlin]
+----
+class AnalysisService(
+    private val diaryService: DiaryService,
+    private val analysisReportCalculator: AnalysisReportCalculator,
+) {
+
+    fun getAnalysisReport(userId: Int, start: Instant, end: Instant): AnalysisReport {
+        val reportEvents = diaryService.getReportEvents(userId, start, end)
+        val analysisReport = analysisReportCalculator.calculateAnalysisReport(reportEvents, start, end)
+        return analysisReport
+    }
+
+}
+----
+a|
+Огромная реализация calculateAnalysisReport без единого непонятного слова и функции высшего порядка
+
+image::image.png[]
+
+|===
+
+
+
+Программировать в человеческом ФП-стиле (без эндофункторов, аппликативов и категорий Клейсли и т.д.) действительно намного проще и приятнее, чем в императивном.
+
+* * *
+
+В общем давайте представим, что я убедил вас попробовать ФП стиль.
+
+В этом случае, первое с чем вы столкнётесь, решив написать свой бэк в ФП стиле: JPA с ним категорически не совместима.
+
+== Почему JPA никогда не подружится с ФП
+
+По спецификации.
+
+В спеке зашито изменение через мутацию полей:
+
+    An update to the state of an entity includes both the assignment of a new value to a persistent property or field of the entity as well as the modification of a mutable value of a persistent property or field
+    — JSR 338: JavaTM Persistence API; Version 2.2; "3.2.4 Synchronization to the Database"
+
+== Если не JPA, то что?
+
+В мире Java (+Kotlin) есть несколько достойных на мой взглдя доверия фреймворков/библиотек работы с БД, поддерживающие работу с неизменямой моделью данных: jooq, MyBatis, Exposed (Kotlin) и Spring Data JDBC.
+
+Среди них Spring Data JDBC обладает DevX, наиболее близким к Spring Data JPA, плюс последние 4 года свои проекты я делаю на нём, поэтому в докладе иллюстрации я тоже буду делать на нём.
+
+Однако большая часть информации, техник и проблем будет актуальной для любого фреймворка с поддержкой неизменяемой модели.
+
+== Пример
+
+В качестве примера, давайте возьмём небольшой проект информационной системы фитнес-зала, написанный в стандартном стиле на базе JPA и постепенно переведём его на неизменяемую модель, хранимую с помощью Spring Data Jdbc.
+
+(#todo: картинка с UML диаграммой#)
+
+== Шаги перехода
+
+[WARNING]
+====
+Я за последние 10 лет работал с JPA только несколько раз эпизодически, а c Java - за последние 4 года.
+Поэтому тут весь код предварительный, и его надо будет переписать совместно с экспертом.
+====
+
+[NOTE]
+====
+Тут скорее всего надо будет поменять очерёдность.
+Надо попробовать применить https://matthiasnoback.nl/2021/02/refactoring-the-mikado-method/[Метод Микадо] пойти с конца и на каждом шаге иметь работающий код.
+А то сейчас на первом же шаге, после удаления NoArgsConstructor-а весь код тут же превращается в тыкву.
+
+Глобально, щяс видятся такие финальные шаги:
+
+. Декомпозировать модель на агрегаты
+. Переехать на SDJ
+. Переехать на иммутабельные классы
+. Переехать не рекорды
+
+====
+
+=== Меняем @NoArgsConstructor на @AllArgsConstructor
+
+Глобально наша цель - перейти на неизменяемые структуры данных и для этого они должны обладать конструктором, который позволяет инициализировать все поля.
+
+image::images/../2024-06-21-10-59-42.png[]
+
+image::images/../2024-06-21-10-59-55.png[]
+
+=== Удаляем сеттеры
+
+После этого можно удалить сеттеры:
+
+image::images/../2024-06-21-11-05-22.png[]
+
+image::images/../2024-06-21-11-05-35.png[]
+
+=== Делаем глубокие копии
+
+Однако при отказе от сеттеров появляется проблема - менять данные в листьях больших агрегатов - боль:
+
+image::images/../2024-06-22-09-09-17.png[]
+
+Вообще в ФП для решения этой проблемы придумали концепцию линз.
+
+Но в Swift, например, решение этой проблемы встроено в язык: https://forums.swift.org/t/why-are-structs-in-swift-said-to-be-immutable/55319.
+
+В Kotlin-е за неё наконец-то возьмутся после релиза K2: https://youtu.be/tAGJ5zJXJ7w
+
+А в Java есть процессор аннотаций для генерации линз: https://github.com/chriskiehl/Deoplice.
+
+image::images/../2024-06-22-09-57-16.png[]
+
+image::images/../2024-06-22-09-57-55.png[]
+
+image::images/../2024-06-22-09-58-35.png[]
+
+Но его надёжность вызывает вопросы.
+
+И, на самом деле, такие задачи возникают не так уж часто и я в ожидании поддержки на уровне языка, пилю "линзы" на коленке:
+
+image::images/../2024-06-22-10-33-06.png[]
+
+image::images/../2024-06-22-10-33-21.png[]
+
+image::images/../2024-06-22-10-33-34.png[]
+
+image::images/../2024-06-22-10-33-53.png[]
+
+На мой взгляд это проще, чем возится с процессорами аннотаций.
+
+=== Разбиваем циклические связи
+
+[NOTE]
+====
+Реальный баг при подготовке к презентации - забыл проставить имя.
+
+image::images/../2024-06-21-11-27-02.png[]
+
+С неизменяемой моделью такого не бывает.
+====
+
+При удалении сеттеров из JPA-модели возникает (проявляется?) ещё одна проблема: из неизменяемых структур сложно сделать циклическую связь.
+
+image::images/../2024-06-21-11-31-40.png[]
+
+image::images/../2024-06-21-11-29-30.png[]
+
+image::images/../2024-06-21-11-30-37.png[]
+
+image::images/../2024-06-21-11-29-30.png[]
+
+image::images/../2024-06-21-11-30-37.png[]
+
+
+Плохое решение этой проблемы: сначала сохранить одну часть и получить ид, потом создать шаги и прописать им упражнение.
+
+image::images/../2024-06-21-11-35-53.png[]
+
+Но любые циклы в любых зависимостях - бомбы замедленного действия и рано или поздно породят проблемы.
+В данном случае они вносят избыточность - и модель допускает ситуацию, когда упражнение содержит шаги, ссылающиеся на другое упражнение и не понятно как это интерпретировать.
+
+Хорошее решение: удалить одну из ссылок.
+
+image::images/../2024-06-21-11-37-28.png[]
+
+image::images/../2024-06-21-11-38-11.png[]
+
+=== Разбиваем модель на небольшие кусочки (агрегаты)
+
+==== Связи *-to-Many
+
+Так как у нас больше нет конструктора по умолчанию и сеттеров, мы потеряли ленивую загрузку.
+И получили проблему: здесь для того чтобы поменять имя тренера, мы загрузим ещё и сотни его программ, с сотнями упражнений, с тысячами шагов, с тысячами картинок:
+
+image::images/../2024-06-21-11-46-43.png[]
+
+И чтобы попилить модель на небольшие агрегаты я предлагаю использовать такой алгоритм:
+
+. Завести явные сущности для связей Many-To-Many
+. Разделить (в голове/на бумажке) связи *-to-Many и *-to-Few
+. Связи *-to-Many поменять на Many-To-One (обратить); связи *-to-Few можно оставить как есть.
+
+Заводим сущность для Program <-> Exercise.
+
+image::images/../2024-06-21-11-50-55.png[]
+
+image::images/../2024-06-21-11-51-03.png[]
+
+Связи Program->ProgramExercise и Exercise->ExerciseStep - являются связми One-To-Few - их оставляем.
+
+А вот Trainer->Program - One-To-Many.
+Её меняем на Program->Trainer.
+
+image::images/../2024-06-21-11-53-23.png[]
+
+image::images/../2024-06-21-11-53-33.png[]
+
+image::images/../2024-06-21-11-53-45.png[]
+
+Но проблемы создают не только *-to-Many, но и blob/clob-поля и классы с десятками полей.
+
+==== Блобы
+
+Проблема: загружаем БЛОБ изображения для обновления имени и длительности упражнения.
+
+image::images/../2024-06-22-12-20-56.png[]
+
+Как правило, большие куски данных - будь-то картинки или формы с большим кол-вом полей - уже на уровне UI разбивают на части во имя UX-а.
+Это надо просто повторить на уровне модели - выносим блоб шага упражнения в отдельный агрегат ExerciseStepImage, а в ExerciseStep оставляем ссылку на него:
+
+image::images/../2024-06-22-12-36-01.png[]
+
+image::images/../2024-06-22-12-36-23.png[]
+
+image::images/../2024-06-22-12-36-34.png[]
+
+В случае классов с десятками полей технология та же самая.
+
+=== Переходим на функциональную архитектуру для того, чтобы обойтись без L1-кэша
+
+Проблема: одно упражнение может быть загружено сотни раз.
+
+[NOTE]
+====
+На самом деле, тут всё наоборот - ФА надо взять для того чтобы упростить понимание и тестирование программ.
+И в качестве побочного эффекта, это нам ещё и решает проблму L1-кэша.
+====
+
+image::images/../2024-06-21-20-02-29.png[]
+
+Решение: структурный дизайн ака функциональная архитектура - сначала всё загружаем, потом дёргаем чистую функцию, потом сохраняем результат её вызова.
+
+image::images/../2024-06-21-19-57-22.png[]
+
+image::images/../2024-06-21-20-11-37.png[]
+
+=== Вводим границы агрегатов для Spring Data Jdbc
+
+Проблема: при обновлении агрегата Spring Data JDBC бай дезигн удаляет все не корневые сущности и вставляет их заново.
+
+Решение удивительное и неоднозначное, однако за 4 года мне ни разу не пришлось заняться его оптимизацией и концептуально его вполне можно обосновать - представьте, что постгрес - это мапа record-ов, и вам по сети прилетело новое дерево рекордов, вы его положили в мапу, а старарое дерево собрал GC.
+
+Тем не менее, когда мы попытаемся вставить упражнение - что-то взорвётся.
+(#todo: щяс уже наверняка не помню, то ли вообще ещё на страте при построении мета модели, то ли при попытке сохранения агрегата из-за попытки удаления строки, на которую есть ссылки.#).
+
+Поэтому все ссылки на корни агрегатов (сущности, которые мапятся на таблицы, на которые другие таблицы ссылаются по внешнему ключу без ON DELETE CASCADE) надо поменять на ссылки по иду.
+
+Сейчас у нас такими ссылками являются следующие:
+
+* Exercise->Trainer
+* Program->Trainer
+* ProgramExercise->Exercise
+
+Меняем их на ИДы:
+
+image::images/../2024-06-22-12-57-28.png[]
+
+image::images/../2024-06-22-12-57-44.png[]
+
+Но теперь есть проблема - запрос программы возвращает тыкву:
+
+[source,json]
+----
+{
+    "name": "Program",
+    "exercises": [1, 2, 3, 4]
+}
+----
+
+==== Представляем агрегаты со ссылками отдельной ДТОшкой
+
+Один вариант решения этой проблемы - завести кастомную ДТОшку (и в SDJ её можно тянуть сразу из БД, на самом деле) и собрать её руками:
+
+image::images/../2024-06-22-12-59-57.png[]
+
+image::images/../2024-06-22-13-00-09.png[]
+
+Однако это приводит к дублированию модели - и мне это не очень нравится.
+
+Поэтому я придумал свой вариант с AggregateReference и подобием ленивой загрузки (sic!).
+
+==== Представляем агрегаты со ссылками через AggregateReference
+
+Сначала надо завести парочку вспомогательных мини классов:
+
+image::images/../2024-06-22-13-12-39.png[]
+
+Потом поменять в ИДах лонги на AggregateReference:
+
+image::images/../2024-06-22-13-13-44.png[]
+
+А потом оборачиваем целевые сущнсоти в HydratedAggregateReference и складываем в исходный объект:
+
+image::images/../2024-06-22-13-14-51.png[]
+
+После чего дубль модели можно удалить:
+
+image::images/../2024-06-22-13-16-38.png[]
+
+И при желании это всё можно обернуть в небольшую либульку на 200 строк Котлин-кода: 
+
+* https://github.com/d-r-q/Trainer-Advisor/blob/71274a163e761a8d435ae63c0dbe9d30eb3f9853/app/src/main/kotlin/pro/qyoga/app/therapist/appointments/core/edit/EditAppointmentPageController.kt#L32
+* https://github.com/d-r-q/Trainer-Advisor/blob/71274a163e761a8d435ae63c0dbe9d30eb3f9853/app/src/main/kotlin/pro/azhidkov/platform/spring/sdj/ergo/ErgoRepository.kt#L89
+* https://github.com/d-r-q/Trainer-Advisor/blob/71274a163e761a8d435ae63c0dbe9d30eb3f9853/app/src/main/kotlin/pro/azhidkov/platform/spring/sdj/ergo/hydration/Hydration.kt#L37
+
+=== Развешиваем аннотации SDJ
+
+Всё, осталось только поменять зависимость и аннотации
+
+image::images/../2024-06-22-13-23-02.png[]
+
+image::images/../2024-06-22-13-23-35.png[]
+
+== Заключение
+
+. ФП вокруг нас, в него надо уметь;
+. ФП сделает вашу жизнь лучше;
+  Поверьте мне на слово.
+  И анкл Бобу.  И Марку Симану.  И Владимиру Хорикову.  И Скоту Влашину.  И Ричу Хикки.  И Ларри Константину.  И Эрику Эвансу.
+. JPA категорически не дружит с ФП;
+. При переходе на ФП придётся многое поменять в подходе к моделированию данных
+.. То-то и то-то
+. Spring Data JDBC поддерживает и неизменяемую модель данных, и знакомую модель программирования Spring Data
