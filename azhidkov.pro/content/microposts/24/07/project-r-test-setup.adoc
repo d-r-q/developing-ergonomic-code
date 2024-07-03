@@ -1,0 +1,169 @@
+---
+title: "Как поднимать свежую фикстуру БД на 300+ таблиц за 1.5 секунды"
+date: 2024-07-03T08:25:37+07:00
+draft: false
+tags: tdd, integration-tests, testcontainers, db-fixture, project-r
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:sectlinks:
+:imagesdir: /microposts/24/06/images/
+:toc:
+:toclevels: 4
+:toc-title: Содержание
+
+[NOTE]
+--
+Этот материал является "микропостом" - текстом, написанным в режиме потока сознания без особой редактуры.
+
+Следить за обновлениями блога можно в Telegram-канале: https://t.me/ergonomic_code[Эргономичный код].
+--
+
+== Введение
+
+Я сторонник тестов с минимумом моков и сделал это одним из столпов link:++{{<ref "/ergo-approach/landing">}}++[Эргономичного подхода].
+Среди прочего, это влечёт использование реальной БД в тестах - известного источника проблем с их скоростью и стабильностью.
+В целом я нашёл link:++{{<ref "/microposts/24/04/trainer-advisor-testing-test-suite-setup">}}++[схему подготовки БД], которая решает обе эти проблемы.
+
+Однако на link:https://t.me/ergonomic_code/443[Проекте Р] стал серьёзным испытанием для моей схемы.
+
+По определённым причинам, мы решили делать Проект Р поверх БД Проекта У.
+
+А самому Проекту У восемь лет, за которые он разжился 300+ таблицами, которые создаются 1389 миграциями.
+На моей машине раскатать такую схему занимает порядка 25 секунд.
+Но это полбеды, просто на то, чтобы понять, что докатывать ничего не надо, Liquibase требуется 4 секунды.
+
+И если работать по ТДД, даже 4 секунды только на подготовку БД, даже один раз на тест ран - это слишком много.
+Поэтому я немного повозился и ужал это время до 1.5 секунд на весь сетап свежей БД - от инициализации контейнера до завершения работы Liqubase.
+
+Рассказываю, как я это сделал.
+
+== Реюз контейнера
+
+Естественно, контейнеры у меня переисполняются не только между тестами, но и между тест-ранами.
+
+В отличие от https://github.com/d-r-q/Trainer-Advisor[Trainer Advisor], в Проекте Р я отказался от приседаний с предапуском контейнеров в дев окружении, но оставил запуск контейнера руками и Spring-конфиг для проброса порта:
+
+[source,kotlin]
+----
+val pgContainer: PostgreSQLContainer<*> by lazy {
+    PostgreSQLContainer("postgres:16.3")
+        .withExposedPorts(5432)
+        .withTmpFs(mapOf("/var" to "rw"))
+        .withUsername("postgres")
+        .withEnv("PGDATA", "/var/lib/postgresql/data-not-mounted")
+        .withInitScript("schema.sql")
+        .withReuse(true)
+        .withCopyFileToContainer(
+            MountableFile.forClasspathResource("db/project-u-db-dump.sql"),
+            "/docker-entrypoint-initdb.d/init.sql"
+        )
+        .apply {
+            start()
+            // Сначала подключаемся к бд postgres, пересоздаём бд project-u для обнуления фикстуры и подключаемся к ней
+            this.withDatabaseName("project-u")
+        }
+}
+
+class TestContainerDbContextInitializer : ApplicationContextInitializer<ConfigurableApplicationContext> {
+
+    override fun initialize(applicationContext: ConfigurableApplicationContext) {
+        applicationContext.environment.propertySources.addFirst(
+            MapPropertySource(
+                "Integration Postgres test properties",
+                mapOf(
+                    "spring.datasource.url" to pgContainer.jdbcUrl,
+                    "spring.datasource.username" to pgContainer.username,
+                    "spring.datasource.password" to pgContainer.password,
+                )
+            )
+        )
+    }
+
+}
+
+----
+
+Но вскоре после этого я обнаружил, что в https://java.testcontainers.org/modules/databases/jdbc/[поддержку jdbc урлов в testcontainers], завезли и опцию реюза, и опцию tmpfs и планирую в ближайшее время заменить весь код выше на одну строку:
+
+[source,yaml]
+----
+spring:
+  datasource:
+    url: "jdbc:tc:postgresql:16.3:///project-u?TC_REUSABLE=true&TC_TMPFS=/var:rw"
+----
+
+== RAM-диск
+
+Как я уже спойлернул в коде выше, база у меня работает на RAM-диске.
+
+Однако, для Проекта Р этого оказалось недостаточно и прогон 1К миграций даже на РАМ-диске требовал какого-то невменяемого времени (замеров у меня не сохранилось, и, пользуясь форматом микропоста, не буду их заново делать).
+
+[NOTE]
+====
+Будьте осторожны: tmpfs работает на RAM-диске только на Linux.
+На Windows и MacOs, необходимо RAM-диски создавать руками и использовать их как volume в контейнере.
+Сам я эту процедуру не проделывал, но она легко гуглится и https://beebom.com/create-ram-disk-windows-10-super-fast-read-write-speeds/[для Windows] и https://gist.github.com/htr3n/344f06ba2bb20b1056d7d5570fe7f596[для MacOs]
+====
+
+== DATABASE TEMPLATE
+
+Очевидным следующим шагом было использовать дамп бд, с уже накаченными миграциями.
+Это я и сделал и, опять же, уже спойлернул в коде выше.
+
+Дамп ситуацию улучшил (тут у меня есть хоть какие-то замеры - на этом этапе тест целиком - от нажатия кнопки запуска до завершения работы JVM - проходил за 9 секунд), но результатом я всё ещё остался недоволен.
+
+Тогда я вспомнил про https://www.postgresql.org/docs/current/manage-ag-templatedbs.html[Postgres Template Databases] - это возможность Postgres создать фактически копию БД, простым копированием директории в файловой системе (на RAM-диске).
+
+Для этого я перетащил дамп в init-скрипт самого контейнера (который выполняется один раз при создании контейнера):
+
+[source,kotlin]
+----
+.withCopyFileToContainer(
+    MountableFile.forClasspathResource("db/project-u-db-dump.sql"),
+    "/docker-entrypoint-initdb.d/init.sql"
+)
+----
+
+А в init-скрипте уже самих testcontainers (который, при реюзе, выполняется при каждой инициализации тест-контейнера) я просто пересоздаю БД из шаблона:
+
+[source,sql]
+----
+DROP DATABASE IF EXISTS project_u;
+
+CREATE DATABASE project_u TEMPLATE project_u;
+----
+
+Это срезало мне 3 секунды и после этого финта на запуск теста стало уходить 6 секунд.
+
+Но мы можем ещё лучше.
+
+== Сокращённые миграции
+
+Немного помедитировав, я подумал: "Если у меня есть фиксированный дамп от 24-ого года - зачем мне проверять миграции 16-23 годов?".
+Подумал и завёл в тестовых исходниках ченджлог-файл с миграциями только 24-ого года.
+
+Это мне срезало ещё 2 секунды и в итоге, на запуск теста со свежей БД на 300+ таблиц стало уходить 4 секунды - от нажатия кнопки запуска теста, до выхода JVM.
+
+== Заключение
+
+Сейчас в Проекте Р на запуск одного теста требуется порядка 4-5 секунд на моей машине, что вполне подходит для разработки в ТДД-стиле.
+
+Из этих 4-5 секунд, на подготовку свежей БД на 300+ таблиц уходит ~1.5 секунды - ~0.5 секунды на инициализацию (переиспользование) testcontainer-а, ~0.2 секунды на создание БД из шаблона и ~0.7 секунд на проверку 21 и запуск 2 миграций (и тут Liquibase явно тормозит - Flyway несколько десятков SQL-миграций может прогнать за 200мс):
+
+  2024-07-03 10:47:29.698 uid= [main] INFO  o.testcontainers.images.PullPolicy - Image pull policy will be performed by: DefaultPullPolicy()
+  2024-07-03 10:47:30.233 uid= [main] INFO  tc.postgres:16.3 - Container is started (JDBC URL: jdbc:postgresql://localhost:32774/test?loggerLevel=OFF)
+  ...
+  2024-07-03 10:47:30.236 uid= [main] INFO  org.testcontainers.ext.ScriptUtils - Executing database script from schema.sql
+  2024-07-03 10:47:30.406 uid= [main] INFO  org.testcontainers.ext.ScriptUtils - Executed database script from schema.sql in 170 ms.
+  ...
+  2024-07-03 10:47:31.479 uid= [main] INFO  liquibase.database - Set default schema name to public
+  2024-07-03 10:47:32.162 uid= [main] INFO  liquibase.command - Command execution complete
+
+Итого, для того чтобы поднять свежую БД на 300+ таблиц за 1.5 секунды, надо:
+
+. Переиспользовать тест-контейнер с БД;
+. Запускать тест-контейнер на RAM-диске;
+. Использовать более-менее свежий дамп в качестве шаблона БД;
+. Прогонять только свежие миграции.
