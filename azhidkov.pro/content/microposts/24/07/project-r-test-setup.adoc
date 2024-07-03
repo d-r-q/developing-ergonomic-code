@@ -132,7 +132,7 @@ spring:
 ----
 DROP DATABASE IF EXISTS project_u;
 
-CREATE DATABASE project_u TEMPLATE project_u;
+CREATE DATABASE project_u TEMPLATE project_u_template;
 ----
 
 Это срезало мне 3 секунды и после этого финта на запуск теста стало уходить 6 секунд.
