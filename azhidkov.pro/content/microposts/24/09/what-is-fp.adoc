@@ -1,0 +1,242 @@
+---
+title: "Что я имею ввиду под ФП "
+date: 2024-08-10T08:25:37+07:00
+draft: false
+tags: terminology, fp, oop, functional-architecturel, ergo-approach
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:sectlinks:
+:imagesdir: /microposts/24/06/images/
+:toc:
+:toclevels: 4
+:toc-title: Содержание
+
+[NOTE]
+--
+Этот материал является "микропостом" - текстом, написанным в режиме потока сознания без особой редактуры.
+
+Следить за обновлениями блога можно в Telegram-канале: https://t.me/ergonomic_code[Эргономичный код].
+--
+
+== Введение
+
+У меня в канале в комментах уже не раз случался холивар на тему "ФП вс ООП".
+
+И в одном из тредов выяснилось, что проблема терминологическая - я под ФП понимаю разделение бизнес-логики и ввода-вывода, а мой оппонент в том треде - разделение данных и поведения.
+
+И тут до меня дошло, что я сам вношу путаницу и периодически пинаю ООП и за то, и за другое.
+
+Плюс, я полагаю, кто-то из других оппонентов под ФП имеет ввиду монады и Haskell с сигнатурами вида `loadUser(): Result<Future<Try<User>>>`, а кто-то трансдюсеры и Clojure где вместо циклов только хвостовая рекурсия.
+
+Поэтому я решил попытаться навести порядок в терминах и своей позиции относительно них.
+
+== Лирика
+
+Итак, у нас есть две бинарные переменные
+
+. Есть ли ограничение на ИО и изменяемое состояние - да, нет?
+. Можно ли растаскивать код и данные - лучше не растаскивать, лучше растаскивать?
+
+Их комбинация даёт нам четыре варианта:
+
+. На ИО ограничений нет, код и данные лучше растаскивать - по моему опыту это самый распространённый подход, который де-факто является процедурным. 
+   Это то где, логика лежит в сервисах, а данные - в изменяемых JPA-сущностях
+. На ИО ограничений нет, код и данные лучше не растаскивать - это ДДД - то куда прогрессивный мир пытается сейчас пойти (по моему субъективному мнению), но у него не получается потому что https://t.me/ergonomic_code/460[мысль №1 и №2];
+. На ИО ограничения есть, код и данные лучше растаскивать - это то, за что я сейчас топлю, опять же потому что мысли №1 и №2
+. На ИО ограничения есть, код и данные лучше не растаскивать - в живой природе я такого толком не видел. 
+   Я сам так пытался делать и link:https://azhidkov.pro/posts/22/04/220401-aggregates/#_%D0%B0%D0%BD%D0%B5%D0%BC%D0%B8%D1%87%D0%BD%D0%B0%D1%8F_%D0%B4%D0%BE%D0%BC%D0%B5%D0%BD%D0%BD%D0%B0%D1%8F_%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C[топил за это], но упёрся в мысли №1 и 2 и перешёл на вариант №3.
+
+При том у меня не фанатичная позиция.
+
+Добавлять методы в классы данных можно, если:
+
+. они универсальные - используются хотя бы в паре-тройке разных операций
+. не тащят новые зависимости в параметрах.
+. их не больше десяти, максимум двадцати штук.
+
+Писать в логи (делать ИО) в чистом ядре можно.
+Если это отладочные логи, а не логи аудита, работа с которыми входит в бизнес-логику.
+
+Создавать объекты с изменяемым состоянием можно.
+Если в интерфейсе объекта нет прямой ручки для его модификации.
+Примеры:
+
+. seed класса Random
+. закэшированный и автоматически и прозрачно получаемый и обновляемый токен клиента внешнего HTTP API.
+
+В общем впредь буду стараться придерживаться таких терминов:
+
+. ФП/ЭП/ФА - это ограничение (но не исключение) ввода-вывода и изменяемого состояния и предпочтение (но не исключительно) разделения данных и кода
+. ООП/ПП - это тупые JPA Entity и умные сервисы без ограничения ввода-вывода
+. ТруъООП/DDD - это умные изменяемые агрегаты и сервисы приложения без ограничения ввода-вывода
+. fDDD - это умные неизменяемые агрегаты и сервисы приложения с ограничением ввода-вывода
+
+== Примеры
+
+=== fDDD
+
+Примером того, что я раньше часто называл ФП, а теперь буду называть fDDD является такой код:
+
+[source,java]
+----
+// Чистое ядро
+public record Order(Long id, Long price) {
+   public Order applyDiscount(Program program) {
+       return new Order(id, (long) (price * program.discount));
+   }
+}
+
+// Оркестрация
+@Service
+public class DiscountsService {
+
+    private final OrdersRepo ordersRepo;
+    private final ProgramRepo programRepo;
+
+    public (OrdersRepo, ordersRepo, ProgramRepo programRepo) {
+        this.ordersRepo = ordersRepo;
+        this.programsRepo = programsRepo;
+    }
+
+    @Transactional
+    public void applyDiscount(Long orderId, Long programId) {
+        // Ввод
+        Order order = ordersRepo.findById(orderId) 
+                                .orElseThrow();
+        Program program = programRepo.findById(programId)
+                                .orElseThrow();
+
+        // Бизнес-логика
+        Order discountedOrder = order.applyDiscount(program); 
+
+        // Вывод
+        ordersRepo.save(discountedOrder); 
+    }
+}
+
+// Ввод-вывод
+public interface OrdersRepo : CrudRepository<Order, Long> {}
+----
+
+Тут модель - в виде record-a, которые в Java не изменяемы.
+
+Бизнес-логика - в чистой функции applyDiscount без мутации состояния и ввода-вывода.
+
+Если вы пишете код так - чудесно.
+
+Если вы при этом ещё и пишете тесты без моков через публичное АПИ - я подпишу вам сертификат о соответствии кода Эргономичному подходу.
+
+=== ЭП/ФП-стиль, ФА
+
+Но сам, в том числе и в проде, я сейчас пишу код немного по другому.
+
+И для демонстрации мне надо перейти на Kotlin:
+
+[source,kotlin]
+----
+// Чистое ядро
+data class Order(val id: Long, val price: Long)
+
+fun Order.applyDiscount(program: Program) =
+    this.copy(price = price * program.discount)
+
+// Оркестрация
+@Component
+class ApplyDiscountOp(
+    private val ordersRepo: OrdersRepo, 
+    private val programRepo: ProgramsRepo
+) : (Long, Long) -> Unit { // aka BiConsumer<Long, Long, Void>
+
+    operator fun invoke(orderId: Long, programId: Long) {
+        // Ввод
+        val order = ordersRepo.findByIdOrNull(orderId) 
+                        ?: error("Order not found")
+        val program = programRepo.findById(programId) 
+                        ?: error("Program not found")
+
+        // Бизнес-логика
+        val discountedOrder = order.applyDiscount(program); 
+
+        // Вывод
+        ordersRepo.save(discountedOrder); 
+    }
+
+}
+
+// Ввод-вывод
+public interface OrdersRepo : CrudRepository<Order, Long> {}
+----
+
+На мой взгляд, тут необычных две вещи:
+
+. Функция `applyDiscount` висит вне класса;
+. Код операции оформлен отдельным классом, а не методом класса-сервиса.
+
+Выделение функции в топ-левел функцию даёт мне:
+
+. Относительно помещения её в класс ApplyDiscount - гарантию того что, там не случайно не появится ввод-вывод;
+. Относительно помещения её в класс Order:
+.. спасение Order от новой зависимости на Program - сохранение никого coupling-а
+.. спасение Order от появления 30 методов для разных юз-кейсов - сохранение высокого cohesion-а
+
+Выделение операции в отдельный класс даёт мне:
+
+. Место где можно сосредоточить всю логику операции и только её - обеспечить "хорошие" coupling и cohesion;
+. Возможность быстро понять уровень сложности операции - для этого достаточно взглянуть на аргументы конструктора;
+. Рубеж обороны от переусложнения операции - на уровне гайдлайна запретить добавление 8-ой зависимости в конструктор без созыва архитектурного комитета.
+
+Но если вам такой подход не нравится - ради бога, используйте вариант из fDDD.
+Только делайте модель в record-ах, и бизнес-логику - в чистых функциях.
+
+=== ООП/ПП
+
+Ну и на всякий случай пример того, что я называл и продолжу называть ООП
+
+[source,java]
+----
+// Модель
+@Entity
+@Getter
+@Setter
+public class Order {
+
+    private Long id;
+    private Long discount;
+
+}
+
+// Сервис приложения
+@Service
+public class DiscountsService {
+
+    private final OrdersRepo ordersRepo;
+    private final ProgramRepo programRepo;
+
+    public (OrdersRepo, ordersRepo, ProgramRepo programRepo) {
+        this.ordersRepo = ordersRepo;
+        this.programsRepo = programsRepo;
+    }
+
+    @Transactional
+    public void applyDiscount(orderId) {
+        Order order = ordersRepo.findById(orderId) 
+                                .orElseThrow();
+        Program program = programRepo.findById(programId)
+                                .orElseThrow();
+
+        // Бизнес-логика
+        applyDiscount(order, program);
+    }
+
+    private void applyDiscount(Order order, Program program) {
+        order.setPrice(order.getPrice() * program.getDiscount()); 
+    }
+
+}
+
+
+// Репозиторий
+public interface OrdersRepo : JpaRepository<Order, Long> {}
+----
