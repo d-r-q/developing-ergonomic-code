@@ -1,0 +1,362 @@
+. IssuesService.createIssue
+.. createIssue 
+... serviceService.findService
+.... serviceRepository.findById
+.... prepareServicePermissions
+..... service.getServicePermission
+..... permissionService.getUsersByPermissionName
+...... getUserIdListByPermissionName
+....... roleRepository.findByKey
+....... permission.getName
+....... getUserIdByPermissionName
+...... userRepository.findAll
+..... service.getWorkerGroupsForView
+... folderRepository.findRootFolder
+... validateIssueParams
+.... checkThatRequiredFieldsArePassed
+..... service.getFields
+...... checkRequiredAndFilled
+....... findRequiredFieldToCheck
+........ field.getDefinition
+....... checkFilled
+........ field.getContacts()
+.... findSyncableIssueByCaseNumber
+..... issueRepository.findSyncableIssueByCaseNumber
+.... mergeFields
+..... materialize
+...... service.getFields
+.... fillDefaultValues
+..... fieldDefinitionsService.getAllServiceFieldDefinitions
+..... fieldUtils.isEnumWithDefaultValue
+...... fieldDefinition.getEnumValues()
+..... fieldUtils.exists
+..... fieldUtils.getDefaultValue
+.... fillDefaultReminders
+..... fieldDefinitionsService.getAllServiceFieldDefinitions
+...... fieldUtils.isTimestampOrDateWithDefaultReminders
+...... fieldUtils.exists
+...... fieldReminderService.merge
+....... findExistingOrAddNewFieldReminder
+........ findExistingReminder
+........ addNewFieldReminder
+....... mergeFieldReminderParams
+... issueRepository.findById
+... setParentIssue
+.... parentIssue.setHasChildren
+.... issueRepository.save
+... authService.isAuthenticated
+... authService.fetchCurrentUserFromDatabase
+... projectManagement.setLastDeadlineChangeUser
+... issueRepository.save
+... mergeIssueParams
+.... mergeHyperlinks
+..... hyperlinkRepository.findAllByIssue
+..... hyperlinkRepository.delete
+..... hyperlink.setIssue
+..... hyperlinkRepository.save
+..... issue.setHyperlinks
+.... mergeIssueCollaborators
+..... authService.isAuthenticated
+..... userRepository.findById
+..... onIssueCollaboratorsPreUpdate.run
+..... issueRepository.save
+..... notifyService.notifyAssignedCollaborators
+...... messageService.createCollaboratorsNotificationMessage
+....... issueMessageService.createCollaboratorsNotificationMessage
+...... notify
+....... notify
+........ jmsTemplate.send
+..... userActivityService.registerIssueCollaboratorExemption
+...... userActivityRepository.save
+..... userActivityService.registerIssueCollaboratorAssignment
+...... createUserActivityWithIssueAssignedCollaboratorType
+....... userActivityRepository.save
+..... issue.setCollaborators
+..... onIssueCollaboratorsPostUpdate.run
+.... checkDeclarantChange
+..... hasActiveActsOrBillsOrReports
+...... hasActiveActs
+....... actRepository.hasActiveActsInIssue
+...... hasActiveBills
+....... billRepository.hasActiveBillsInIssue
+.... contactRepository.findById
+..... contactService.makePersonClient
+...... contactRepository.findById
+...... makeClient
+....... globalSettingsService.getBaseCountry
+....... makeOrganizationClient
+......... contactRepository.findById
+......... makeClient
+.......... contactRepository.save
+.......... organizationRequisitesRepository.deleteByOrganizationId
+.......... contactExternalIdRepository.deleteByContactId
+.......... contactRepository.delete
+.......... contactRepository.updateOrganizationId
+.......... contactRepository.findById
+.......... setEmailsAndPhones
+.......... savedClientOrganization.updateRequisite
+....... contactRepository.save
+....... contactExternalIdRepository.deleteByContactId
+....... contactRepository.delete
+....... contactRepository.updateClientId
+....... contactRepository.findById
+....... setEmailsAndPhones
+.... issueMessageService.createOnNewIssueForDeclarantMessage
+..... addDeclarantsAndPublisheesIfNecessary
+...... shouldRemindDeclarant
+...... addOnlyDeclarantsIfNecessary
+...... addPublishees
+..... getCurrentUser
+...... authService.isAuthenticated
+...... authService.fetchCurrentUserFromDatabase
+.... notifyService.notify
+.... hasActiveActsOrBillsOrReports
+.... costCenterService.findCostCenter
+..... repository.findById
+.... contactService.findByPriorityCostCenter
+..... declarantUtils.findByPriorityCostCenter
+...... findCostCenters
+....... addCostCenterFromOrganizationUnit
+.... isCaseNumberOrCaseTypeWasChanged
+.... serviceService.findService
+.... disputeBaseService.findById
+..... disputeBaseRepository.findOne 
+.... subjectOfDisputeService.findById
+..... subjectOfDisputeRepository.findOne
+.... checkDeclarantCompanyChange
+.... contactRepository.findOrganizationContactById
+.... contactService.makeOrganizationClient
+.... hasActiveActsOrBillsOrReports
+.... mergeBudgeting
+..... globalSettingsService.isBasicVersion
+..... userRepository.findById
+... mergePricing
+.... contactRepository.findEmployeeById
+.... workerGroupRepository.findById
+... linkedIssueService.saveLinkedIssues
+.... linkedIssueRepository.save
+... updateIssueWorkload
+.... workloadService.calculateIssueWorkload
+..... issueRepository.findIssueByIdForWorkload
+...... proceedingRepository.findProceedingForWorkload
+...... fieldRepository.findFieldForCalculateWorkload
+..... calculateIssueWorkloadByProceedingsAndFields
+...... competencyService.getWorkloadOfIssue
+... issueRepository.save
+... mergeReminders
+.... remindableService.mergeReminders
+..... findExistingOrCreateNew
+..... mergeReminder
+...... userRepository.findById
+... authService.isAuthenticated
+... authService.fetchCurrentUserFromDatabase
+... userRepository.findById
+... issueAssigneeService.assigneeIssue
+.... onIssueAssigneePreUpdate.run
+.... issueRepository.save
+.... messagesReadStatusService.addForAssignee
+..... issueRepository.findEntityById
+..... chatService.getOrCreateChatUnsafe
+..... issueRepository.findEntityById
+..... chatService.getOrCreateChatUnsafe
+..... messagesReadStatusRepository.save
+... contractHelper.initRelatedContractsForNewIssue
+.... contractRepository.findAll
+....  contractFirmRepository.findAll
+..... addContractToIssue
+...... addContractsToIssue
+....... authService.createCurrentUserReference
+....... userActivityService.registerAddContractsToIssue
+... issueRepository.save
+... assignIssueIfNeeded
+.... authService.isAuthenticated
+.... authService.createCurrentUserReference
+..... assignNewIssue
+...... userActivityService.registerAssignerChange
+...... issueStateService.updateIssueState
+....... fsm.onEvent
+....... issueConcentrator.preUpdate
+........ findExternalIdsForContactsOnContracts
+.........  contactExternalIdRepository.findContactExternalIdMapByIssueId
+...... issueStateService.updateIssueState
+...... autoAssigneeService.autoAssignIssue
+....... autoAssigneeUsersService.getPairOfUsersAndExecSelRuleForAutoAssign
+........ competencyService.competencyInited
+......... competencyRepository.competencyInited
+......... competencyService.getMaxCompetencyLevelOfIssue
+......... initAssigneeByContract
+.......... findLawyerOfContract
+...........  contractHelper.getFirstContract
+............ getFirstContract
+........... contractHelper.getResponsibleLawyerOfContract
+........... contractRepository.isContractHasActivityFromDateWithCtimeContract
+........... contractFirmRepository.isContractHasActivityFromDateWithCtimeContract
+........... findLawyerOfContractor
+............ contractHelper.getFirstContract
+............. getFirstContract
+........ excludeRemovedAndUnavailableWithoutAvailableDeputy
+........ serviceService.getRoutedValueByIssue
+........ executorsService.getExecutors
+......... getExecutors
+.......... organizationUnitRepository.getParentIdAndAllChildIdsByParentId
+.......... userRepository.findByOrgUnitIdsAndUserLawyer
+........ findExecutorsByCompany
+........ executorsService.getExecutors
+......... getExecutors
+.......... getExecutors
+........ executorsService.getExecutors
+........ excludeRemovedAndUnavailableWithoutAvailableDeputy
+........ initAssigneesByIssueCompetency
+......... executorsService.getExecutors
+.........  competencyService.getMaxCompetencyLevelOfIssue
+......... executorsService.getExecutorsByCompetencyLevel
+........ executorsService.getExecutors
+........ excludeRemovedAndUnavailableWithoutAvailableDeputy
+........ excludeRemovedAndUnavailableWithoutAvailableDeputy
+....... issueStateService.updateIssueState
+....... userActivityService.registerAssignerChange
+....... issueStateService.updateIssueState
+..... issueStateService.updateIssueState
+.... assignIssue
+..... mergeAssignee
+...... userRepository.findById
+...... issueAssigneeService.assigneeIssue
+....... onIssueAssigneePreUpdate.run
+....... issueRepository.save
+....... messagesReadStatusService.addForAssignee
+...... userActivityService.registerAssignerChange
+...... workloadService.updateWorkload
+...... issueStateService.updateIssueState
+..... autoAssigneeService.autoAssignIssue
+..... addUserToIssueCollaborators
+...... userActivityService.registerIssueCollaboratorAssignment
+...... notifyService.notifyAssignedCollaborators
+....... messageService.createCollaboratorsNotificationMessage
+........ issueMessageService.createCollaboratorsNotificationMessage
+... slaService.calculateDeadlineByStateWaitToResolved
+.... standardTermsRepository.getOneByStateWaitAndResolvedAndIssueIdOrderByStandardDeadlineDesc
+..... calculateDeadline
+...... dateCalculationService.createZoneOffsetCalculator
+...... calculateDeadline
+....... dateCalculationService.add
+........ systemSettingsRepository.get
+........ publicHolidaysService.isWorkTime
+......... systemSettings.isUseRoundTheClockService
+......... systemSettings.getWorkingDayStartTime
+.......  competencyService.getTimeShiftOfIssue
+........ publicHolidaysService.getDefaultNormHours
+....... addAdmissionWorkingHours
+........ calculateAdmissionWorkingHours
+......... systemSettingsRepository.get
+.......... calculateHoursIssueWasInState
+........... dateCalculationService.calculateSkippedWorkingHour
+............ publicHolidaysService.isWorkTime
+....... shouldAccountPausedTime
+....... addSkippedWorkingHours
+........ calculateSkippedWorkingHours
+... onManagerRatingChange
+.... authService.getCurrentUser
+..... userActivityService.registerIssueManagerRatingChange
+... initDefaultProceedings
+.... enabledOnlyBankruptcyIssues
+.... initBankruptcy
+..... bankruptcyFolderCreator.getOrCreateFolder
+...... localizedFolderCreator.getOrCreateFolder
+....... managedFolderCreator.getOrCreateFolder
+........ fileSystemEntityRepository.findByParentFolderAndName
+........ createManagedFolder
+......... folderRepository.saveAndFlush
+..... bankruptcyService.save
+..... authService.isAuthenticated
+..... issuePublisheesAndWatchersByProceedingNotifier.notifyIssuePublisheesAndWatchersOnBankruptcyAdded
+...... notifyService.notify
+.... initProceedings
+..... createDefaultProceeding
+...... proceedingFolderCreator.getOrCreateFolder
+....... localizedFolderCreator.getOrCreateFolder
+...... proceedingRepository.save
+..... issueDisputeDirectionService.updateDisputeDirection
+...... opponentService.getSide
+... initMicrosoftTeamsChatLink
+.... globalSettingsService.isMicrosoftTeamsIntegrationEnabled
+..... issueFolderCreator.createIssueDeclarantFolder
+...... managedFolderCreator.getOrCreateFolder
+... temporaryFilesService.moveTemporaryFilesTo
+.... authService.fetchCurrentUserFromDatabase
+.... temporaryFileRepository.findAll
+.... fileRepository.save
+.... temporaryFileRepository.delete
+... autoAssigneeService.initContractsAssigneesAndContractorsRespLawyersByIssue
+.... contractHelper.getContracts
+.... contractHelper.getContractIssues
+.... initContractAssigneeAndContractorResponsibleLawyerByRelatedIssues
+..... initContractResponsibleLawyerByRelatedIssues
+..... replaceLawyerInContractIfOldLastActivity
+..... replaceLawyerInContractIfUnavailable
+..... initContractorResponsibleLawyerByRelatedIssues
+..... replaceLawyerInContractorIfOldLastActivity
+..... replaceLawyerInContractorIfUnavailable
+... autocompleteRulesService.fillSystemFieldByClassOnDefaultValue
+.... systemFieldRepository.findAllByBelongToClassContainsIgnoreCase
+.... serviceFieldRelationRepository.findAllByFieldBaseDataIdInAndServiceId
+..... setFieldValueByFieldType
+... autocompleteRulesService.fillAllIssueFieldDefinitionsOnDefaultValue
+.... serviceFieldRelationRepository.findAllByFieldBaseDataIdInAndServiceId
+... publisher.publishEvent
+
+serviceRepository
+roleRepository
+userRepository
+folderRepository
+issueRepository
+hyperlinkRepository
+userActivityRepository
+actRepository
+billRepository
+contactRepository
+organizationRequisitesRepository
+contactExternalIdRepository
+costCenterRepository
+disputeBaseRepository
+subjectOfDisputeRepository
+workerGroupRepository
+linkedIssueRepository
+proceedingRepository
+fieldRepository
+messagesReadStatusRepository
+contractRepository
+contractFirmRepository
+competencyRepository
+organizationUnitRepository
+standardTermsRepository
+systemSettingsRepository
+fileSystemEntityRepository
+temporaryFileRepository
+fileRepository
+systemFieldRepository
+serviceFieldRelationRepository
+итого - 30
+
+find - 37 штук
+save - 20 штук
+
+
+Структурный дизайн + функциональное программирование + Spring Data JDBC = любовь.
+Или как я вернул фан в кровавый энтерпрайз.
+
+. Подводка
+. 
+
+. Я использую SDJ в продакшене 4 года
+. Потому что он помогает мне рассеять мглу
+.. Первые 10-15 лет своей карьеры я чувстсвовал себя героем фильма мгла
+.. Потому что регулярно сталкивался с вот таким кодом
+.. А я вообще ни разу не герой и не люблю, проживать каждый день как подвиг
+.. Поэтому я начал искать способы рассеять мглу
+.. И я нашёл два совместимых способа - структурный дизайн и функциональное программирование
+... Структурный дизайн
+... Функциоанльное программирование
+.. Однако эти способы не совместимы с Spring Data JPA
+.. Поэтому я начал искать ей замену - пробовал jooq и JdbcTemplate, но они требуют слишком много ручной работы
+.. А потом наткнулся на Spring Data JDBC и обрёл щясте - он позволяет применять СД и ФП и при этом берёт на себя значительную часть ручной работы
+.

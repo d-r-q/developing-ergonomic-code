@@ -1,0 +1,151 @@
+[source,kotlin]
+----
+fun driverStats(driver: Driver): String =
+    """
+        DriverStats(
+            name=${driver.name}, 
+            ordersInShift=${driver.ordersInShift})
+    """
+----
+
+[source,kotlin]
+----
+fun assignOrders() {
+    val onlineDrivers = //...
+    // ...
+    log.debug(
+        "Drivers stats after assign: {}",
+        onlineDriver.map(::driverStats))
+    //..
+}
+----
+
+[source,kotlin]
+----
+fun assignOrders() {
+    val onlineDrivers = //...
+    // ...
+    log.debug(
+        "Drivers stats after assign: {}",
+        onlineDriver.map(::driverStats))
+    //..
+}
+----
+
+[source,kotlin]
+----
+class DriverStatsTests {
+    @Test
+    fun `Статистика водителя должна содержать его имя`() {
+        // Сетап
+        val name = "Гордеев Иван"
+        val driver = aDriver(name = name)
+
+        // Действие
+        val stats = AssignService.driverStats(driver)
+
+        // Проверка
+        stats shouldContain name
+    }
+}
+----
+
+[source,kotlin]
+----
+@SpringBootTest
+class DriverStatsTests {
+
+    @MockBean
+    private lateinit var skillsService: SkillsService
+    
+    @Autowired
+    private lateinit var assignService: AssignService
+
+    @Test
+    fun `Статистика водителя должна содержать его имя`() {
+        // Сетап
+        val name = "Гордеев Иван"
+        val driver = aDriver(name = name)
+        every { skillService.getSkills(driver.id) } 
+            returns listOf("Поддерживать разговор о политике")
+
+        // Действие
+        val stats = AssignService.driverStats(driver)
+
+        // Проверка
+        stats shouldContain name
+    }
+}
+----
+
+[source,kotlin]
+----
+fun assignOrders() {
+    val onlineDrivers = //...
+    // ...
+    val assignments = findBestMatches()
+    tryAssign(assignments)
+    log.debug(
+        "Drivers stats after assign: {}",
+        onlineDriver.map(::driverStats))
+    //..
+}
+----
+
+[source,kotlin]
+----
+// Модель
+@Entity
+class Order(
+  var id: Long
+  var price: Long
+) {
+  fun applyDiscount() {
+    price = (price * 0.9).toLong()
+  }
+}
+
+// Сервис приложения
+class DiscountsService {
+  @Transactional
+  fun applyDiscount(orderId) {
+    Order order = ordersRepo
+                   .findByIdOrNull(orderId) 
+                   ?: throw NotFound()
+    order.applyDiscount();
+  }
+}
+
+// Репозиторий
+interface OrdersRepo : CrudRepository</**/>
+----
+
+[source,kotlin]
+----
+// Модель
+@Table("orders")
+data class Order(
+  val id: Long
+  val price: Long
+) {
+
+  fun applyDiscount(): Order =
+    copy(price = (price * 0.9).toLong())
+
+}
+
+// Репозиторий
+interface OrdersRepo : CrudRepository</**/>
+
+// Сервис приложения
+class DiscountsService {
+    @Transactional
+    fun applyDiscount(orderId) {
+        Order order = ordersRepo
+                   .findByIdOrNull(orderId) 
+                   ?: throw NotFound()
+        val dscntedOrder = order.applyDiscount() 
+        ordersRepo.save(dscntedOrder)
+    }
+}
+----

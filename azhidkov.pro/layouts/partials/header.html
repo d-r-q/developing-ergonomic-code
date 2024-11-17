@@ -24,7 +24,7 @@
             </li>
           {{ end }}
         {{ end }}
-        {{ if .Site.IsMultiLingual }}
+        {{ if hugo.IsMultilingual }}
           {{ $node := . }}
           {{ .Scratch.Set "separator" true }}
           {{ with .Site.Params.LangSeparator }}

@@ -1,0 +1,27 @@
+flowchart TD
+
+    ABSr("ArchivistBoxService.\nrepackage")
+    
+    OShAL("OsgService.\nhasAnyLinks")
+    ABSr --> OShAL
+
+    ORhAL("OsgRepo.\nhasAnyLinks")
+    OShAL --> ORhAL
+
+    BRfBII("BoxRepo\n.findByIdIn")
+    ABSr --> BRfBII
+
+    ABSrB("ArchivistBoxService.\nrepackBoxes")
+    ABSr --> ABSrB
+
+    ABStRI("ArchivistBoxService.\ntoReportingIntervals")
+    ABSrB --> ABStRI
+
+    BRsA("BoxRepo\n.saveAll")
+    ABSr --> BRsA
+
+    OSiBTOL("OsgService\n.insertBoxesToOsgLinks")
+    ABSr --> OSiBTOL
+
+    ORiBTOL("OsgService.\ninsertBoxToOsgLinks")
+    OSiBTOL --> ORiBTOL

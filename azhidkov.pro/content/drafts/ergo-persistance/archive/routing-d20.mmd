@@ -1,0 +1,27 @@
+flowchart TD
+
+    TRQIr("OrdersQueue.process")
+
+    TSSr("OrdersService.process")
+    TRQIr --> TSSr
+
+    TSSgT("OrdersService.getOrder")
+    TSSr --> TSSgT
+
+    TRfBI("OrdersRepository.findById")
+    TSSgT --> TRfBI
+
+    ORfA("DriversReposiotry.findAll")
+    TSSr --> ORfA
+
+    TRfT("OrdersRepository.findOrders")
+    TSSr --> TRfT
+
+    Qo("Queue.offer")
+    TSSr --> Qo
+
+    TsO("Order.setDriver")
+    TSSr --> TsO
+
+    TFoE("OrderFsm.onEvent")
+    TSSr --> TFoE

@@ -1,0 +1,235 @@
+%% 123
+flowchart TD
+
+    subgraph performRoute["orcestrate"]
+    RpR[("Router.performRoute (3)")]
+    style RpR fill:#00C3FF
+    end
+    
+    RpR --> RRfRD
+
+%% 30
+    subgraph fetch["Read"]
+    RRfRD[("RoutingRepository.fetchRoutingData (4)")]
+    style RRfRD fill:#00D3FF
+
+
+    CSfA[("ChannelService.findAll (1)")]
+    style CSfA fill:#00A3FF
+
+    RRfRD --> CSfA
+
+    CRfA[("ChannelRepository.findAll (0)")]
+    style CRfA fill:#0099FF
+
+    CSfA --> CRfA
+
+    RRfRDSACA("RoutingReopsitory.selectActiveChannelsAt (1)")
+    style RRfRDSACA fill:#00A3FF
+
+    RRfRD --> RRfRDSACA
+
+    RRsPO[("RoutingReopsitory.selectPersonalOpertaors (1)")]
+    style RRsPO fill:#00A3FF
+
+    RRfRD --> RRsPO
+
+    RRsTQ[("RoutingReopsitory.selectThreadsQueue (1)")]
+    style RRsTQ fill:#00A3FF
+    
+    RRfRD --> RRsTQ
+
+    RRsAU[("RoutingReopsitory.selectActiveUsers (1)")]
+    style RRsAU fill:#00A3FF
+
+    RRfRD --> RRsAU
+
+    RRsULCT[("RoutingReopsitory.selectUserLastClosedThreads (1)")]
+    style RRsULCT fill:#00A3FF
+
+    RRsAU --> RRsULCT
+    
+    RRsTR[("RoutingReopsitory.selectThreadRefuses (1)")]
+    style RRsTR fill:#00A3FF
+
+    RRsAU --> RRsTR
+
+    RRsUS[("RoutingReopsitory.selectUserSkills (1)")]
+    style RRsUS fill:#00A3FF
+
+    RRsAU --> RRsUS
+
+    RRsRS[("RoutingReopsitory.selectRoutingSettings (1)")]
+    style RRsRS fill:#00A3FF
+
+    RRfRD --> RRsRS
+
+    RMBbRM("RoutesMapBuilder.buildRoutesMap (1)")
+    style RMBbRM fill:#00F3FF
+
+    RRfRD --> RMBbRM
+
+    RMBmRP("RoutesMapBuilder.mapRoutePoints (1)")
+    style RMBmRP fill:#00E3FF
+
+    RRfRD --> RMBmRP
+
+    RMBrPCV("RoutesMapBuilder.routePointCriteriaValues (1)")
+    style RMBrPCV fill:#00D3FF
+
+    RRfRD --> RMBrPCV
+
+
+    SSgL[("SettingsService.getLong (1)")]
+    style SSgL fill:#00A3FF
+
+    RpR --> SSgL
+
+    end
+
+    %% 71 (58%)
+    subgraph decide["Transfomration"]
+
+    RdR("Router.decideRoutes (1)")
+    style RdR fill:#00A3FF
+
+    RpR --> RdR
+
+    RPr("RouterPolicy.route (17)")
+    style RPr fill:#00FF23
+
+    RdR --> RPr
+    
+    AOhNFS("ActiveOperators.hasNoFreeSlots (2)")
+    style AOhNFS fill:#00B3FF
+
+    RPr --> AOhNFS
+
+    AOtFS("ActiveOperators.totalFreeSlots (1)")
+    style AOtFS fill:#00A3FF
+
+    RPr --> AOtFS
+
+    RPoC("RoutingPolicy.operatorsComparator (1)")
+    style RPoC fill:#00A3FF
+
+    RPr --> RPoC
+    
+    ORDfSR("OperatorRoutingData.freeSlotsRatio (2)")
+    style ORDfSR fill:#00B3FF
+
+    RPoC --> ORDfSR
+
+    ORDiTSS("OperatorRoutingData.idleTimeSinceSession (3)")
+    style ORDiTSS fill:#00C3FF
+
+    RPoC --> ORDiTSS
+
+    ORDcA("OperatorRoutingData.canAccept (2)")
+    style ORDcA fill:#00B3FF
+
+    RPr --> ORDcA
+
+    ORDhFS("OperatorRoutingData.hasFreeSlots (2)")
+    style ORDhFS fill:#00B3FF
+
+    ORDcA --> ORDhFS
+
+    ORDfS("OperatorRoutingData.freeSlots (4)")
+    style ORDfS fill:#00D3FF
+
+    ORDhFS --> ORDfS
+    
+    TRDiFT("ThreadRoutingData.isFromFransfer (1)")
+    style TRDiFT fill:#00A3FF
+
+    RPr --> TRDiFT
+
+    RPtTA("RoutingPolicy.tryTransferAssignment (6)")
+    style RPtTA fill:#00F3FF
+
+    RPr --> RPtTA
+
+    TRDcBAT("ThreadRoutingData.canBeAssignedTo (7)")
+    style TRDcBAT fill:#00FFFF
+
+    RPtTA --> TRDcBAT
+
+    RPtPA("RoutingPolicy.tryPersonalAssignment (5)")
+    style RPtPA fill:#00E3FF
+
+    RPr --> RPtPA
+
+    ORDiPOF("OperatorRoutingData.isPersonalOperatorFor (2)")
+    style ORDiPOF fill:#00B3FF
+
+    RPtPA --> ORDiPOF
+
+    RPtBMA("RoutingPolicy.tryBestMatchingAssignment (7)")
+    style RPtBMA fill:#00FFFF
+
+    RPr --> RPtBMA
+
+    RPgR("RoutingPolicy.getRoute (2)")
+    style RPgR fill:#00B3FF
+
+    RPtBMA --> RPgR
+
+    RPm("RoutingPoint.matches (3)")
+    style RPm fill:#00C3FF
+
+    RPtBMA --> RPm
+
+    ACaA("RoutingPoint.matches (3)")
+    style ACaA fill:#00C3FF
+
+    RPtBMA --> ACaA
+
+    end
+
+    %%19
+    subgraph performAssignments["Write"]
+
+    RpA[("Router.performAssignments (4)")]
+    style RpA fill:#00D3FF
+
+    RpR --> RpA
+
+    TAStAT[("ThreadApiService.tryAssignThread (4)")]
+    style TAStAT fill:#00D3FF
+
+    RpA --> TAStAT
+
+    AEPsTCAOQUE[("AsyncEventPublisher.sendThreadChangedAndOperatorQueueUpdateEvent (2)")]
+    style AEPsTCAOQUE fill:#00B3FF
+
+    RpA --> AEPsTCAOQUE
+
+    RsTNRE[("Router.sendThreadsNotRoutedEvent (2)")]
+    style RsTNRE fill:#00B3FF
+
+    RpR --> RsTNRE
+
+    AEPtNR[("AsyncEventPublisher.threadsNotRouted (1)")]
+    style AEPtNR fill:#00a3ff
+
+    RsTNRE --> AEPtNR
+
+    TSuLRAT[("ThreadService.updateLastRoutingAttemptTime (1)")]
+    style TSuLRAT fill:#00a3ff
+
+    RpR --> TSuLRAT
+
+    ESSdES[("extraSlotService.discardExtraSlots (2)")]
+    style ESSdES fill:#00B3FF
+
+    RpR --> ESSdES
+
+    URdES[("UserService.discardExtraSlots (0)")]
+    style URdES fill:#0099ff
+
+    ESSdES --> URdES
+    end
+
+    fetch --> decide
+    decide --> performAssignments

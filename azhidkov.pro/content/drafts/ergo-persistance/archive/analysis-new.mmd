@@ -1,0 +1,51 @@
+flowchart TD
+
+    ASIgRA("AnalysisServiceImpl.calculateEventStatistics")
+
+    ASIgAE("AnalysisServiceImpl.getAnalysisEvents")
+    ASIgRA --> ASIgAE
+
+    PSgRP("ProfileService.getProfile")
+    ASIgAE --> PSgRP
+
+    DRRgUEDIPFR("DiaryReportsRepo.getUserEventDataInPeriodForReport")
+    ASIgAE --> DRRgUEDIPFR
+
+    ARCcES("AnalysisReportCalculator.calculateEventStatistics")
+    ASIgRA --> ARCcES
+
+    ARCcBS("AnalysisReportCalculator.calculateBreadStatistics")
+    ARCcES --> ARCcBS
+
+    ARCrDOZ("AnalysisReportCalculator.roundingDivisionOrZero")
+    ARCcBS --> ARCrDOZ
+
+    ARCcAS("AnalysisReportCalculator.calculateActivityStatistics")
+    ARCcES --> ARCcAS
+
+    ARCcAS --> ARCrDOZ
+
+    ARCcIS("AnalysisReportCalculator.calculateInsulinStatistics")
+    ARCcES --> ARCcIS
+
+    ARCaBUD("AnalysisReportCalculator.averageByUniqueDate")
+    ARCcIS --> ARCaBUD
+
+    ARCaBUD --> ARCrDOZ
+
+    ARCcGS("AnalysisReportCalculator.calculateGlucoseStatistics")
+    ARCcES --> ARCcGS
+
+    GAEDgFV("GlucoseAnalysisEventData.getFormattedValue")
+    ARCcGS --> GAEDgFV
+
+    ARCrGL("AnalysisReportCalculator.resolveGlucoseLevel")
+    ARCcGS --> ARCrGL
+
+    PcIRGL("Profile.calculateInRaneGlucoseLevels")
+    ARCcGS --> PcIRGL
+
+    ARCcGS --> ARCrDOZ
+
+    DsWSPR("Double.substractWithSinglePrecisionRound")
+    ARCcGS --> DsWSPR

@@ -1,0 +1,59 @@
+---
+title: "Раскладываем по полочкам технологии работы с РСУБД в Spring"
+date: 2024-05-21T08:25:37+07:00
+draft: false
+tags: ergo-persistance spring-data-jdbc jpa
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:sectlinks:
+:imagesdir: 
+:toc:
+:toclevels: 4
+:toc-title: Содержание
+
+== Введение
+
+Мои студенты часто путают
+
+== JDBC
+
+=== API
+
+=== SPI
+
+=== Drivers
+
+== R2DBC
+
+=== ???
+
+== Spring Data Access
+
+== Spring Tx
+
+== Hibernate
+
+=== Reactive
+
+== JPA
+
+=== EclipseLink, TopLink
+
+== Spring Data
+
+== Spring Data Relational
+
+=== JDBC
+
+=== R2DBC
+
+== Spring Data JPA
+
+== Заключение
+
+Не путайте:
+
+. JDBC
+. ...

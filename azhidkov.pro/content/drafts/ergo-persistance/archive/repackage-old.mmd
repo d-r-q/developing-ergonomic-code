@@ -1,0 +1,38 @@
+flowchart TD
+
+    ABSr("1")
+    
+    OShAL("1")
+    ABSr --> OShAL
+
+    ORhAL("1")
+    OShAL --> ORhAL
+
+    ABSrSB("1")
+    ABSr --> ABSrSB
+
+    BRfBI("1")
+    ABSrSB --> BRfBI
+
+    ABStRI("1")
+    ABSrSB --> ABStRI
+
+    BRs("1")
+    ABSrSB --> BRs
+
+    OSiBTOL("1")
+    ABSrSB --> OSiBTOL
+
+    ORiBTOL("1")
+    OSiBTOL --> ORiBTOL
+
+    ABSrMB("1")
+    ABSr --> ABSrMB
+
+    ABSrMB --> OSiBTOL
+
+    ABSrBTOB("1")
+    ABSrMB --> ABSrBTOB
+
+    ABSrBTOB --> BRfBI
+    ABSrBTOB --> BRs
