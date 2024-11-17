@@ -1,0 +1,31 @@
+name = "Coder Portfolio"
+license = "MIT"
+licenselink = "https://github.com/naro143/hugo-coder-portfolio/blob/master/LICENSE.md"
+description = "It is a theme to have you know yourself than developed based on hugo-coder"
+homepage = "https://github.com/naro143/hugo-coder-portfolio"
+tags = [
+  "blog",
+  "minimal",
+  "minimalist",
+  "responsive",
+  "simple",
+  "clean",
+  "personal"
+]
+features = [
+  "analytics",
+  "favicon",
+  "pagination",
+  "single-column",
+  "syntax-highlighting"
+]
+min_version = "0.32"
+
+[author]
+  name = "Yusuke Ishimi"
+  homepage = "https://naro143.github.io"
+
+[original]
+  author = "Luiz F. A. de Prá"
+  homepage = "https://luizdepra.com"
+  repo = "https://github.com/luizdepra/hugo-coder"
