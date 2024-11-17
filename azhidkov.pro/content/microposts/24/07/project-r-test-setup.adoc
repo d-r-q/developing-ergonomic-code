@@ -2,7 +2,12 @@
 title: "Как поднимать свежую фикстуру БД на 300+ таблиц за 1.5 секунды"
 date: 2024-07-03T08:25:37+07:00
 draft: false
-tags: tdd, integration-tests, testcontainers, db-fixture, project-r
+tags: 
+- tdd
+- integration-tests
+- testcontainers
+- db-fixture
+- project-r
 ---
 :source-highlighter: rouge
 :rouge-theme: github

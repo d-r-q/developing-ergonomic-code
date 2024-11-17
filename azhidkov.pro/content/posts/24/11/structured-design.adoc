@@ -2,7 +2,10 @@
 title: "Структурный дизайн. Древний секрет простого и быстрого кода"
 date: 2024-11-17T08:25:37+07:00
 draft: false
-tags: structured-design functional-architecture case
+tags: 
+- structured-design 
+- functional-architecture
+- case
 ---
 :source-highlighter: rouge
 :rouge-theme: github

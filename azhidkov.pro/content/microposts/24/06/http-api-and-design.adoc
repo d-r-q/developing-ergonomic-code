@@ -2,7 +2,12 @@
 title: "Влияние дизайна HTTP API на дизайн модели"
 date: 2024-06-01T08:25:37+07:00
 draft: false
-tags: project-mariotte, http-api, functional-architecture, parse-dont-validate, make-invalid-states-unrepresentible
+tags:
+- project-mariotte
+- http-api
+- functional-architecture
+- parse-dont-validate
+- make-invalid-states-unrepresentible
 ---
 :source-highlighter: rouge
 :rouge-theme: github
