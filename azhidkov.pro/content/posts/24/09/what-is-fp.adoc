@@ -2,7 +2,9 @@
 title: "Что я имею ввиду под ФП "
 date: 2024-08-10T08:25:37+07:00
 draft: false
-tags: terminology, fp, oop, functional-architecturel, ergo-approach
+tags: terminology, fp, oop, functional-architecture, ergo-approach
+aliases:
+- /microposts/24/09/what-is-fp
 ---
 :source-highlighter: rouge
 :rouge-theme: github
