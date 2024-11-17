@@ -1,0 +1,15 @@
+flowchart TD
+
+    OQPIpQF("OperatorQueueProcessorImpl.processQueueFor")
+
+    TRfT("ThreadsRepository.findThreads")
+    OQPIpQF --> TRfT
+
+    SPSnT("SimpleProcessingStrategy.nextThread")
+    OQPIpQF --> SPSnT
+
+    TgSCT("Thread.getStateChangeTime")
+    SPSnT --> TgSCT
+
+    OsNT("Operator.setNextThread")
+    OQPIpQF --> OsNT

@@ -1,0 +1,119 @@
+<!doctype html><html lang=ru-ru><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="Алексей Жидков"><meta name=description content="https://azhidkov.pro/"><meta property="og:site_name" content="Алексей Жидков"><meta property="og:title" content="
+   - Алексей Жидков
+"><meta property="og:description" content><meta property="og:type" content="website"><meta property="og:url" content="https://azhidkov.pro/drafts/ergo-persistance/archive/fa-sdj/"><meta property="og:image" content="https://azhidkov.pro/"><meta name=twitter:card content="summary"><meta name=twitter:site content="https://azhidkov.pro/drafts/ergo-persistance/archive/fa-sdj/"><meta name=twitter:image content="https://azhidkov.pro/"><base href=https://azhidkov.pro/drafts/ergo-persistance/archive/fa-sdj/><title>- Алексей Жидков
+</title><link rel=canonical href=https://azhidkov.pro/drafts/ergo-persistance/archive/fa-sdj/><link rel=stylesheet href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700"><link rel=stylesheet href=/css/normalize.min.css><link rel=stylesheet href=/css/style.min.css><link rel=stylesheet href=https://use.fontawesome.com/releases/v5.2.0/css/all.css><link rel=stylesheet href=https://azhidkov.pro/css/custom.css><link rel=stylesheet href=https://azhidkov.pro/css/github.css><link rel=stylesheet href=https://azhidkov.pro/css/JetBrains-Mono.css><link rel=icon type=image/png href=/images/favicon-32x32.png sizes=32x32><link rel=icon type=image/png href=/images/favicon-16x16.png sizes=16x16><link rel=alternate href=https://azhidkov.pro/index.xml type=application/rss+xml title="Алексей Жидков"><link href=https://azhidkov.pro/index.xml rel=feed type=application/rss+xml title="Алексей Жидков"><meta name=generator content="Hugo 0.137.0"></head><body><main class=wrapper><link rel=apple-touch-icon sizes=180x180 href=apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://azhidkov.pro/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://azhidkov.pro/favicon-16x16.png><link rel=manifest href=site.webmanifest><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><link href='https://fonts.googleapis.com/css?family=Roboto' rel=stylesheet type=text/css><nav class=navigation><section class=container style=height:100%><img src=https://azhidkov.pro/images/logo.svg class=logo>
+<a class=navigation-title href=/>Алексей Жидков
+</a><input type=checkbox id=menu-control>
+<label class="menu-mobile float-right" for=menu-control><span class="btn-mobile float-right">&#9776;</span><ul class=navigation-list><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/ergo-approach/landing>Эргономичный подход</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/effects-diagram/landing>Диаграмма Эффектов</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/posts>Блог</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/portfolio>Портфолио</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/>Контакты</a></li><li class=mobile-menu-lang-separator-full><hr></li></ul></label></section></nav><div class=content><section class="container page"><article><header><h1></h1></header><div class=listing-block><pre class=highlight><code class=language-kotlin data-lang=kotlin>fun driverStats(driver: Driver): String =
+    &#34;&#34;&#34;
+        DriverStats(
+            name=${driver.name},
+            ordersInShift=${driver.ordersInShift})
+    &#34;&#34;&#34;</code></pre></div><div class=listing-block><pre class=highlight><code class=language-kotlin data-lang=kotlin>fun assignOrders() {
+    val onlineDrivers = //...
+    // ...
+    log.debug(
+        &#34;Drivers stats after assign: {}&#34;,
+        onlineDriver.map(::driverStats))
+    //..
+}</code></pre></div><div class=listing-block><pre class=highlight><code class=language-kotlin data-lang=kotlin>fun assignOrders() {
+    val onlineDrivers = //...
+    // ...
+    log.debug(
+        &#34;Drivers stats after assign: {}&#34;,
+        onlineDriver.map(::driverStats))
+    //..
+}</code></pre></div><div class=listing-block><pre class=highlight><code class=language-kotlin data-lang=kotlin>class DriverStatsTests {
+    @Test
+    fun `Статистика водителя должна содержать его имя`() {
+        // Сетап
+        val name = &#34;Гордеев Иван&#34;
+        val driver = aDriver(name = name)
+
+        // Действие
+        val stats = AssignService.driverStats(driver)
+
+        // Проверка
+        stats shouldContain name
+    }
+}</code></pre></div><div class=listing-block><pre class=highlight><code class=language-kotlin data-lang=kotlin>@SpringBootTest
+class DriverStatsTests {
+
+    @MockBean
+    private lateinit var skillsService: SkillsService
+
+    @Autowired
+    private lateinit var assignService: AssignService
+
+    @Test
+    fun `Статистика водителя должна содержать его имя`() {
+        // Сетап
+        val name = &#34;Гордеев Иван&#34;
+        val driver = aDriver(name = name)
+        every { skillService.getSkills(driver.id) }
+            returns listOf(&#34;Поддерживать разговор о политике&#34;)
+
+        // Действие
+        val stats = AssignService.driverStats(driver)
+
+        // Проверка
+        stats shouldContain name
+    }
+}</code></pre></div><div class=listing-block><pre class=highlight><code class=language-kotlin data-lang=kotlin>fun assignOrders() {
+    val onlineDrivers = //...
+    // ...
+    val assignments = findBestMatches()
+    tryAssign(assignments)
+    log.debug(
+        &#34;Drivers stats after assign: {}&#34;,
+        onlineDriver.map(::driverStats))
+    //..
+}</code></pre></div><div class=listing-block><pre class=highlight><code class=language-kotlin data-lang=kotlin>// Модель
+@Entity
+class Order(
+  var id: Long
+  var price: Long
+) {
+  fun applyDiscount() {
+    price = (price * 0.9).toLong()
+  }
+}
+
+// Сервис приложения
+class DiscountsService {
+  @Transactional
+  fun applyDiscount(orderId) {
+    Order order = ordersRepo
+                   .findByIdOrNull(orderId)
+                   ?: throw NotFound()
+    order.applyDiscount();
+  }
+}
+
+// Репозиторий
+interface OrdersRepo : CrudRepository&lt;/**/&gt;</code></pre></div><div class=listing-block><pre class=highlight><code class=language-kotlin data-lang=kotlin>// Модель
+@Table(&#34;orders&#34;)
+data class Order(
+  val id: Long
+  val price: Long
+) {
+
+  fun applyDiscount(): Order =
+    copy(price = (price * 0.9).toLong())
+
+}
+
+// Репозиторий
+interface OrdersRepo : CrudRepository&lt;/**/&gt;
+
+// Сервис приложения
+class DiscountsService {
+    @Transactional
+    fun applyDiscount(orderId) {
+        Order order = ordersRepo
+                   .findByIdOrNull(orderId)
+                   ?: throw NotFound()
+        val dscntedOrder = order.applyDiscount()
+        ordersRepo.save(dscntedOrder)
+    }
+}</code></pre></div></article></section></div></main><script src=/js/app.js></script></body></html>

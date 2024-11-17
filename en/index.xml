@@ -1,22 +1,143 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Aleksey Zhidkov</title><link>https://azhidkov.pro/en/</link><description>Recent content on Aleksey Zhidkov</description><generator>Hugo -- gohugo.io</generator><language>en-en</language><lastBuildDate>Mon, 21 Jun 2021 11:25:37 +0700</lastBuildDate><atom:link href="https://azhidkov.pro/en/index.xml" rel="self" type="application/rss+xml"/><item><title>The Many Faces of the Single Responsibility Principle</title><link>https://azhidkov.pro/en/posts/21/06/210626-srp-interpretations/</link><pubDate>Mon, 21 Jun 2021 11:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/06/210626-srp-interpretations/</guid><description>Note: You can follow the blog’s updates in my channel: Ergonomic code (rus)
-It feels like any solid software engineer knows of SOLID in general and the single-responsibility principle (SRP) in particular.
-In case you don’t…​The SOLID is a set of principles guiding object-oriented design. It was put together by Robert Martin, who’s also known as Uncle Bob. These principles go as follows:
-Single Responsibility Principle: A module should have one, and only one, reason to change.</description></item><item><title>Uncle Bob Isn't Always Right</title><link>https://azhidkov.pro/en/posts/21/04/srp-ocp-conflict/</link><pubDate>Wed, 28 Apr 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/04/srp-ocp-conflict/</guid><description>Note: You can follow the blog’s updates in my channel: Ergonomic code (rus)
-Uncle Bob’s Latest ArticleI’ve just read Uncle Bob’s recent article and must say I disagree.
-Here’s a brief overview of the contents.
-Someone on the internet asked how’d one go about refactoring this code.
-Uncle Bob said that the right way would be to encapsulate this &amp;#39;if&amp;#39; statement in a factory object.
-He followed with:</description></item><item><title>Why You Should Avoid Using JPA/Hibernate in Production</title><link>https://azhidkov.pro/en/posts/21/04/why-jpa-should-be-avoided/</link><pubDate>Sat, 03 Apr 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/04/why-jpa-should-be-avoided/</guid><description>Note: You can follow the blog updates in my channel: Ergonomic Code (rus)
-22.08.21 edit:
-Section Bad procedural programming styleSection What to do if JPA is unavoidableSection Links Disclaimer: I passionately hate JPA and Hibernate.My relationship with Hibernate (JPA hasn’t yet existed back then) has been rocky from the very beginning. Somewhere as far back as 2005 or 2007, an interviewer asked me how I’d go about mapping the 1-N relationship with Hibernate.</description></item><item><title>On Systems Decomposition</title><link>https://azhidkov.pro/en/posts/21/03/250326-project-decomposition/</link><pubDate>Wed, 24 Mar 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/03/250326-project-decomposition/</guid><description>*Dislaimer: here’s a brief link post on a topic that’s book chapter worthy.
-Finally, your dream has come true. You’ll now get to build a project from the ground up. Finally, you can do everything right yourself instead of fighting legacy code written a hundred years ago by people you’ve never even seen.
-How would you do that, though? How to build a system you won’t be cursed for by your successors?</description></item><item><title>The Tests You Can Trust</title><link>https://azhidkov.pro/en/posts/21/03/210321-project-l-testing/</link><pubDate>Sat, 13 Mar 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/03/210321-project-l-testing/</guid><description>I’m working on a project where I’m the lead back-end developer. Naturally, I’m trying to keep everything in line with my Ergonomic Approach.
-The code base will be ergonomic if you have a set of tests you can trust. If the tests pass, it means the build is ready for release. There’s no other way around this.
-In this post, I’ll talk about the testing strategy I’m using for the &amp;#39;L&amp;#39; Project.</description></item><item><title>Non-Ergonomic Jackson</title><link>https://azhidkov.pro/en/posts/21/02/210212-jackson-write-object-as-string/</link><pubDate>Tue, 23 Feb 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/02/210212-jackson-write-object-as-string/</guid><description>Recently, I’ve written this code (or something like that) to serialize a JSON object via Jackson:
-public String renderToJson(Object dto) { try { return objectMapper.writeValueAsString(dto); } catch (IOException e) { throw new AssertionError(&amp;#34;Unexpected IOException converting object to json&amp;#34;); } } It was almost offensive to my eye. I was creating a string object in memory. What the heck would that have to do with IO? I had no time to ponder about this, though.</description></item><item><title>Pure and dirty functions, effects, signal processing, side effects: pure functions</title><link>https://azhidkov.pro/en/posts/21/01/210112-pure-functions/</link><pubDate>Tue, 12 Jan 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/01/210112-pure-functions/</guid><description>Note: You can follow the blog’s updates in my channel: Ergonomic Code (rus)
-The first part of my terminology series can be found here
-Note that I’ve broadened the topic I’m covering here. Apart from dirty functions announced yesterday, I also mentioned signals. The title is long-ish, but let’s keep it this way for now :) Today, we’ll be talking about pure functions.
-Pure functions are functions with no effects and no side effects.</description></item><item><title>Single Responsibility Principle considered harmful</title><link>https://azhidkov.pro/en/posts/21/01/210107-srp/</link><pubDate>Thu, 07 Jan 2021 07:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/01/210107-srp/</guid><description>I’ve just come across this article, and it bummed me out quite a bit.
-Theoretically, the principle per se (that is, the Single Responsibility Principle) may very well be a good one. There’s just one problem: Uncle Bob has been trying to explain it for 20 (twenty) years to no avail.
-I managed to track back Martin’s process of defining this term. To sum it up:
-2003: &amp;#34;A class should have only one reason to change&amp;#34; - Agile Software Development, Principles, Patterns, and Practices2008: &amp;#34;The Single Responsibility Principle (SRP) states that a class or module should have one, and only one, reason to change&amp;#34; - Clean Code2014: &amp;#34;Gather together the things that change for the same reasons.</description></item><item><title>Pure and efficient functions: Introduction</title><link>https://azhidkov.pro/en/posts/21/01/210105-pure-functions-and-effects-intro/</link><pubDate>Tue, 05 Jan 2021 09:19:22 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/01/210105-pure-functions-and-effects-intro/</guid><description>In this blog and my book (rus), I repeat, time and again, the same mantra about &amp;#34;separating the effects from the logic.&amp;#34; I think it’s necessary that my readers fully understand what I mean. However, when I started to analyze the existing terminology, I was surprised to find out there’s no uniform framework. The options that are available don’t include the nuances I believe to be important. Therefore, I decided to write an article series about the terminology I’m using.</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Aleksey Zhidkov</title><link>https://azhidkov.pro/en/</link><description>Recent content on Aleksey Zhidkov</description><generator>Hugo</generator><language>en-en</language><lastBuildDate>Mon, 21 Jun 2021 11:25:37 +0700</lastBuildDate><atom:link href="https://azhidkov.pro/en/index.xml" rel="self" type="application/rss+xml"/><item><title>The Many Faces of the Single Responsibility Principle</title><link>https://azhidkov.pro/en/posts/21/06/210626-srp-interpretations/</link><pubDate>Mon, 21 Jun 2021 11:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/06/210626-srp-interpretations/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>You can follow the blog’s updates in my channel: &lt;a href="https://t.me/ergonomic_code">Ergonomic code (rus)&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>It feels like any solid software engineer knows of SOLID in general and the single-responsibility
+principle (SRP) in particular.&lt;/p>
+&lt;details>&lt;summary>In case you don’t…​&lt;/summary>&lt;div class="content">&lt;p>The SOLID is a set of principles guiding object-oriented design.
+It was put together by Robert Martin, who’s also known as Uncle Bob.
+These principles go as follows:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>&lt;span class="big">&lt;strong>S&lt;/strong>&lt;/span>ingle Responsibility Principle: A module should have one, and only one, reason to change.&lt;/li>&lt;li>&lt;span class="big">&lt;strong>O&lt;/strong>&lt;/span>pen/Closed Principle:: A software artifact should be open for extension but closed for modification.&lt;/li>&lt;li>&lt;span class="big">&lt;strong>L&lt;/strong>&lt;/span>iskov Substitution Principle:: What is wanted here is something like the following substitution property: If for each object o1 of type S there is an object o2 of type T such that for all programs P defined in terms of T, the behavior of P is unchanged when o1 is substituted for o2 then S is a subtype of T&lt;/li>&lt;li>&lt;span class="big">&lt;strong>I&lt;/strong>&lt;/span>nterface Segregation Principle:: Clients should not be forced to depend upon interfaces that they do not use.&lt;/li>&lt;li>&lt;span class="big">&lt;strong>D&lt;/strong>&lt;/span>ependency Inversion Principle::&lt;ol class="upperalpha">&lt;li>High level modules should not depend upon low level modules. both should depend upon abstractions.&lt;/li>&lt;li>Abstractions should not depend upon details. details should depend upon abstractions.&lt;/li>&lt;/ol>&lt;/li>&lt;/ol>&lt;/div></description></item><item><title>Uncle Bob Isn't Always Right</title><link>https://azhidkov.pro/en/posts/21/04/srp-ocp-conflict/</link><pubDate>Wed, 28 Apr 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/04/srp-ocp-conflict/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>You can follow the blog’s updates in my channel: &lt;a href="https://t.me/ergonomic_code">Ergonomic code (rus)&lt;/a>&lt;/p>&lt;/aside>
+&lt;section class="doc-section level-1">&lt;h2 id="_uncle_bobs_latest_article">Uncle Bob’s Latest Article&lt;/h2>&lt;p>I’ve just read &lt;a href="https://blog.cleancoder.com/uncle-bob/2021/03/06/ifElseSwitch.html">Uncle Bob’s recent
+article&lt;/a> and must say I disagree.&lt;/p>
+&lt;p>Here’s a brief overview of the contents.&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>&lt;p>Someone on the internet asked how’d one go about refactoring this code.&lt;/p>&lt;div class="image-block">&lt;img src="https://azhidkov.pro/posts/21/04/srp-ocp-conflict-197cb.png" alt="srp ocp conflict 197cb"/>&lt;/div>&lt;/li>&lt;li>&lt;p>Uncle Bob said that the right way would be to encapsulate this &amp;#39;if&amp;#39; statement in a factory object.&lt;/p>&lt;div class="image-block">&lt;img src="https://azhidkov.pro/posts/21/04/srp-ocp-conflict-f5d0e.png" alt="srp ocp conflict f5d0e"/>&lt;/div></description></item><item><title>Why You Should Avoid Using JPA/Hibernate in Production</title><link>https://azhidkov.pro/en/posts/21/04/why-jpa-should-be-avoided/</link><pubDate>Sat, 03 Apr 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/04/why-jpa-should-be-avoided/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>You can follow the blog updates in my channel: &lt;a href="https://t.me/ergonomic_code">Ergonomic Code (rus)&lt;/a>&lt;/p>
+&lt;p>22.08.21 edit:&lt;/p>
+&lt;div class="ulist">&lt;ul>&lt;li>Section &lt;a href="#_bad_procedural_programming_style">Bad procedural programming style&lt;/a>&lt;/li>&lt;li>Section &lt;a href="#_what_to_do_if_jpa_is_unavoidable">What to do if JPA is unavoidable&lt;/a>&lt;/li>&lt;li>Section &lt;a href="#_links">Links&lt;/a>&lt;/li>&lt;/ul>&lt;/div>&lt;/aside>
+&lt;section class="doc-section level-1">&lt;h2 id="_disclaimer_i_passionately_hate_jpa_and_hibernate">Disclaimer: I passionately hate JPA and Hibernate.&lt;/h2>&lt;p>My relationship with Hibernate (JPA hasn’t yet existed back then) has been rocky from the very beginning.
+Somewhere as far back as 2005 or 2007, an interviewer asked me how I’d go about mapping the 1-N relationship with Hibernate.
+”I have no idea what Hibernate is,” I said.&lt;/p>
+&lt;p>Then in 2008 I got a job at Softage to work on a project based on Swing and Hibernate.
+I had zero commercial experience with either, so it seemed to me I was terrible at the job.
+I spent a few weeks worrying my head over it and then quit.&lt;/p>
+&lt;p>No Java developer can really eschew having to work with JPA altogether, though.
+So naturally, I too had to live through with it.
+I’ve had to dig up and fix a mountain of bugs and performance issues caused by the coding style JPA enforces.
+To do that, I had to understand how JPA works.
+Still, I’ll never get back the hours of doing that.
+That’s why I hate JPA.&lt;/p>
+&lt;p>In this article, I’ve discussed both the facts and my own experience.
+It’s up to you to interpret these.&lt;/p>&lt;/section>
+&lt;section class="doc-section level-1">&lt;h2 id="_jpas_philosophy">JPA’s Philosophy&lt;/h2>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>To be fair, 90% of my experience with JPA is limited to Hibernate.
+I’ve also tried EclipseLink, although it has the very same problems.
+So in this article, I’m using JPA and Hibernate almost interchangeably.
+However, JPA’s main problems all stem from mutable entities and lazy loading.
+These are inherent to its specification, so I doubt it’s possible to completely avoid them.&lt;/p>&lt;/aside>
+&lt;p>Here’s my loose take on JPA’s philosophy: &amp;#34;Forget the database–just declare your own object model. Work with it as if it’s already in the memory in full. We’ll take care about getting all objects saved in the database.&amp;#34;&lt;/p>
+&lt;p>Perhaps the actual philosophy behind JPA is different–I couldn’t find anything in my research.
+However, that’s certainly what the folk version of it sounds like.&lt;/p>&lt;/section>
+&lt;section class="doc-section level-1">&lt;h2 id="_hibernates_simplified_model">Hibernate’s Simplified Model&lt;/h2>&lt;figure class="image-block">&lt;img src="https://azhidkov.pro/posts/21/04/en_jpa-model.svg" alt="en jpa model"/>
+&lt;figcaption>Figure 1. Hibernate’s Simplified Model&lt;/figcaption>&lt;/figure>
+&lt;p>To make the &amp;#39;Just think all your objects to already be in the memory&amp;#39; promise come true, that’s how Hibernate works:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>The app initiates a transaction via &lt;code>entityManager.getTransaction().begin()&lt;/code> (&lt;a href="https://en.wikipedia.org/wiki/Software_transactional_memory">transactions can be stored in memory as well&lt;/a>, which doesn’t contradict JPA’s philosophy);&lt;/li>&lt;li>The app loads the data via entityManager:&lt;ol class="loweralpha" type="a">&lt;li>EntityManager forms up queries and receives table rows via JDBC-Driver.&lt;/li>&lt;li>ORM creates proxies for entity objects using these table rows.&lt;/li>&lt;li>Before passing all the objects on to the app, entityManager saves them into Persistence Context;&lt;/li>&lt;/ol>&lt;/li>&lt;li>The app modifies the objects via setters;&lt;ol class="loweralpha" type="a">&lt;li>Since these are proxies, though, the setters also mark the objects as dirty on the way.&lt;/li>&lt;/ol>&lt;/li>&lt;li>The app commits the transaction via &lt;code>entityManager.getTransaction().commit()&lt;/code>;&lt;ol class="loweralpha" type="a">&lt;li>Here, the entityManager looks through Persistence Context, then saves or updates all the objects into the database, both dirty and new.&lt;/li>&lt;/ol>&lt;/li>&lt;/ol>&lt;/div></description></item><item><title>On Systems Decomposition</title><link>https://azhidkov.pro/en/posts/21/03/250326-project-decomposition/</link><pubDate>Wed, 24 Mar 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/03/250326-project-decomposition/</guid><description>&lt;p>*Dislaimer: here’s a brief link post on a topic that’s book chapter worthy.&lt;/p>
+&lt;p>Finally, your dream has come true.
+You’ll now get to build a project from the ground up.
+Finally, you can do everything right yourself instead of fighting legacy code written a hundred
+years ago by people you’ve never even seen.&lt;/p>
+&lt;p>How would you do that, though?
+How to build a system you won’t be cursed for by your successors?&lt;/p>
+&lt;p>I’ve already given half the answer—in some way—in my book.
+Basically, it’s all about the &lt;a href="https://azhidkov.pro/book/ergo/#_таблица_эффектов">effects table (rus)&lt;/a> and &lt;a href="https://azhidkov.pro/book/ergo/#_принципы_проектирования_системы">components (rus)&lt;/a>.&lt;/p>
+&lt;p>The effects table is a way to describe &lt;a href="https://azhidkov.pro/posts/21/01/210119-effects/">which effects get triggered by various operations (rus)&lt;/a>.
+Or, in other words, it’s a way to describe the program’s behavior—that is, its functional specification.&lt;/p>
+&lt;p>Components imply encapsulated state.
+The good old conceptual objects that comprise multiple objects of several levels in the runtime.&lt;/p>
+&lt;p>There’s just one catch.
+When you’re going from the functional spec to the components, that’s exactly what &amp;#39;software design&amp;#39;
+per se is.
+And these days, people who can do quality software design are few and far between in our industry.&lt;/p>
+&lt;p>So the second part of the answer is an algorithm to take you from the effects table straight to components.
+The algorithm goes something like this:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>Make a graph based on the effects table.
+In that graph, the edges will contain the signals and the effects, but the vertices will contain the relation between them.&lt;/li>&lt;li>Break the graph down into subgraphs.
+There should be high cohesion within subgraphs and low coupling among them.&lt;/li>&lt;li>Voila, the components are ready.
+Each subgraph is a separate component that encapsulates the state changed by this subgraph’s effects as a result of processing the signals of the subgraph.&lt;/li>&lt;/ol>&lt;/div></description></item><item><title>The Tests You Can Trust</title><link>https://azhidkov.pro/en/posts/21/03/210321-project-l-testing/</link><pubDate>Sat, 13 Mar 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/03/210321-project-l-testing/</guid><description>&lt;p>I’m working on a project where I’m the lead back-end developer.
+Naturally, I’m trying to keep everything in line with my Ergonomic Approach.&lt;/p>
+&lt;p>The code base will be ergonomic if you have a set of tests you can trust.
+If the tests pass, it means the build is ready for release.
+There’s no other way around this.&lt;/p>
+&lt;p>In this post, I’ll talk about the testing strategy I’m using for the &amp;#39;L&amp;#39; Project.&lt;/p>
+&lt;section class="doc-section level-1">&lt;h2 id="_the_l_project">The &amp;#39;L&amp;#39; Project&lt;/h2>&lt;p>Since this project is under NDA, I can’t disclose much details.
+Here are some key points:&lt;/p>
+&lt;div class="ulist">&lt;ul>&lt;li>The project’s goal is to validate a business hypothesis.&lt;/li>&lt;li>The &amp;#39;L&amp;#39; project is supplemental to the client’s main app.
+It works via a public HTTP API.&lt;/li>&lt;li>The project’s main value is concentrated in the front-end.
+For that reason, the back-end features just three business rules.&lt;/li>&lt;li>Most method implementations within the &amp;#39;L&amp;#39; project pull data from multiple main app methods.&lt;/li>&lt;li>Therefore, the &amp;#39;L&amp;#39; project has a quite complex system of data transformation and caching.&lt;/li>&lt;li>The main app has a test environment.&lt;/li>&lt;li>The &amp;#39;L&amp;#39; project is quite limited budget- and time limits-wise.&lt;/li>&lt;li>I made two major mistakes while analyzing one of the iterations. Therefore, I had to rework and refactor everything twice.&lt;/li>&lt;/ul>&lt;/div></description></item><item><title>Non-Ergonomic Jackson</title><link>https://azhidkov.pro/en/posts/21/02/210212-jackson-write-object-as-string/</link><pubDate>Tue, 23 Feb 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/02/210212-jackson-write-object-as-string/</guid><description>&lt;p>Recently, I’ve written this code (or something like that) to serialize a JSON object via &lt;a href="https://github.com/FasterXML/jackson">Jackson&lt;/a>:&lt;/p>
+&lt;div class="listing-block">&lt;pre class="rouge highlight">&lt;code data-lang="java">&lt;span class="kd">public&lt;/span> &lt;span class="nc">String&lt;/span> &lt;span class="nf">renderToJson&lt;/span>&lt;span class="o">(&lt;/span>&lt;span class="nc">Object&lt;/span> &lt;span class="n">dto&lt;/span>&lt;span class="o">)&lt;/span> &lt;span class="o">{&lt;/span>
+ &lt;span class="k">try&lt;/span> &lt;span class="o">{&lt;/span>
+ &lt;span class="k">return&lt;/span> &lt;span class="n">objectMapper&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="na">writeValueAsString&lt;/span>&lt;span class="o">(&lt;/span>&lt;span class="n">dto&lt;/span>&lt;span class="o">);&lt;/span>
+ &lt;span class="o">}&lt;/span> &lt;span class="k">catch&lt;/span> &lt;span class="o">(&lt;/span>&lt;span class="nc">IOException&lt;/span> &lt;span class="n">e&lt;/span>&lt;span class="o">)&lt;/span> &lt;span class="o">{&lt;/span>
+ &lt;span class="k">throw&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nf">AssertionError&lt;/span>&lt;span class="o">(&lt;/span>&lt;span class="s">&amp;#34;Unexpected IOException converting object to json&amp;#34;&lt;/span>&lt;span class="o">);&lt;/span>
+ &lt;span class="o">}&lt;/span>
+&lt;span class="o">}&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;p>It was almost offensive to my eye.
+I was creating a string object in memory.
+What the heck would that have to do with IO?
+I had no time to ponder about this, though.&lt;/p>
+&lt;p>So there I was reading
+&lt;a href="https://softwareengineering.stackexchange.com/questions/147059/the-modern-way-to-perform-error-handling">The
+modern way to perform error handling&lt;/a>.
+And voila, here’s the answer, emerging right from the depths of my mind!
+You know what?
+That’s still the same topic of mixing policies with effects, and all the problems rooted in this.&lt;/p>
+&lt;p>If you take a deep look at &lt;code>writeValueAsString&lt;/code> &amp;#39;s inner workings, you’ll see that this
+&lt;a href="https://azhidkov.pro/posts/21/01/210119-effects/">pure (rus)&lt;/a>—per
+se—method is just a wrap for &lt;code>_writeValueAndClose(JsonGenerator g, Object value)&lt;/code>.&lt;/p>
+&lt;p>g in turn is a wrap for &lt;code>java.io.Writer&lt;/code>.
+Then you have Writer throwing the &lt;code>java.io.IOException&lt;/code>.
+Boom, there goes your IOException when you’re generating a string in memory.&lt;/p>
+&lt;p>The cause of that problem is this: the policy and the effects are jumbled into one function
+(namely, _writeValueAndClose).
+The former defines the set of rules according to which the JSON gets formed, based on the Java object.
+The latter writes the result into the abstract receiver.&lt;/p>
+&lt;p>To make this code
+&lt;a href="https://azhidkov.pro/book/ergo/#_таблица_эффектов">ergonomic&lt;/a>,
+we have to keep these two apart:&lt;/p>
+&lt;div class="listing-block">&lt;pre class="rouge highlight">&lt;code data-lang="kotlin">&lt;span class="k">fun&lt;/span> &lt;span class="nf">transform&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Any&lt;/span>&lt;span class="p">):&lt;/span> &lt;span class="nc">Sequence&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nc">Char&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="p">=&lt;/span>
+ &lt;span class="c1">// the intricate yet clean algorithm that re-renders the json&lt;/span>
+
+&lt;span class="k">fun&lt;/span> &lt;span class="nf">writeValueAsString&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Any&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">transform&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nf">joinToString&lt;/span>&lt;span class="p">()&lt;/span>
+
+&lt;span class="nd">@Throws&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nc">IOException&lt;/span>&lt;span class="o">::&lt;/span>&lt;span class="k">class&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="k">fun&lt;/span> &lt;span class="nf">writeValue&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Any&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">w&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Writer&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">transform&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nf">forEach&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="n">w&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">append&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">it&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Pure and dirty functions, effects, signal processing, side effects: pure functions</title><link>https://azhidkov.pro/en/posts/21/01/210112-pure-functions/</link><pubDate>Tue, 12 Jan 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/01/210112-pure-functions/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>You can follow the blog’s updates in my channel: &lt;a href="https://t.me/ergonomic_code">Ergonomic Code (rus)&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>The first part of my terminology series can be found &lt;a href="https://azhidkov.pro/en/posts/21/01/210105-pure-functions-and-effects-intro/">here&lt;/a>&lt;/p>
+&lt;p>&lt;em>Note that I’ve broadened the topic I’m covering here.
+Apart from dirty functions announced yesterday, I also mentioned signals.
+The title is long-ish, but let’s keep it this way for now :)
+Today, we’ll be talking about pure functions.&lt;/em>&lt;/p>
+&lt;p>Pure functions are functions with no effects and no side effects. :)
+Or functions as they are understood in math.
+Their output is determined by the parameters only, and they have just one output, that is, the value
+they return.&lt;/p>
+&lt;p>Here are some signs the function isn’t pure:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>&lt;p>It has no result (the functions returns void or Unit).
+In theory, this could be a pure function.
+There would be little point to this, though.
+It could only ever be used as some mock output function.&lt;/p>&lt;p>A typical example is printf/println.&lt;/p>&lt;/li>&lt;li>&lt;p>It has no arguments.
+Again, in theory, you could make such a function pure. There would be little point to this, though, as
+it could only be used as some input helper function.&lt;/p>&lt;p>A typical example is currentTime.&lt;/p>&lt;/li>&lt;li>&lt;p>Being called with the same parameters at a different time, it can return different results.
+Any such function wouldn’t be pure by its very definition.&lt;/p>&lt;p>A typical example Files.readString(Path.of(``/tmp/test’’))&lt;/p>&lt;/li>&lt;li>&lt;p>Being determined, it has an observable effect apart from returning the value.
+Again, any such function isn’t pure by definition.&lt;/p>&lt;p>Typical examples include: determined caching and logging in determined functions.&lt;/p>&lt;/li>&lt;/ol>&lt;/div></description></item><item><title>Single Responsibility Principle considered harmful</title><link>https://azhidkov.pro/en/posts/21/01/210107-srp/</link><pubDate>Thu, 07 Jan 2021 07:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/01/210107-srp/</guid><description>&lt;p>I’ve just come across &lt;a href="https://tommcfarlin.com/programming-side-effects/">this article&lt;/a>, and it bummed
+me out quite a bit.&lt;/p>
+&lt;p>Theoretically, the principle per se (that is, the Single Responsibility Principle) may very well
+be a good one.
+There’s just one problem: Uncle Bob has been trying to explain it for 20 (twenty) years to no avail.&lt;/p>
+&lt;p>I managed to track back Martin’s process of defining this term. To sum it up:&lt;/p>
+&lt;div class="ulist">&lt;ul>&lt;li>2003: &lt;em>&amp;#34;A class should have only one reason to change&amp;#34;&lt;/em> - &lt;a href="https://www.amazon.com/Software-Development-Principles-Patterns-Practices/dp/0135974445">Agile Software Development, Principles, Patterns, and Practices&lt;/a>&lt;/li>&lt;li>2008: &lt;em>&amp;#34;The Single Responsibility Principle (SRP) states that a class or module should have one, and only one, reason to change&amp;#34;&lt;/em> - &lt;a href="https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882">Clean Code&lt;/a>&lt;/li>&lt;li>2014: &lt;em>&amp;#34;Gather together the things that change for the same reasons. Separate those things that change for different reasons.&amp;#34;&lt;/em> - &lt;a href="https://blog.cleancoder.com/uncle-bob/2014/05/08/SingleReponsibilityPrinciple.html">The Single Responsibility Principle&lt;/a>&lt;/li>&lt;li>2018: &lt;em>&amp;#34;A module should be responsible to one, and only one, actor&amp;#34;&lt;/em> - &lt;a href="https://www.amazon.com/Clean-Architecture-Craftsmans-Software-Structure/dp/0134494164/ref=pd_bxgy_img_2/147-8271342-0171521?_encoding=UTF8&amp;amp;pd_rd_i=0134494164&amp;amp;pd_rd_r=90e2cb95-6f04-4c0c-9c7b-66c2d960039a&amp;amp;pd_rd_w=iwjpt&amp;amp;pd_rd_wg=0JqHc&amp;amp;pf_rd_p=f325d01c-4658-4593-be83-3e12ca663f0e&amp;amp;pf_rd_r=1HX5JTT8AYRP3ABYS91W&amp;amp;psc=1&amp;amp;refRID=1HX5JTT8AYRP3ABYS91W">Clean Architecture&lt;/a>&lt;/li>&lt;/ul>&lt;/div></description></item><item><title>Pure and efficient functions: Introduction</title><link>https://azhidkov.pro/en/posts/21/01/210105-pure-functions-and-effects-intro/</link><pubDate>Tue, 05 Jan 2021 09:19:22 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/01/210105-pure-functions-and-effects-intro/</guid><description>&lt;p>In this blog and &lt;a href="https://azhidkov.pro/book/ergo/">my book (rus)&lt;/a>, I repeat, time and again, the same mantra
+about &amp;#34;separating the effects from the logic.&amp;#34;
+I think it’s necessary that my readers fully understand what I mean.
+However, when I started to analyze the existing terminology, I was surprised to find out there’s no
+uniform framework.
+The options that are available don’t include the nuances I believe to be important.
+Therefore, I decided to write an article series about the terminology I’m using.&lt;/p>
+&lt;p>Pure functions have it easy.
+There’s a &lt;a href="https://en.wikipedia.org/wiki/Pure_function">Wikipedia article&lt;/a> about these that provides a decent enough definition:&lt;/p>
+&lt;div class="quote-block">&lt;blockquote>&lt;p>&amp;lt;…​&amp;gt; a pure function is a function that has the following properties:
+. The function return values are identical for identical arguments (no variation with local static variables, non-local variables, mutable reference arguments or input streams).
+. The function application has no side effects (no mutation of local static variables, non-local variables, mutable reference arguments or input/output streams).&lt;/p>&lt;footer>— &lt;cite>Wikipedia&lt;/cite>&lt;/footer>&lt;/blockquote>&lt;/div></description></item></channel></rss>

@@ -1,0 +1,404 @@
+flowchart TD
+
+    TRSaBT[("ThreadRoutingService.assignBackloggedThreads (2)")]
+    style TRSaBT fill:#14FF00
+
+    
+    TRSgRC[("ThreadRoutingService.getRoutingCandidates (3)")]
+    style TRSgRC fill:#1EFF00
+
+    TRSaBT --> TRSgRC
+
+    SSgL[("SettingsService.getLong (1)")]
+    style SSgL fill:#00ff00
+
+    TRSgRC --> SSgL
+
+    TRfUT[("ThreadsRepository.findUnassignedThreads (0)")]
+    style TRfUT fill:#b3ddff
+
+    TRSgRC --> TRfUT
+
+    TRSiRN[("ThreadRoutingService.isRoutableNow (4)")]
+    style TRSiRN fill:#28FF00
+
+    TRSgRC --> TRSiRN
+
+    SSiA[("ScheduleService.isActive (2)")]
+    style SSiA fill:#14FF00
+
+    TRSiRN --> SSiA
+
+    SRfBT[("ScheduleRepository.findByThread (1)")]
+    style SRfBT fill:#00ff00
+
+    SSiA --> SRfBT
+
+    SSiAS[("ScheduleService.isActive(Schedule) (3)")]
+    style SSiAS fill:#1EFF00
+
+    SSiA --> SSiAS
+
+    TSuLRAT[("ThreadService.updateLastRoutingAttemptTime (1)")]
+    style TSuLRAT fill:#00ff00
+
+    TRSiRN --> TSuLRAT
+
+    TRfBI[("ThreadsRepository.findById (0)")]
+    style TRfBI fill:#b3ddff
+
+    TSuLRAT --> TRfBI
+
+    TsRAT[("Thread.setRoutingAttemptTime (1)")]
+    style TsRAT fill:#00ff00
+
+    TSuLRAT --> TsRAT
+
+    TRSiEFPS[("ThreadRoutingServiceImpl.isEligiableFroPersonalService (7)")]
+    style TRSiEFPS fill:#46FF00
+
+    TSuLRAT --> TRSiEFPS
+
+    TgC[("Thread.getClient (1)")]
+    style TgC fill:#00ff00
+
+    TRSiEFPS --> TgC
+
+    TgLO[("Thread.getLastOperator (1)")]
+    style TgLO fill:#00ff00
+
+    TRSiEFPS --> TgLO
+
+    TRSiNB("ThreadRoutingService.isNotBot (3)")
+    style TRSiNB fill:#1EFF00
+
+    TRSiEFPS --> TRSiNB
+
+    TRSiRBO[("ThreadRoutingService.isRefusedByOperator (1)")]
+    style TRSiRBO fill:#00ff00
+
+    TRSiEFPS --> TRSiRBO
+
+    TRIReBOAT[("ThreadRefuseInfoRepository.existsByOperatorAndThread (1)")]
+    style TRIReBOAT fill:#b3ddff
+
+    TRSiRBO --> TRIReBOAT
+
+    TRSrAFLO[("ThreadRoutingService.readyAndFreeLastOperator (1)")]
+    style TRSrAFLO fill:#00ff00
+
+    TRSiEFPS --> TRSrAFLO
+    TRSiEFPS --> TRSiNB
+
+    TRSiR("ThreadRoutingService.isReady (1)")
+    style TRSiR fill:#00ff00
+
+    TRSrAFLO --> TRSiR
+
+    TSgFS[("ThreadService.getFreeSlots (1)")]
+    style TSgFS fill:#00ff00
+
+    TRSrAFLO --> TSgFS
+
+    USgMT[("UserService.getMaxThreads (1)")]
+    style USgMT fill:#00ff00
+
+    TSgFS --> USgMT
+
+    UgMT[("User.getMaxThreads (1)")]
+    style UgMT fill:#00ff00
+
+    USgMT --> UgMT
+    USgMT --> SSgL
+    
+    TScAT[("ThreadsServicec.countActiveThreads (1)")]
+    style TScAT fill:#00ff00
+
+    TSgFS --> TScAT
+
+    TRcT[("ThreadsRepository.countThreads (1)")]
+    style TRcT fill:#b3ddff
+
+    TSgFS --> TRcT
+
+    TRSgES[("ThreadRoutingService.getExtraThreads (1)")]
+    style TRSgES fill:#00ff00
+
+    TRSrAFLO --> TRSgES
+
+    TRSiEFPS --> SSgL
+
+    TSgCTIFC[("ThreadService.getClosedThreadsInfoForClient (4)")]
+    style TSgCTIFC fill:#28FF00
+    
+    TRSiEFPS --> TSgCTIFC
+
+    TRfA[("ThreadsRepository.findAll (0)")]
+    style TRfA fill:#b3ddff
+
+    TSgCTIFC --> TRfA
+
+    TRc[("ThreadsRepository.count (0)")]
+    style TRc fill:#b3ddff
+
+    TSgCTIFC --> TRc
+
+    TgO[("Thread.getOperator (1)")]
+    style TgO fill:#00ff00
+
+    TRSiEFPS --> TgO
+    TRSiEFPS --> TRSiNB
+    TRSiEFPS --> TRSrAFLO
+
+    TRSpPR[("ThreadRoutingService.performPersonalRouting (18)")]
+    style TRSpPR fill:#B4FF00
+
+    TRSaBT --> TRSpPR
+
+    TRSlO[("ThreadRoutingService.logOperators (3)")]
+    style TRSlO fill:#1EFF00
+
+    TRSpPR --> TRSlO
+    TRSpPR --> TgLO
+    TRSpPR --> TRSlO
+    TRSpPR --> TRSrAFLO
+    TRSpPR --> SSgL
+    TRSpPR --> TSgCTIFC
+
+    TgLC[("Thread.getLastClosed (1)")]
+    style TgLC fill:#00ff00
+
+    TRSpPR --> TgLC
+    TRSpPR --> TSuLRAT
+    TRSpPR --> RTOtAT
+    TRSpPR --> REPoQU
+
+    URgTS[("UserRepository.getThreadsStats (0)")]
+    style URgTS fill:#b3ddff
+
+    TRSlO --> URgTS
+
+    TRSgSR[("ThreadRoutingService.getStatsRecord (6)")]
+    style TRSgSR fill:#3CFF00
+
+    TRSlO --> TRSgSR
+
+    SRgSOO[("SkillRepository.getSkillsOfOperator (0)")]
+    style SRgSOO fill:#b3ddff
+
+    TRSgSR --> SRgSOO
+
+    TRSpSR[("ThreadRoutingService.performStandardRouting (26)")]
+    style TRSpSR fill:#FFF500
+
+    TRSaBT --> TRSpSR
+
+    RISsRC[("RoutingIntegrationSercice.standardRoutingComparator (1)")]
+    style RISsRC fill:#00ff00
+
+    TRSpSR --> RISsRC
+
+    SSfBT[("SegmentService.findByThread (1)")]
+    style SSfBT fill:#00ff00
+
+    RISsRC --> SSfBT
+
+    SRfBT[("SegmentRepositroy.findByThread (0)")]
+    style SRfBT fill:#b3ddff
+
+    RISsRC --> SRfBT
+    TRSpSR --> SRfBT
+
+    TRCSfR[("ThreadRoutingCriteriaService.findRoute (3)")]
+    style TRCSfR fill:#1EFF00
+
+    TRSpSR --> TRCSfR
+
+    RSgD("RoutingService.getDefault (1)")
+    style RSgD fill:#00ff00
+
+    TRCSfR --> RSgD
+
+    RSfBS[("RoutingService.findBySegment (1)")]
+    style RSfBS fill:#00ff00
+
+    TRCSfR --> RSfBS
+
+    RSRfBS[("RoutingSettingRepository.findBySegment (0)")]
+    style RSRfBS fill:#b3ddff
+
+    RSfBS --> RSRfBS
+
+    TRCSgCBR[("ThreadRoutingCriteriaService.getCriteriaByRoute (2)")]
+    style TRCSgCBR fill:#14FF00
+
+    TRSpSR --> TRCSgCBR
+
+    RCRfABRS[("RoutingCriteriaRepository.fABRS (0)")]
+    style RCRfABRS fill:#b3ddff
+
+    TRCSgCBR --> RCRfABRS
+    TRCSgCBR --> RSgD
+
+    TRSgNO[("ThreadRoutingService.getNextOperator (1)")]
+    style TRSgNO fill:#00ff00
+    
+    TRSpSR --> TRSgNO
+
+    TRCSfEO[("ThreadRoutingCriteriaService.findEligibleOperators (2)")]
+    style TRCSfEO fill:#14FF00
+    
+    TRSgNO --> TRCSfEO
+
+    RCRgOBUC[("RoutingCriteriaRepository.getOperatorsByUnitCriteria (0)")]
+    style RCRgOBUC fill:#b3ddff
+    
+    TRCSfEO --> RCRgOBUC
+
+    URgOBC[("UserRepository.getOperatorsByCriteria (0)")]
+    style URgOBC fill:#b3ddff
+    
+    TRCSfEO --> URgOBC
+
+    TRCSgUWS[("ThreadRoutingCriteriaService.getUsersWithSkill (1)")]
+    style TRCSgUWS fill:#00ff00
+    
+    TRCSfEO --> TRCSgUWS
+
+    URfBSARNASIAAT[("UserRepository.findByStateAndRoleNameAndSkillsInAndActiveTrue (0)")]
+    style URfBSARNASIAAT fill:#b3ddff
+    
+    TRCSgUWS --> URfBSARNASIAAT
+
+    RCRgSBC[("RoutingCriteriaRepository.getSkillsByCriteria (0)")]
+    style RCRgSBC fill:#b3ddff
+    
+    TRCSfEO --> RCRgSBC
+
+    URgBBC[("UserRepository.getBotsByCriteria (0)")]
+    style URgBBC fill:#b3ddff
+    
+    TRCSfEO --> URgBBC
+
+    TRCSgAO[("ThreadRoutingService.getAllOperators (1)")]
+    style TRCSgAO fill:#00ff00
+    
+    TRCSfEO --> TRCSgAO
+    
+    URffBRNASNAAT[("UserRepository.findByRoleNameAndStateNotAndActiveTrue (0)")]
+    style URffBRNASNAAT fill:#b3ddff
+    
+    TRCSgAO --> URffBRNASNAAT
+
+    TRSgNO --> TRSiRBO
+    
+    USgTS[("UserService.getThreadsStats (3)")]
+    style USgTS fill:#1EFF00
+
+    TRSgNO --> USgTS
+    USgTS --> URgTS
+
+    TRSlO2[("ThreadRoutingService.logOperators(Collection) (2)")]
+    style TRSlO2 fill:#14FF00
+
+    TRSgNO --> TRSlO2
+    TRSlO2 --> TRSgSR
+
+    ORSgNO[("OperatorRoutingService.getNextOperator (6)")]
+    style ORSgNO fill:#3CFF00
+
+    TRSgNO --> ORSgNO
+
+    MUiB("ModelUtils.isBot (3)")
+    style MUiB fill:#1EFF00
+
+    ORSgNO --> MUiB
+
+    USgFS("UserStats.getFreeSlots (2)")
+    style USgFS fill:#14FF00
+
+    ORSgNO --> USgFS
+
+    UWSRfBUI[("UserWorkShiftRepository.findByUserId (0)")]
+    style UWSRfBUI fill:#b3ddff
+
+    ORSgNO --> UWSRfBUI
+
+    UWSgU[("UserWorkShift.getUser (1)")]
+    style UWSgU fill:#00ff00
+
+    ORSgNO --> UWSgU
+    
+    ORSgQI[("OperatorRoutingService.getQueueInfo (1)")]
+    style ORSgQI fill:#00ff00
+
+    ORSgNO --> ORSgQI
+    
+    ORSgWST[("OperatorRoutingService.getWaitStartTime (2)")]
+    style ORSgWST fill:#14FF00
+
+    ORSgNO --> ORSgWST
+
+    TRfLTCDSD[("ThreadsRepository.findLastThreadsClosedDatesSinceDate (0)")]
+    style TRfLTCDSD fill:#b3ddff
+
+    ORSgWST --> TRfLTCDSD
+
+    RTOtAT[("RoutingThreadOperations.tryAssignThread (4)")]
+    style RTOtAT fill:#28FF00
+
+    TRSpSR --> RTOtAT
+
+    TLSl[("ThreadLogService.log (4)")]
+    style TLSl fill:#28FF00
+
+    TRSpSR --> TLSl
+
+    TRSpSR --> TSuLRAT
+
+    SSgB[("SettingsService.getBoolean (1)")]
+    style SSgB fill:#00ff00
+
+    TLSl --> SSgB
+
+    TLRs[("ThreadLogRepository.save (0)")]
+    style TLRs fill:#b3ddff
+
+    TLSl --> TLRs
+    
+    REPoQU[("RoutingEventPublisher.operatorQueueUpdate (2)")]
+    style REPoQU fill:#14FF00
+
+    TLSl --> REPoQU
+
+    TSgT[("ThreadService.getThread (1)")]
+    style TSgT fill:#00ff00
+
+    REPoQU --> TSgT
+
+    TSgT --> TRfBI
+
+    TgO[("Thread.getOperator (1)")]
+    style TgO fill:#00ff00
+
+    TSgT --> TgO
+
+    MUiO("ModelUtils.isOperator (1)")
+    style MUiO fill:#00ff00
+
+    REPoQU --> MUiO
+
+    AEPpE("ApplicationEventPublisher.publishEvent (0)")
+    style AEPpE fill:#b3ddff
+
+    REPoQU --> AEPpE
+
+    ESSdES[("extraSlotService.discardExtraSlots (2)")]
+    style ESSdES fill:#14FF00
+
+    TRSaBT --> ESSdES
+
+    URdES[("UserService.discardExtraSlots (0)")]
+    style URdES fill:#b3ddff
+
+    ESSdES --> URdES

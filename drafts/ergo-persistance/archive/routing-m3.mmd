@@ -1,0 +1,58 @@
+flowchart TD
+
+    TRQIpUT("ThreadsRoutingQueueImpl.processUnassignedThreads")
+
+    TSIaBT("ThreadServiceImpl.assignBackloggedThreads")
+    TRQIpUT --> TSIaBT
+
+    TRfT("ThreadsRepository.findThreads")
+    TSIaBT --> TRfT
+
+    QPSc("QueueProcessingStrategy.compare")
+    TSIaBT --> QPSc
+
+    TSIeFPS("ThreadServiceImpl.isEligibleForPersonalService")
+    TSIaBT --> TSIeFPS
+
+    TSIgPSTD("ThreadServiceImpl.getPersonalizedServiceTimeoutDate")
+    TSIeFPS --> TSIgPSTD
+
+    TgC("Thread.getClient")
+    TSIeFPS --> TgC
+
+    CgLO("Client.getLastOperator")
+    TSIeFPS --> CgLO
+
+    TSIaBT --> TgC
+    TSIaBT --> CgLO
+
+    TSIgFS("ThreadServiceImpl.getFreeSlots")
+    TSIaBT --> TSIgFS
+
+    TSIgFS --> TRfT
+
+    TSItATTO("ThreadServiceImpl.tryAssignThreadToOperator")
+    TSIaBT --> TSItATTO
+
+    TsO("Thread.setOperator")
+    TSItATTO --> TsO
+
+    TRsAF("ThreadsRepository.saveAndFlush")
+    TSItATTO --> TRsAF
+    
+    TFoE("ThreadFsm.onEvent")
+    TSItATTO --> TFoE
+
+    OQnOJ("OutgingQueue.notifyOperatorJoined")
+    TSItATTO --> OQnOJ
+
+    RETSoTR("RoutingEventTrackingService.onTreadRouted")
+    TSItATTO --> RETSoTR
+
+    TSIgNO("ThreadRoutingService.getNextOperator")
+    TSIaBT --> TSIgNO 
+
+    ORfBS("OperatorRepository.findByState")
+    TSIgNO --> ORfBS
+
+    TSIaBT --> TSItATTO

@@ -1,0 +1,121 @@
+flowchart TD
+
+    SCHcS("SCHcS")
+
+    SCHgAE("SCHgAE")
+    SCHcS --> SCHgAE
+
+    DSgAEA("DSgAEA")
+    SCHgAE --> DSgAEA
+
+    ESBb("ESBb")
+    SCHcS --> ESBb
+
+    BSFa("BSFa")
+    ESBb --> BSFa
+
+    BSCr("BSCr")
+    BSFa --> BSCr
+
+    BSHcE("BSHcE")
+    BSCr --> BSHcE
+
+    BSHaV("BSHaV")
+    BSCr --> BSHaV
+
+    ASHaV("ASHaV")
+    BSHaV --> ASHaV
+
+    BSHs("BSHs")
+    BSCr --> BSHs
+
+    ASHa("ASHa")
+    BSHs --> ASHa
+
+    ISFa("ISFa")
+    ESBb --> ISFa
+
+    ISCr("ISCr")
+    ISFa --> ISCr
+
+    ISHcE("ISHcE")
+    ISCr --> ISHcE
+
+    ISHaV("ISHaV")
+    ISCr --> ISHaV
+
+    AISHaV("AISHaV")
+    ISHaV --> AISHaV
+
+    AISHaV --> ASHaV
+
+    BISHaV("BISHaV")
+    ISHaV --> BISHaV
+
+    BISHaV --> ASHaV
+
+    BoISHaV("BoISHaV")
+    ISHaV --> BoISHaV
+
+    BoISHaV --> ASHaV
+
+    ISHs("ISHs")
+    ISCr --> ISHs
+
+    AISHa("AISHa")
+    ISHs --> AISHa
+
+    AISHa --> ASHa
+
+    BISHa("BISHa")
+    ISHs --> BISHa
+
+    BISHa --> ASHa
+
+    BoISHa("BoISHa")
+    ISHs --> BoISHa
+
+    BoISHa --> ASHa
+
+    ASFa("ASFa")
+    ESBb --> ASFa
+
+    ASCr("ASCr")
+    ASFa --> ASCr
+
+    ASHcE("ASHcE")
+    ASCr --> ASHcE
+
+    AcSHaV("AcSHaV")
+    ASCr --> AcSHaV
+
+    AcSHaV --> ASHaV
+
+    AvSHs("AvSHs")
+    ASCr --> AvSHs
+
+    AvSHs --> ASHa
+
+    GSFa("GSFa")
+    ESBb --> GSFa
+
+    GSCr("GSCr")
+    GSFa --> GSCr
+
+    GSHcE("GSHcE")
+    GSCr --> GSHcE
+
+    GSHaV("GSHaV")
+    GSCr --> GSHaV
+
+    GSHcCEL("GSHcCEL")
+    GSHaV --> GSHcCEL
+    
+    LRd("LRd")
+    GSHcCEL --> LRd
+
+    GSHs("GSHs")
+    GSCr --> GSHs
+
+    GSHa("GSHa")
+    GSHs --> GSHa
