@@ -1,0 +1,202 @@
+<!doctype html><html lang=ru-ru><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="Алексей Жидков"><meta name=description content="https://azhidkov.pro/"><meta property="og:site_name" content="Алексей Жидков"><meta property="og:title" content="
+   - Алексей Жидков
+"><meta property="og:description" content><meta property="og:type" content="website"><meta property="og:url" content="https://azhidkov.pro/drafts/ergo-persistance/why-sdj2/"><meta property="og:image" content="https://azhidkov.pro/"><meta name=twitter:card content="summary"><meta name=twitter:site content="https://azhidkov.pro/drafts/ergo-persistance/why-sdj2/"><meta name=twitter:image content="https://azhidkov.pro/"><base href=https://azhidkov.pro/drafts/ergo-persistance/why-sdj2/><title>- Алексей Жидков
+</title><link rel=canonical href=https://azhidkov.pro/drafts/ergo-persistance/why-sdj2/><link rel=stylesheet href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700"><link rel=stylesheet href=/css/normalize.min.css><link rel=stylesheet href=/css/style.min.css><link rel=stylesheet href=https://use.fontawesome.com/releases/v5.2.0/css/all.css><link rel=stylesheet href=https://azhidkov.pro/css/custom.css><link rel=stylesheet href=https://azhidkov.pro/css/github.css><link rel=stylesheet href=https://azhidkov.pro/css/JetBrains-Mono.css><link rel=icon type=image/png href=/images/favicon-32x32.png sizes=32x32><link rel=icon type=image/png href=/images/favicon-16x16.png sizes=16x16><link rel=alternate href=https://azhidkov.pro/index.xml type=application/rss+xml title="Алексей Жидков"><link href=https://azhidkov.pro/index.xml rel=feed type=application/rss+xml title="Алексей Жидков"><meta name=generator content="Hugo 0.137.0"></head><body><main class=wrapper><link rel=apple-touch-icon sizes=180x180 href=apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://azhidkov.pro/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://azhidkov.pro/favicon-16x16.png><link rel=manifest href=site.webmanifest><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><link href='https://fonts.googleapis.com/css?family=Roboto' rel=stylesheet type=text/css><nav class=navigation><section class=container style=height:100%><img src=https://azhidkov.pro/images/logo.svg class=logo>
+<a class=navigation-title href=/>Алексей Жидков
+</a><input type=checkbox id=menu-control>
+<label class="menu-mobile float-right" for=menu-control><span class="btn-mobile float-right">&#9776;</span><ul class=navigation-list><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/ergo-approach/landing>Эргономичный подход</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/effects-diagram/landing>Диаграмма Эффектов</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/posts>Блог</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/portfolio>Портфолио</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/>Контакты</a></li><li class=mobile-menu-lang-separator-full><hr></li></ul></label></section></nav><div class=content><section class="container page"><article><header><h1></h1></header><section class="doc-section level-1"><h2 id=_введение>Введение</h2><p>Привет!</p><p>Меня зовут Алексей и с января 2021 года я делаю коммерческие проекты на Spring Data JDBC.</p><p>И если вы нормальный программист и сами знакомились с этой технологией или читали посты других нормальных программистов вы можете подумать: чувак извращенец, там же гора и маленькая тележка проблем:</p><div class=ulist><ul><li>Там же надо проектировать агрегаты!
+А не понятно как это делать!</li><li>Там же нет Many To Many!</li><li>Там же всегда N+1!</li><li>Там же откуда-то берутся непонятные DELETE!</li><li>Там же нет контекста транзакции!</li></ul></div></section><section class="doc-section level-1"><h2 id=_почему_sdj>Почему SDJ</h2><p>Все утверждения выше - истинны, SDJ действительно так и работает.</p><p>Но для меня это всё - не проблемы, а решения.</p><p>Потому что с 2012 года я предпочитаю писать код в функциональном стиле, и с 2017 года делаю это в коммерческих проектах.</p><p>И с этой колокольни особенности работы, причисленные выше, выглядят совсем по другому.</p><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Под функциональным стилем я понимаю то, что сам долго называл "пролетарским ФП", а сейчас оказалось что это data-oriented programming - только лишь программирование с неизменяемой моделью данных и разделение ввода-вывода и бизнес-логики.</p><p>В этом посте (помимо этого примечания) не будет ни одного упоминания монад, аппликативов и категорий Клейсли, не будет ни одной рекурсивной функции и не будет ни одного типа на трёхэтажных дженериках.</p></aside><p>Но для того, чтобы объяснить, какие проблемы решают эти особенности работы SDJ, сначала надо рассказать, как функциональные программисты проектируют модель данных, какую модель изменения этих данных и какую архитектуру используют.</p><section class="doc-section level-2"><h3 id=_разработка_бакэндов_глазами_функционального_программиста>Разработка бакэндов глазами функционального программиста</h3><section class="doc-section level-3"><h4 id=_функциональная_модель_информации_модель_модели_данных>Функциональная модель информации (модель модели данных)</h4><p>Функциональные программисты используют, вы не поверите, самую обычную модель информации, в которой информация организована в записи - наборы пар атрибут-значение, соответствующие определённым типам.
+Записи бывают двух видов - корневые и вложенные.
+Корневые имеют ключевой атрибут, уникально идентифицирующие отдельную запись в наборе всех записей определённого типа.
+Вложенные записи ключевых атрибутов не имеют и могут храниться только внутри одной корневой записи.</p><p>На корневую запись можно сослаться только по её ключу - добавить в ссылающуюся запись атрибут, который в качестве значения хранит ключ ссылаемой записи.</p><p>На вложенную запись сослаться нельзя, её можно только включить по значению - добавить во внешнюю запись атрибут, который в качестве значения хранит непосредственно саму запись.</p><p>Экземпляры записей организованы в коллекции - наборы пар ключ-значение, где ключами выступают ключевые атрибуты записей, а значениями - сами записи.
+Соответственно в коллекции организованы только корневые записи, обладающие ключами.</p><p>Если взять классический пример с заказами, их позициями и продуктам, то:</p><div class="olist arabic"><ol class=arabic><li>Заказ и продукт будут корневыми записями;</li><li>Позиция заказа будет вложенной записью;</li><li>Атрибут "позиции" в записи заказа - будет атрибутом включения вложенной записи;</li><li>Атрибут "ид продукта" в записи позиции заказа будет ссылкой по ключу.</li><li>Экземпляры записей заказ и продукт будут храниться в соответствующих коллекциях.</li></ol></div><p>До сих пор, функциональная модель информации мало чем отличается от объектной модели информации.
+И вообще ни чем не отличается от модели информации DDD со ссылки между агрегатами через ИДы.</p><p>Отличия начинаются с того, что в функциональной модели информации записи являются не изменяемыми - значения атрибутов записи невозможно изменить после создания экземпляра.</p><p>И тут возникает резонное возражение - заказ, это же сущность, он должен меняться!</p><p>Для того чтобы справиться с этим несовершенством реального мира, функциональные программисты-практики идут на компромисс - они допускают появление в системе изменяемых объектов, но минимизируют количество их экземпляров, и делают изменяемыми не сами записи, а их коллекции (репозитории).</p><p>И в этом случае сущность обретает для себя вполне конкретный дом - ячейку в коллекции идентифицируемой ключём этой сущности.
+То есть сущность инкапсулирована внутри коллекции - вы можете запросить её текущее состояние, но изменить его вы можете только через коллекцию.</p><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Обратите внимание на то, насколько близка эта модель к тому, как действительно работают современные БД - данные хранятся на диске организованными записи, которые ссылаются друг на друга по ключу.
+И эти записи инкапсулированы внутри базы данных - вы можете запросить их текущее состояние в свой процесс, но это будет лишь копия не связанная с оригиналом и для того чтобы изменить оригинал, вам надо попрасить об этом БД.</p></aside><p>Итого, функциональная модель информации представляет информацию в виде изменяемых коллекций неизменяемых, потенциально составных записей, идентифицируемых и ссылающихся друг на друга по ключу.
+А обновление состояния сущности в системе осуществляется посредством сохранения записи с новым состоянием сущности под ключём этой сущности в соответствующей коллекции.</p></section><section class="doc-section level-3"><h4 id=_функциональная_архитектура_в_трёх_словах>Функциональная архитектура в трёх словах</h4><p>Функциональная архитектура делит код на три вида - чистое ядро (бизнес-логика), ввод-вывод (репозитории, гейтвеи и т.д.) и оркестрация (юз кейсы, интеракторы, методы сервисов приложения).</p><p>В чистое ядро входит модель предметной области в виде неизменяемых классов и бизнес-правила в виде функций без побочных эффектов (ввода-вывода и обращения к глобальному состоянию - текущему времени, например).</p><p>В ввод-вывод входит реализация интерфейсов связи с внешним миром - репозитории, клиенты внешних систем и т.д.</p><p>Оркестрация - это один метод который управляет потоком данных из ввода в чистое ядро в вывод.</p><p>В простейшем виде это выглядит так:</p><div class=listing-block><pre class=highlight><code class=language-java data-lang=java>// Чистое ядро
+public record Order(Long id, Long price) {
+
+    public Order applyDiscount() {
+        return new Order(id, (long) (price * 0.9));
+    }
+
+}
+
+// Ввод-вывод
+public interface OrdersRepo : CrudRepository&lt;Order, Long&gt; {}
+
+// Оркестрация
+public class DiscountsService {
+
+    public void applyDiscount(orderId) {
+        Order order = ordersRepo.findBuId(orderId)
+                                .orElseThrow();
+        Order discountedOrder = order.applyDiscount();
+        ordersRepo.save(discountedOrder);
+    }
+
+}</code></pre></div><hr><p>И вооружившись этими знаниями можно вернуться к особенностям работы SDJ.</p></section></section><section class="doc-section level-2"><h3 id=_особенности_работы_sdj_глазами_функционального_программиста>Особенности работы SDJ глазами функционального программиста</h3><section class="doc-section level-3"><h4 id=_там_же_надо_проектировать_агрегаты>Там же надо проектировать агрегаты!</h4><p>С моей точки зрения это не "надо проектировать агрегаты", а "наконец-то я нашёл технологию, для которой модель данных в виде деревьев неизменяемых структур данных является нативной".</p><p>До появления SDJ в мире Java было два варианта работы с БД:</p><div class=ulist><ul><li>Полномасштабные ОРМы - имплементации JPA и EBeans;</li><li>Легковесные обёртки поверх JDBC - MyBatis, JDBI, jooq, QueryDSL.</li></ul></div><p>И при работе в функциональном стиле первый вариант - сразу не вариант, потому что все реализации ОРМ-ов, заслуживающие доверия, требуют изменяемой модели данных.</p><p>С вторым вариантом в целом можно жить, но все эти библиотеки, как минимум, не поддерживают из коробки каскадные модификации, которые необходимы для сохранения деревьев объектов.
+Помимо этого каждая из библиотек второго типа требует тех или дополнительных приседаний.</p><p>А с SDJ - проектируешь низеменяемую модель, развешиваешь чуть-чуть аннотаций (а если подстроиться под соглашения SDJ и обойтись без аудита - можно отделаться только лишь <code>@Id</code>), пишешь <code>repo.save(myImmutableObjectsTree)</code> и вуаля - оно оказалось в БД.
+Ну не чудо ли?</p></section><section class="doc-section level-3"><h4 id=_там_же_нет_many_to>Там же нет Many to *</h4><p>В SDJ невозможно сделать прямую ссылку между двумя сущностями с независимыми жизненными циклами, например книги и авторы (<code>class Book { private Set&lt;Author> authors; }</code>).
+Нормальным программистам это кажется нонсенсом.</p><p>А для функционального программиста это комфортная норма жизни.</p><p>Потому что прямая (а не по иду) ссылка на сущность является фактически денормализацей со всеми свойственными ей аномалиями - информация об авторах начинает храниться во множестве мест - собственно коллекции авторов, плюс во всех записях книг этих авторов.</p></section><section class="doc-section level-3"><h4 id=_там_же_всегда_n1>Там же всегда N+1!</h4><p>В первую очередь надо отметить, что не N+1, а 1+K, где K - количество ассоциаций, а не количество связанных объектов.
+То есть агрегат загружается обычно не больше чем за пару-тройку запросов.</p><p>Но да, агрегаты в SDJ всегда загружаются целиком со всеми ассоциациями.</p><p>И для функционального программиста это прекрасно - это помогает ему обеспечить соответствие кода функциональной архитектуре и быть уверенным в том, что вызывая чистое ядро и передавая туда агрегат он может спокойно обращаться ко всем ссылкам и ходить по всем коллекциям и это не приведёт к выполнению новых SQL-запросов (ввода-вывода в чистом ядре).</p><p>А ещё это делает код самоочевидным - мне достаточно знать только лишь структуру агрегата, чтобы в 100 случаях из 100 правильно определять стоимость его загрузки.</p></section><section class="doc-section level-3"><h4 id=_там_же_откуда_то_берутся_непонятные_delete>Там же откуда-то берутся непонятные DELETE!</h4><p>В SDJ когда вы сохраняете агрегат, все связанные с ним сущности удаляются и вставляются заново.</p><p>Соответственно, если, например, вы получаете от вэба только корень агрегата (с пустыми списками ассоциаций) и сохраняете его как есть, то при сохранении, все связанные с ним ранее вложенные сущности будут удалены.</p><p>И это прекрасно - это именно то поведение, которе я ожидаю, потому что оно обеспечивает соблюдение такого, на мой взгляд фундаментального инварианта:</p><div class=listing-block><pre class=highlight><code class=language-java data-lang=java>@Transactional(isolation = ISOLATION_REPEATABLE_READ)
+public void repeatableRead(Aggregate agg) {
+    Long id = aggRepo.save(agg);
+    Aggregate read = aggRepo.findById(id);
+    assert agg.equals(read);
+}</code></pre></div><p>Если я записал набор данных в БД - я ожидаю ровно этот же набор данных и получить при последующем чтении данных из БД.</p><p>Кроме того, это опять же делает код самоочевидным - мне достаточно знать лишь фактическую структуру дерева объектов, чтобы в 100 случаях из 100 правильно определить, какие изменения будут выполнены в БД при его сохранении.</p><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Справедливости ради, текущая реализация сохранения агрегата - удаление всех связанных сущностей и вставка их заново, вызывает вопросы.</p><p>Я бы сделал это через безусловное удаление того, что отсутствует в списке ассоциаций и опциональное обновление того, что присутствует в списке с непустым id-ом, и вставки того, что присутствует с пустым id-ом.</p></aside></section><section class="doc-section level-3"><h4 id=_там_же_нет_контекста_транзакции>Там же нет контекста транзакции!</h4><p>И это прекрасно!</p><p>Во-первых, функциональному программисту он не нужен - его роль выполняют локальные переменные метода оркестрации.</p><p>Во-вторых, для функционального программиста это только плюс, так как дополнительно подталкивает разработчика локализовать ввод-вывод на границах системы (в императивно оболочке).</p><hr><p>Итак, я делаю бакенды на SDJ потому что эта технология лучше всего подходит для разработки в функциональном стиле.
+И тут возникает следующий вопрос - почему я пишу бакэнды в функциональном стиле, а не как все белые люди в объектно-ориентированном?</p><p>На него я обязательно отвечу, но прежде чем уйти от темы проблем SDJ хочу рассказать об объективных проблемах SDJ - проблемах с которыми столкнётся и объектно-ориентированный и функциональный программист.</p></section></section></section><section class="doc-section level-1"><h2 id=_объективные_проблемы_sdj>Объективные проблемы SDJ</h2><section class="doc-section level-2"><h3 id=_нет_поддержки_наследования>Нет поддержки наследования</h3><p>В моей практике самой болючей проблемой SDJ является отсутствие поддержки наследование.</p><p>На это есть <a href=https://github.com/spring-projects/spring-data-relational/issues/627>задача</a> 5-летней давности без какой-либо активности.
+Поэтому на кавалерию тут надежды нет.</p><p>А у меня буквально во всех 5 проектах наследование требовалось.</p><p>Я это костылял двумя способами - рукописный репозиторий поверх jdbcAggregateTemplate и jsonb-колонки плюс кастомный маппер.
+Но оба варианта мне не понравились.</p></section><section class="doc-section level-2"><h3 id=_нет_поддержки_декларативной_загрузки_нескольких_агрегатов>Нет поддержки декларативной загрузки нескольких агрегатов</h3><p>Другой довольно часто встречаемой проблемой является загрузка нескольких агрегатов.</p><p>Официальным решением этой проблемы является отдельная рид-модель - вполне допустимо завести отдельную модель с агрегатом, в который вложены другие агрегаты и отдельный репозиторий для него.</p><p>И так как чаще всего такая потребность возникает при выдаче данных для UI, это в целом работает и в трудоёмкости это не сильно уступает варианту варианту на базе Spring Data JPA - дополнительно надо только соответствующий репоз завести, а специлизировнную DTO-шку надо делать и там и там.</p><p>Но иногда ссылаемые агрегаты требуются для бизнес-логики и в таком случае отдельная рид-модель является ненужным дублированием на мой взгляд.</p><p>И тогда все агрегаты приходится загружать и кэшировать руками, что при сложной структуре связей, может быть довольно неудобно.</p><p>Для решения этой проблемы, я собрал на коленке небольшую библиотеку на 150 строк Kotlin-кода.</p><p>Она состоит из трёх частей:</p><div class="olist arabic"><ol class=arabic><li>"Гидрированной" реализации AggregateReference - объекта, который содержит агрегат, и который можно поместить в поле типа AggregateReference;</li><li>DSL описания дерева путей в модели данных по прямым ссылкам и ссылкам на агрегаты;</li><li>Функции, которая получает на вход список агрегатов, дерево путей и jdbcAggregateTemplate и возвращает список тех же агрегатов, где значения полей-ссылок подменено на гидрированную реализацию AggregateReference.</li></ol></div><p>Сторонники JPA скажут, что я изобретаю велосипед и будут правы.
+Но на мой взгляд велосипед на 150 строчек кода стоит возможности писать код в функциональном стиле.</p></section><section class="doc-section level-2"><h3 id=_слабая_поддержка_динамических_запросов>Слабая поддержка динамических запросов</h3><p>Наконец, третьей по болючести проблемой SDJ являются динамические запросы.</p><p>Они требуются повсеместно, но на данный момент (лето 24ого, SDJ 3.3.2) для этой проблемы есть только одно официальное коробочное решение - Query By Example.</p><p>Это решение само по себе крайне ограниченное плюс совершенно не дружит с Kotlin и ненуллабельными типами.</p><p>Но для решения этой проблемы есть целый спектр воркэраундов:</p><div class="olist arabic"><ol class=arabic><li>Полуофициальное Criteria API;</li><li>Техника OR NULL;</li><li>MyBatis;</li><li>QueryDSL.</li></ol></div><section class="doc-section level-3"><h4 id=_criteria_api>Criteria API</h4><p>Большинство динамических запросов я сейчас пишу с помощью Criteria API.</p><p>Это публичное (классы, интерфейсы и методы с модификатором доступа public) API, которое не описано в Reference документации и не доступно в по умолчанию в интерфейсах репозиториев.</p><p>Но это API можно выставить с помощью пары методов-однострочников в кастомном базовом классе репозиториев:</p><div class=listing-block><pre class=highlight><code class=language-kotlin data-lang=kotlin>class SmartRepositoryImpl&lt;T : Any, ID&gt;(
+    private val jdbcAggregateTemplate: JdbcAggregateOperations,
+    private val entity: PersistentEntity&lt;T, *&gt;,
+    jdbcConverter: JdbcConverter,
+) : SimpleJdbcRepository&lt;T, ID&gt;(jdbcAggregateTemplate, entity, jdbcConverter), SmartRepository&lt;T, ID&gt; {
+
+    override fun findPage(query: Query): Page&lt;T&gt; {
+        // пагинация внутри query имеет приоритет над явно переданной пагинацией
+        return jdbcAggregateTemplate.findAll(query, entity.type, Pageable.unpaged())
+    }
+
+}
+
+@EnableJdbcRepositories(repositoryBaseClass = SmartRepositoryImpl::class, basePackages = [&#34;pro.azhidkov.project_x&#34;])
+@Configuration
+class SdjConf</code></pre></div><p>После чего (и ещё небольшого DSL-ка на 100 строк с синтаксическим сахаром), динамические запросы пишутся и выполняются без лишних церемоний:</p><div class=listing-block><pre class=highlight><code class=language-kotlin data-lang=kotlin>fun findByName(pageable: Pageable, name: String?): Page&lt;Agg&gt; {
+    val byName = (Agg::ruName isILikeIfNotNull name) OR
+            (Agg:enName isILikeIfNotNull name)
+
+    return repo.findPage(Query.query(byName).with(pageable))
+}</code></pre></div><p>Однако и у этого метода есть существенные ограничения:</p><div class="olist arabic"><ol class=arabic><li>в запросе нельзя обращаться к колонкам вложенных сущностей с отношением 1-N;</li><li>в запросе нельзя использовать формулы и функции БД.</li></ol></div><p>Поэтому иногда приходится обращаться к чистому SQL.
+И в этом случае я стараюсь обойтись техникой OR NULL.</p></section><section class="doc-section level-3"><h4 id=_техника_or_null>Техника OR NULL</h4><p>Техника OR NULL проста как три копейки:</p><div class="olist arabic"><ol class=arabic><li>Объявляете метод с кастомным запросом;</li><li>Опциональные части критериев выборки сопровождаете условием <code>OR :param IS NULL</code>: <code>WHERE (ru_name ILIKE :ruName OR :ruName IS NULL) OR (en_name ILIKE :enName OR :enName IS NULL)</code>;</li></ol></div><p>На этой технике можно уехать очень далеко, настолько далеко, что до MyBaits и QueryDsl у меня руки ни разу не дошли.</p><p>Но в чистом виде, у неё есть одно неприятное ограничение - она не поддерживает пагинацию.
+Однако и это можно обойти</p><section class="doc-section level-4"><h5 id=_spel>SpEL</h5><p>Если вам нужны только Slice или Window (а не Page) и/или динамическая сортировка по одной колонке, то можно обойтись поддержкой SpEL в строке запроса:</p><div class=listing-block><pre class=highlight><code class=language-kotlin data-lang=kotlin>@Query(&#34;SELECT * FROM table WHERE a = 0 ORDER BY :#{sortCol} OFFSET = :#{page.offset} LIMIT :#{page.pageSize}&#34;)
+fun findByA(sortCol: String, pageable: Pageable)</code></pre></div><p>Если же вам нужно получить именно Page и/или поддержать сложную сортировку то надо будет ещё пописать инфраструктурного кода.</p></section><section class="doc-section level-4"><h5 id=_namedparameterjdbcopertions>NamedParameterJdbcOpertions</h5><p>Для этого нам потребуется:</p><div class="olist arabic"><ol class=arabic><li>В базовый класс репозов прокинуть NamedParameterJdbcOperations;</li><li>Чуть-чуть залезть в кишочки SDJ и добыть оттуда EntityRowMapper для мапинга агрегата;</li><li>Добавить в базовый класс репозов метод findPage(baseQuery: String, params: Map&lt;String, Any>, pageable: Pageable): Page&lt;T> на 30 строк</li></ol></div><div class=listing-block><pre class=highlight><code class=language-kotlin data-lang=kotlin>fun findPage(baseSql: String, params: Map&lt;String, Any&gt;, pageable: Pageable = Pageable.unpaged(), rowMapper: RowMapper&lt;T&gt; = this.rowMapper): Page&lt;T&gt; {
+    val count = namedParameterJdbcOperations.queryForObject(
+        &#34;SELECT count(*) FROM ($baseSql) data&#34;,
+        params,
+        Long::class.java
+    )!!
+    if (count == 0L) {
+        val emptyPage: List&lt;T&gt; = emptyList()
+        return PageImpl(emptyPage, pageable, count)
+    }
+
+    val dataQuery = buildString {
+        appendLine(&#34;SELECT * FROM($baseSql) data&#34;)
+        if (pageable.sort.isSorted) {
+            append(&#34;ORDER BY &#34;)
+            appendLine(pageable.sort.map { it.property + &#34; &#34; + it.direction.name }.joinToString(&#34;, &#34;))
+        }
+        appendLine(
+            &#34;&#34;&#34;
+                    LIMIT :pageSize
+                    OFFSET :offset
+                    &#34;&#34;&#34;
+        )
+    }
+    val data = namedParameterJdbcOperations.query(
+        dataQuery,
+        params + mapOf(&#34;pageSize&#34; to pageable.pageSize, &#34;offset&#34; to pageable.offset),
+        rowMapper
+    )
+
+    return PageImpl(data, pageable, count)
+}</code></pre></div><hr><p>И вот теперь мы снова можем вернуться к вопросу что же такого в ФП, ради чего я иду на все эти мучения.</p></section></section></section></section><section class="doc-section level-1"><h2 id=_почему_фп>Почему ФП?</h2><p>Ответ на этот вопрос такой: потому что, ФП помогает мне решать задачи в два раза быстрее и качественнее.
+Чем когда я сам же решаю задачи в императивной кодовой базе.</p><p>У этого утверждения нет неопровержимых доказательств, но какие-никакие у меня есть.</p><section class="doc-section level-2"><h3 id=_резюме_поста>Резюме поста</h3><p>Я уже писал пост на эту тему, подробно повторять его не буду, но приведу основные тезисы:</p><div class="olist arabic"><ol class=arabic><li>Константин (мужик, который ввёл в нашей индустрии понятия coupling & cohesion) говорит, что у него были эмпирические свидетельства в пользу того, что программы написанные в функциональном стиле стоили дешевле;</li><li>Делать максимум кода в функциональном стиле рекомендуют множество книг, включая классические Clean Code и DDD Blue Book;</li><li>Многие эксперты, включая анкл Боба перешли на функциональный стиль и не хотят назад;</li><li>Программы, написанные в функциональном стиле, проще поддаются автоматической оптимизации и формальной верификации, что на мой взгляд свидетельствует об их больше простоте для понимания.</li></ol></div><p>В дополнение к этому посту у меня так же есть свидетельство большей эффективности работы команды с кодовой базой на основе SDJ и выполненной в функциональном стиле.</p></section><section class="doc-section level-2"><h3 id=_проект_э>Проект Э</h3><div class=table-block><table class="frame-all grid-all stretch"><col style=width:33.3333%><col style=width:33.3333%><col style=width:33.3334%><thead><tr><th class="halign-left valign-top">Метрика</th><th class="halign-left valign-top">Оригинальный проект</th><th class="halign-left valign-top">Отреинженеренный проект</th></tr></thead><tbody><tr><td class="halign-left valign-top">Стэк</td><td class="halign-left valign-top">C#, OOP, микросервисы, 0 тестов, Entity Framework, Dapper</td><td class="halign-left valign-top">Kotlin, DOP, модульный монолит, 100% покрытие эндпоинтов, SDJ</td></tr><tr><td class="halign-left valign-top">Трудоёмкость</td><td class="halign-left valign-top">~1512 ч/часов мидла</td><td class="halign-left valign-top">1162 ч/часов юниоров</td></tr><tr><td class="halign-left valign-top">Медианные трудозатраты на задачу</td><td class="halign-left valign-top">16</td><td class="halign-left valign-top">5</td></tr><tr><td class="halign-left valign-top">Количество багов на задачу</td><td class="halign-left valign-top">1,7</td><td class="halign-left valign-top">0,4</td></tr></tbody></table></div><p>Чисто цифры очень хочется просуммировать так: за 80% времени мидла, юниоры сделали проект, который стало поддерживать в два раза дешевле.</p><p>Но, к сожалению, условия выполнения проектов были сильно разными, поэтому честнее будет намного более аккуратное резюме:</p><div class=ulist><ul><li>SDJ и ФП не обрекут ваш проект на провал;</li><li>Джуны (при условии ревью лидом) могут писать хорошие проекты в функциональном стиле.</li></ul></div><p>Это уже моё субъективное мнение, но я полагаю, что на разницу в метриках, помимо качественного тестирования и отказа от ненужных сложностей распределённого программирования, положительное влияние оказала и простата, присущая коду написанному в функциональном стиле.</p><p>Этот тезис я проиллюстрирую примером из другого коммерческого проекта.</p></section><section class="doc-section level-2"><h3 id=_проект_баркодер>Проект Баркодер</h3><p>Этот пример хорош тем, что версия "до" - это реальный код, написанный юниором до ревью.
+В Проекте Э таких примеров не было или они не сохранились.</p><p>Рассмотрим вот такой кусочек кода метода сервиса приложения:</p><div class=listing-block><pre class=highlight><code class=language-kotlin data-lang=kotlin>@Transactional
+open fun repackage(boxIds: List&lt;Long&gt;, osgPeriods: List&lt;OsgPeriodDto&gt;) {
+   val osgIds = osgPeriods.map { it.osgBoxId }
+   if (boxIds.size == 1) {
+       val box = boxRepo.findByIdOrNull(boxIds[0])
+       if (osgPeriods.first().periods.isEmpty()) {
+           osgPeriods.forEach {
+               if (it.periods.isEmpty()) {
+                   it.periods.addAll(box.reportingIntervals.map { ri -&gt;
+                       ReportingPeriodDto(
+                           ri.startDate.toString(),
+                           ri.endDate.toString()
+                       )
+                   })
+               }
+           }
+           saveBoxWithPeriodsOnRepackage(box, osgPeriods, false)
+       } else {
+           saveBoxWithPeriodsOnRepackage(box, osgPeriods, true)
+       }
+   } else {
+       boxIds.forEach { boxId -&gt;
+           val osgId = osgPeriods[0].osgBoxId
+           val box = boxRepo.findByIdOrNull(boxId)
+           boxRepo.save(
+               box.copy(
+                   reportingIntervals = box.reportingIntervals.map {
+                       it.copy(
+                           osgBoxId = osgId
+                       )
+                   }.toSet()
+               )
+           )
+       }
+       osgRepo.insertBoxesToOsgsLinks(osgIds, boxIds)
+   }
+}</code></pre></div><p>Тут перемешанны бизнес-логика и ввод вывод и из-за этого понять его довольно сложно.
+И я особо не надеюсь, что кто-то будет в него вникать, но тем не мнение предложу вам небольше задание по чтению императивного кода: засеките время и попробуйте найти в нём проблему производительности.</p><p>Нашли?
+В оригинальном коде методы findByIdOrNull и save вызываются в цикле.</p><p>Теперь давайте посмотрим, как этот же код выглядит будучи написанным функциональном стиле:</p><div class=listing-block><pre class=highlight><code class=language-kotlin data-lang=kotlin>val boxes = boxRepo.findByIdIn(boxIds)
+val (repackedBoxes, boxOsgBoxLinks) = repackageBoxes(boxes, osgPeriods)
+boxRepo.saveAll(repackedBoxes)
+osgRepo.insertBoxesToOsgsLinks(boxOsgBoxLinks.boxIds, boxOsgBoxLinks.osgBoxIds)</code></pre></div><p>Тут уже вполне можно код почитать и понять, что этот код:</p><div class="olist arabic"><ol class=arabic><li>Достаёт некие коробки по идам (1 select);</li><li>Каким-то образом их переупаковывает на основе неких периодов, в результате чего появляются изменённые коробки, а так же связи коробок с ОСГ-коробками (никакого IO);</li><li>Сохраняет обновлённые коробки (пакетные N + K insert-ов и update-ов);</li><li>Добавляет связи (один insert).</li></ol></div><p>Ну а если хочется понять, что там за перепаковка такая, то этот код выглядит так:</p><div class=listing-block><pre class=highlight><code class=language-kotlin data-lang=kotlin>private fun repackageBoxes(
+   boxes: List&lt;Box&gt;,
+   osgPeriods: List&lt;OsgPeriodDto&gt;
+): Pair&lt;List&lt;Box&gt;, BoxOsgBoxLinks&gt; = when {
+   boxes.size == 1 &amp;&amp; osgPeriods.all { it.periods.isEmpty() } -&gt; {
+       listOf(box.single().unlinkReportingIntervalsFromOsg()) to NoLinks
+   }
+   boxes.size == 1 &amp;&amp; osgPeriods.all { it.periods.isNotEmpty() } -&gt; {
+       val box = boxes.single()
+       val newReportingIntervals = osgPeriodsDtosToReportingIntervals(box.id!!, osgPeriods)
+       listOf(box.withReportingIntervals(newReportingIntervals)) to NoLinks
+   }
+   else -&gt; {
+       val repackedBoxes = boxes.map { box -&gt;
+           val newReportingIntervals = osgPeriodsDtosToReportingIntervals(box.id!!, osgPeriods)
+           box.withReportingIntervals(newReportingIntervals)
+       }
+       repackedBoxes to extractLinks(boxes, osgPeriods)
+   }
+
+private fun osgPeriodsDtosToReportingIntervals(
+   boxId: Long,
+   osgPeriods: List&lt;OsgPeriodDto&gt;
+): Set&lt;ReportingInterval&gt; {
+   val allOsgPeriods = osgPeriods.flatMap { osgBox -&gt; osgBox.periods.map { osgBox.osgBoxId to it } }
+   val newBoxReportingIntervals = allOsgPeriods.map { (osgBoxId, period) -&gt;
+       ReportingInterval(boxId, period.convertFromDateToDate(), period.convertToDateToDate(), osgBoxId)
+   }
+   return newBoxReportingIntervals.toSet()
+}</code></pre></div><p>В этот код вы так же вряд ли станете вникать в рамках чтения поста.
+Но если бы вам деваться было некуда, то вы бы были очень благодарны, что вам тут хотя бы за работой с БД следить не надо.</p><p>Вы можете сказать, что тут просто юниор на гавнокодил и в целом будете правы.
+Но разделение ввода-вывода и бизнес-логики и очень простые правила как этого добиться существенно уменьшают вероятность появления гавнокода.</p><p>А правила такие:</p><div class="olist arabic"><ol class=arabic><li>Методы сервисов не могут вызывать методы другие методы сервисов<sup>*</sup>;</li><li>Методы сервисов не могут содержать циклов (а так же функций высшего порядка на коллекциях) или if-ов (за исключением защитных выражений).</li></ol></div><p><sup>*</sup> - переиспользуемая логика помещается в функции, которые получают все коллабораторы в качестве параметров.</p><p>Рассмотрим другой пример.</p></section><section class="doc-section level-2"><h3 id=_проект_ю>Проект Ю</h3><div class=listing-block><pre class=highlight><code class=language-kotlin data-lang=kotlin>public Issue createIssue(Issue issueParams,
+                            List&lt;LinkedIssue&gt; linkedIssues,
+                            boolean checkRequiredFields,
+                            AdditionalIssueParams additionalIssueParams) {
+    Issue issue = createIssue(issueParams,
+                                linkedIssues,
+                                issueParams.getCurrency(),
+                                checkRequiredFields,
+                                additionalIssueParams,
+                                false);
+
+    boolean remindReporter = issue.getType().getNotificationSettings().isRemindReporterOnStatusOrAssigneeChange();
+    if (!issue.getType().isDisableFunctionalityForReporters() &amp;&amp; remindReporter) {
+        notifyService.notify(issueMessageService.createOnNewIssueForReporterMessage(issue, true), track(issue.getId(), issue.getClass()));
+    }
+
+    return issue;
+}</code></pre></div><p>В этом коде создаётся некая задача и, в случае если для типа задач в целом включены фича репортеров и в частности включены нотификации, репортеру задачи отправляется нотификация.</p><p>И этот код не содержит каких-то очевидных проблем.
+Нейминг не бесспорный, чуть-чуть нарушен принцип Деметры, но в остальном, вроде бы, простой понятный код.</p><p>Теперь добавлю, что этот код написан в мейнстримном стиле - Spring с автовайром на полях, JPA, ООП, слоёная архитектура.
+И в свете этого факта, код начинает меня тут же напрягать.</p><p>Потому что в таком коде невинный вызов метода <code>createIssue</code> может оказаться вратами в варп, полный демонов.
+И в данном случае так и есть - за этим вызовом скрывается:</p><div class="olist arabic"><ol class=arabic><li>более 300 вызовов методов Spring-бинов;</li><li>которые включают обращения к по меньшей мере 30 репозиториям;</li><li>с использованием по меньшей мере 37 методов find*;</li><li>И 20 методов save;</li><li>И один бог знает, сколько таблиц там трогается через ленивую загрузку и дёрти чекинг.</li></ol></div><p>Как я это выяснил?
+В результате четырёх часов методичного чтения кода.</p><p>И в случае ФА, как минимум бы не было иллюзии, что этот код простой - все 30 репозов и работа с ними были бы сконцентрированны в одном методе, который бы ввергал в ужас с первой секунды, а не 4 часа спустя.</p><p>Но, скорее всего, при наличии на проекте хотя бы одного вменяемого разработчика, ФА просто бы не допустила появление такого метода.</p><hr><p>Итого, ФП потому что:</p><div class="olist arabic"><ol class=arabic><li>оно делает код более простым для понимания;</li><li>оно как минимум не дороже ООП.</li></ol></div></section></section><section class="doc-section level-1"><h2 id=_разработка_бакендов_в_функциональном_стиле_101>Разработка бакендов в функциональном стиле 101</h2><section class="doc-section level-2"><h3 id=_алгоритм_проектирования_модели_данных>Алгоритм проектирования модели данных</h3></section><section class="doc-section level-2"><h3 id=_разделение_ввода_вывода_и_бизнес_логики>Разделение ввода-вывода и бизнес-логики</h3></section></section><section class="doc-section level-1"><h2 id=_пример>Пример</h2><section class="doc-section level-2"><h3 id=_тз>ТЗ</h3></section><section class="doc-section level-2"><h3 id=_проектирование_модели>Проектирование модели</h3></section><section class="doc-section level-2"><h3 id=_реализация_операции_отображения_таблицы>Реализация операции отображения таблицы</h3></section></section><section class="doc-section level-1"><h2 id=_заключение>Заключение</h2><p>Итого:</p><div class="olist arabic"><ol class=arabic><li>Почему я использую SDJ?
+Потому что это фреймворк работы с БД лучше всего согласующийся с ФП стилем;</li><li>Почему я использую ФП стиль?
+Он не сложнее императивного ООП стиля и делает код более простым для понимания;</li><li>Как писать бакенды в ФП стиле?<ol class=loweralpha type=a><li>Декомпозируйте модель на небольшие неизменяемые агрегаты, которые согласуются с большинством ваших транзакций;</li><li>Запретите на уровне ревью использовать в одном методе операторы ветвления и циклов (а так же функции высшего порядка на коллекциях) и вызовы методов Spring-бинов.</li></ol></li></ol></div></section></article></section></div></main><script src=/js/app.js></script></body></html>
