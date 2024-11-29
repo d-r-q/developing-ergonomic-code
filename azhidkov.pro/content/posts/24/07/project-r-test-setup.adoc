@@ -8,12 +8,13 @@ tags:
 - testcontainers
 - db-fixture
 - project-r
+aliases:
+- /posts/24/09/what-is-fp
 ---
 :source-highlighter: rouge
 :rouge-theme: github
 :icons: font
 :sectlinks:
-:imagesdir: /microposts/24/06/images/
 :toc:
 :toclevels: 4
 :toc-title: Содержание
