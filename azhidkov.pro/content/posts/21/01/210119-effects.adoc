@@ -2,6 +2,10 @@
 title: "Чистые и эффективные функции: Эффекты"
 date: 2021-01-19T09:19:22+07:00
 draft: false
+tags:
+- fp
+- effects
+- ergo-approach
 ---
 :source-highlighter: rouge
 :rouge-theme: github

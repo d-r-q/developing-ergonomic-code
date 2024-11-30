@@ -3,6 +3,11 @@ title: "Агрегаты"
 description: "В основе поддерживаемых информационных систем лежат агрегаты. В этом посте я расскажу что такое агрегат, как его проектировать и какие ошибки проектирования агрегатов встречаются чаще всего"
 date: 2022-04-01T08:25:37+07:00
 draft: false
+tags:
+- ddd
+- ergo-approach
+- immutable-domain-model
+- design
 ---
 :source-highlighter: rouge
 :rouge-theme: github

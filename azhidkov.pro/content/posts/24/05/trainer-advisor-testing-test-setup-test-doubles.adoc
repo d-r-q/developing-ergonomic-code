@@ -1,0 +1,741 @@
+---
+title: "Тестирование Trainer Advisor: сетап теста, подготовка тестовых дублей"
+date: 2024-05-14T08:25:37+07:00
+draft: false
+tags:
+- trainer-advisor
+- ergo-testing
+- ergo-mocking
+- wiremock
+aliases:
+- /microposts/24/05/trainer-advisor-testing-test-setup-test-doubles
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:sectlinks:
+:imagesdir: /posts/24/04/images/
+:toc:
+:toclevels: 4
+:toc-title: Содержание
+
+== Введение
+
+[NOTE]
+--
+Этот материал является "микропостом" - текстом, написанным в режиме потока сознания без особой редактуры.
+
+Следить за обновлениями блога можно в Telegram-канале: https://t.me/ergonomic_code[Эргономичный код].
+--
+
+Это четвёртый пост о тестировании link:++{{<ref "/posts/23/11/trainer-advisor">}}++[Trainer Advisor] и третий (и последний) пост о сетапе фикстуры.
+
+Ранее в сериале:
+
+. link:++{{<ref "/posts/24/03/trainer-advisor-testing-theory">}}++[Теория и общие идеи подхода к тестированию];
+. link:++{{<ref "/posts/24/04/trainer-advisor-testing-test-suite-setup">}}++[Запуск инфраструктуры и системы для тестов];
+. link:++{{<ref "/posts/24/04/trainer-advisor-testing-test-setup-generate-fixture">}}++[Генерация и вставка фикстурных данных в хранилища];
+
+
+Перед прочтением этого поста рекомендую ознакомиться хотя бы с постами об общих идеях тестирования и запуском инфраструктуры и тестов, если ещё не сделали этого.
+
+При том что в целом я стараюсь минимизировать использование тестовых дублей, я вполне допускаю их использование в случаях, когда это целесообразно/экономически обосновано.
+
+Напомню, на самом верхнем уровне процесс подготовки теста в Trainer Advisor (и в целом по link:++{{<ref "/ergo-approach/landing">}}++[Эргономичному подходу]) состоит из следующих шагов:
+
+. Один раз на запуск набора тестов:
+.. Запустить или сбросить состояние запущенной инфраструктуры (сейчас - Postgres и Minio);
+.. Запустить приложение;
+.. Проинициализировать инфраструктуру (схему и бакеты);
+. Для каждого тест-кейса из набора:
+.. Подготовить хранилища;
+... Привести данные в БД к эталонным;
+... Сформировать специфичные данные, которые sut загрузит из хранилищ неявно в процессе испытания (вызова метода в блоке Then);
+... Вставить эти данные в хранилища.
+.. Подготовить тестовые дубли.
+
+И в этом посте я рассматриваю последний шаг — подготовку тестовых дублей.
+
+== Сетап тестовых дублей для тестирования настроек обработки ошибок Spring-ом
+
+В TA сейчас практически нигде нет особого смысла в какой бы то ни было обработке ошибок инфраструктуры, кроме отображения пользователю сообщения об ошибке.
+Поэтому общая стратегия обработки ошибок инфраструктуры заключается в их игнорировании:)
+Они улетают в Spring и он отображает человеческую страницу об ошибке.
+
+Но чтобы контролировать, что Spring продолжает себя так вести, я написал на это тест:
+
+.Тест на обработку ошибок Spring. https://github.com/d-r-q/QYoga/blob/master/app/src/test/kotlin/pro/qyoga/tests/cases/app/error_handling/ErrorHandlingTest.kt#L12[Смотреть на GitHub]
+[source,kotlin]
+----
+class ErrorHandlingTest : QYogaAppIntegrationBaseTest() {
+
+    @Test
+    fun `QYoga should return user friendly error page on unexpected error`() {
+        // Given
+
+        // When
+        val document = PublicClient.getFailPage()
+
+        // Then
+        document shouldBe GenericErrorPage
+    }
+
+    @Test
+    fun `QYoga should return user friendly error page on request of not existing page`() {
+        // Given
+
+        // When
+        val document = PublicClient.getNotFoundPage()
+
+        // Then
+        document shouldBePage NotFoundErrorPage
+    }
+
+}
+----
+
+Как спровоцировать NOT FOUND, я думаю, очевидно, а вот как спровоцировать неожиданную ошибку - не совсем, поэтому поясню.
+
+Для этого я в тестовых исходниках завёл контроллер, который всегда выбрасывает исключение:
+
+.FailingController. https://github.com/d-r-q/QYoga/blob/master/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/FailingController.kt#L8[Смотреть на GitHub]
+[source,kotlin]
+----
+@Controller
+class FailingController {
+
+    @GetMapping("/test/fail")
+    fun fail() {
+        error("Test error handling")
+    }
+
+}
+----
+
+[NOTE]
+====
+Сейчас думаю, что для чистоты эксперимента тут лучше было выбрасывать IOException.
+Или ещё лучше - передавать класс исключения в параметрах, а в тестах написать пачку тестов на основные виды - Throwable, Exception, Runtime, Error, IO, Assertion.
+Но, сделаю это чуть позже.
+====
+
+И импортирую его в конфиге тестов:
+
+.TestsConfig. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/infra/test_config/spring/TestsConfig.kt#L35[Смотреть на GitHub]
+[source,kotlin]
+----
+@Import(
+    // ...
+    FailingController::class
+)
+@Configuration
+class TestsConfig
+----
+
+Плюс ещё пришлось немного подправить продовые настройки Spring Security: 
+
+.WebSecurityConfig. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/main/kotlin/pro/qyoga/app/infra/WebSecurityConfig.kt#L49[Смотреть на GitHub]
+[source,kotlin]
+----
+fun mainSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
+    http
+        .csrf { it.disable() }
+        .authorizeHttpRequests { requests ->
+            requests
+                // ...
+                .requestMatchers(
+                    HttpMethod.GET,
+                    // ...
+                    "/test/*"
+                )
+                .permitAll()
+        }
+}
+----
+
+[NOTE]
+====
+Полагаю, существует возможность дописать это правило без изменения продового кода, но я решил, что вред этой строчки не превышает затрат на поиск решения, поэтому сделал так.
+====
+
+== Сетап тестовых дублей для тестирования обработки ошибок инфраструктуры
+
+И хотя подавляющее большинство ошибок улетает в пользователя напрямую, есть один случай где это не так.
+Речь идёт о случае отказа Minio при удалении изображений шагов упражнения, после успешного удаления самого упражнения из Postgres-а.
+
+В этом случае отказ будет для пользователя совершенно незаметен и незачем портить пользователю жизнь сообщением об ошибке.
+
+[NOTE]
+====
+А если честно - я поленился заморачиваться с обеспечением согласованности в конечном итоге между Postgres и Minio.
+Если бы я в этом случае возвращал ошибку пользователю - мне пришлось бы делать компенсирующую транзакцию, по вставке удалённого упражнения.
+Которая тоже могла бы зафейлиться.
+
+А удалять изображения из Minio внутри транзакции Postgres нельзя из-за того, что это существенно бы удлинило время жизни транзакции и всё равно бы потребовало компенсирующей транзакции - на этот раз по восстановлению изображений, в случае сбоя Postgres.
+====
+
+Симулировать отказ реального Minio в принципе возможно с помощью https://github.com/Shopify/toxiproxy[ToxiProxy] - однако это долго и дорого и в смысле разработки, и в смысле времени прогона тестов.
+Поэтому я решил, что этот тот случай, когда использование моков является экономически целесообразным.
+
+Логика по обработке этой ошибки находится в классе ExercisesService:
+
+.Обработка ошибки удаления изображения упражнения. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/main/kotlin/pro/qyoga/core/therapy/exercises/ExercisesServiceImpl.kt#L99[Смотреть на GitHub]
+[source,kotlin,highlight=14..19]
+----
+fun deleteById(exerciseId: Long) {
+    val exercise = transaction {
+        val exercise = findById(exerciseId)
+            ?: return@transaction null
+
+        exercisesRepo.deleteById(exercise.id)
+        return@transaction exercise
+    }
+
+    if (exercise == null) {
+        return
+    }
+
+    try {
+        val stepImageIds = exercise.steps.mapNotNull { it.imageId?.id }
+        exerciseStepsImagesStorage.deleteAllById(stepImageIds)
+    } catch (ex: Exception) {
+        log.warn("Exercise images deletion failed", ex)
+    }
+}
+----
+
+И для тестирования этой логики мне надо замокать `exerciseStepsImagesStorage` в этом классе.
+
+Однако с моками в Spring есть нюанс.
+
+С одной стороны, в Spring Test есть чудесная автомагия в виде https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/test/mock/mockito/MockBean.html[@MockBean].
+
+С другой стороны, это автомагия приводит к тому, что *каждый* тест-кейс (метод) с этой аннотацией запускает контекст заново.
+А у нас контекст практически продовый и запускается по несколько секунд - неприемлемо долго.
+
+Другим очевидным способом подсунуть мок в sut (ExercisesService в данном случае) является создание sut руками, вообще без Spring.
+Однако в этом конфигурация sut отдалится от боевой дальше, чем требуется - мы потеряем всю автомагию Spring, в этом примере - создание транзакции через @Transactional.
+
+Это, наверное, небольшая потеря, но я нашёл способ, как её избежать:
+
+.Создание бина с моками силами Spring. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/backgrounds/SpringBackgrounds.kt#L20[Смотреть на GitHub]
+[source,kotlin]
+----
+@Component
+class SpringBackgrounds( // <1>
+    private val context: GenericApplicationContext // <2>
+) {
+
+    private val beansCache = ConcurrentHashMap<String, Any>()
+
+    fun createExercisesService( // <3>
+        exercisesRepo: ExercisesRepo? = null, // <4>
+        exerciseStepsImagesStorage: FilesStorage? = null
+    ): ExercisesService {
+        val key = "mockExerciseService($exerciseStepsImagesStorage, $exercisesRepo)"
+        val bean = beansCache.getOrPut(key) {
+            val bd = GenericBeanDefinition().apply { // <5>
+                setBeanClass(ExercisesService::class.java)
+                setInstanceSupplier {
+                    ExercisesService( // <6>
+                        exercisesRepo ?: context.getBean(), // <7>
+                        exerciseStepsImagesStorage ?: context.getBean(
+                            "exerciseStepsImagesStorage",
+                            FilesStorage::class.java
+                        ),
+                        context.getBean()
+                    )
+                }
+            }
+            context.registerBeanDefinition(key, bd) // <8>
+            context.getBean(key, ExercisesService::class.java) // <9>
+        }
+
+        return bean as ExercisesService
+    }
+
+}
+----
+
+Что здесь происходит:
+
+. Я определяю бин-бэкгрануд для работы со Spring;
+. У которого есть доступ к Spring-контексту приложения;
+. В бэкграунде определён метод `createExercisesService`;
+. Который на вход получает зависимости бина ExerciseService (которые можно не указывать, если надо использовать продовый бин из контекста);
+. Далее я создаю BeanDefinition;
+. Для которого руками создаю экземпляр ExercisesService;
+. Передавая в качестве зависимостей либо тот объект, что пришёл в параметрах (мок), либо настоящий бин из конекста;
+. Затем я регистрирую этот бин дефинишн в контексте тестов;
+. И получаю из контекста бин - в этот момент Spring навернёт свою автомагию, на объект созданный на шаге 6.
+
+[NOTE]
+====
+Сейчас такой метод только один - поэтому вся логика работы с контекстом зашита прямо в нём.
+Однако, как только появится второй такой метод - я вытащу логику работы со Spring во вспомогательные методы и в методах создания конкретных бинов останется только код ручного создания объектов.
+====
+
+== Сетап тестового дубля для тестирования отправки почты
+
+Сейчас отправка писем (со сгенерированным системой паролем для пользователя и нотификацией для админа) в Trainer Advisor выполняется с помощью почты Yandex-а, взаимодействие с которой проходит по SMTP.
+И исходя из принципа, что тест должен выполнять те же проверки, что и тестировщик-человек, в тесте регистрации надо получить отправленное письмо, достать из него пароль, залогиниться с этим паролем и убедиться, что логин прошёл.
+
+В принципе, это всё можно провернуть поверх другого ящика на той же почте Yandex-а.
+И это будет конфигурацией, максимально приближенной к боевой.
+
+Но у такого подхода есть серия существенных минусов:
+
+. Тест начнёт зависеть от сети и не будет работать в офлайне (или если вдруг почта Yandex-а упадёт);
+. Тест начнёт ходить по сети и работать намного дольше, чем все остальные тесты, не покидающие пределов localhost;
+. Тесту надо будет дополнительно чистить ящик, что потребует дополнительного времени и на разработку теста и на запуск.
+
+Поэтому в данном случае начинают работать соображения эргономики разработки и тестирования и в тестах вместо SMTP сервера Yandex-а, я использую локальный SMTP сервер https://greenmail-mail-test.github.io/greenmail/[GreenMail].
+
+Это позволяет тестировать систему в конфигурации достаточно близкой к боевой (используется реальный код, который отправляет реальные сообщения по SMTP), но без всех недостатков использования реального сервера Yandex.
+
+Для того чтобы это провернуть, нам надо настроить приложение при запуске в тестах на работу с локальным сервером и запустить локальный SMTP-сервер.
+
+Настройка приложения выполняется с помощью конфигурации профиля:
+
+.application-test.yaml. https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/resources/application-test.yaml#L4[Смотреть на GitHub]
+[source,yaml]
+----
+spring:
+  mail:
+    username: qyogapro@yandex.ru
+    password: password
+    host: localhost
+    port: 10025
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+----
+
+Затем сервер запускается с помощью JUnit 5 расширения:
+
+.Запуск GreenMail-сервера. [GitHub]
+[source,kotlin]
+----
+class RegistrationPageTest : QYogaAppIntegrationBaseTest() {
+
+    // ...
+
+    companion object {
+
+        @JvmField
+        @RegisterExtension
+        var greenMail: GreenMailExtension = GreenMailExtension(ServerSetupTest.SMTP.port(10_025))
+            .withConfiguration(GreenMailConfiguration.aConfig().withUser("qyogapro@yandex.ru", "password"))
+
+    }
+
+}
+----
+
+[NOTE]
+====
+Код выше - это фактически аналог простого статического поля в Java:
+[source,java]
+----
+class RegistrationPageTest {
+    @RegisterExtension
+    public static final GreenMail greenMail = new GreenMailExtension(/* ... */);
+}
+----
+====
+
+А дальше письмо "получается" тривиальным вызовом АПИ:
+
+.Извлечение пароля из письма. https://github.com/d-r-q/QYoga/blob/f68632f0/app/src/test/kotlin/pro/qyoga/tests/cases/app/publc/RegistrationPageTest.kt#L55[Смотреть на GitHub]
+[source,kotlin]
+----
+val userReceivedMessages = greenMail.getReceivedMessagesForDomain(userEmail)
+// ...
+val password = passwordEmailPattern.matchEntire(userReceivedMessages[0].content as String)!!.groupValues[2]
+----
+
+== Заключение
+
+В своей практике я стараюсь избегать моков, так как они снижают устойчивость к рефакторингу и надёжность тестов.
+Но ни то ни другое не является проблемой самой по себе.
+Проблема в том, что и лишний рефаторинг и лишний цикл исправления ошибок стоят дополнительных денег.
+
+Однако в некоторых случаях (симуляция ошибок, работа с внешними системами) сетап и использование настоящих зависимостей будет стоить ещё дороже, чем лишний рефакторинг и лишние циклы исправления ошибок.
+
+В этих случаях можно и нужно использовать тестовые дубли.
+
+== Бонус трэк
+
+В Trainer Advisor всей это инфраструктуры (пока?) нет, но 2024 году пост об интеграционном тестировании, без описания тестирования интеграций с внешними сервисами и брокерами сообщений нельзя считать полноценным.
+Поэтому в качестве бонус-трека, я расскажу о том, как мы тестировали такие интеграции в link:++{{<ref "/ergo-approach/landing##_проект_э">}}++[Проекте Э].
+
+=== Сетап тестового дубля для тестирования кода, зависящего от внешнего Web-сервиса
+
+Как я писал в link:++{{<ref "/posts/24/04/trainer-advisor-testing-test-suite-setup#_запуск_wiremock">}}++[посте о сетапе инфраструктуры], тестирование кода, работающего с внешними сервисами, у меня проработано намного меньше, чем тестирование кода, работающего с БД, но, тем не менее, кое-какие наработки есть.
+
+А именно:
+
+. Я всегда выделяю сетап WireMock-а во вспомогательные методы;
+. Для каждого эндпоинта внешней системы я завожу по отдельному методу на комбинацию структуры тела запроса и тела ответа.
+  Зачастую это значит, что на каждый эндпоинт необходимо заводить по два метода - на успешный и неуспешный ответ;
+. Так же как и с доменными объектами, я никогда не хардкожу значения параметров и полей;
+. Практически всегда для полей ответа я указываю дефолтное случайное реалистичное значение.
+. URL-ы, тела и т.д. я матчу, как регулярные выражения, а не точные совпадения.
+
+В коде это выглядит так:
+
+.Методы сетапа моков
+[source,kotlin]
+----
+fun WireMock.willSucceededOnIdentifyAccountRequest(
+    oms: String,
+    birthDate: LocalDate,
+    statusCode: Int = 200,
+    externalAccountId: String = randomExternalAccountId()
+) {
+    put {
+        url like "$EXTERNAL_BASE_PATH/identifyPatient\\?birthDate=$birthDate&oms=$oms"
+    } returns {
+        statusCode = statusCode
+        body = """
+            {
+                "remoteId": "$externalAccountId"
+            }
+            """
+    }
+}
+
+fun WireMock.willFailOnIdentifyAccountRequest(
+    oms: String,
+    birthDate: LocalDate,
+    statusCode: Int = 500,
+    externalSystemErrorCode: String = randomExternalSystemErrorCode()
+) {
+    put {
+        url like "$EXTERNAL_BASE_PATH/identifyPatient\\?birthDate=$birthDate&oms=$oms"
+    } returns {
+        statusCode = statusCode
+        body = """
+            {
+                "code": "$externalSystemErrorCode"
+            }
+            """
+    }
+}
+----
+
+[NOTE]
+====
+В коде выше используется https://github.com/wiremock/kotlin-wiremock[Kotlin DSL для WireMock].
+====
+
+А сами тест-кейсы выглядят так:
+
+.Тест-кейсы с WireMock
+[source,kotlin]
+----
+@Test
+fun `links internal account to external system`(wm: WireMockRuntimeInfo) {
+    // Given
+    // ...
+    wm.wireMock.willSucceededOnIdentifyAccountRequest(
+        oms = linkAccountRequest.oms, 
+        birthDate = linkAccountRequest.birthDate
+    )
+
+    // When
+    // Триггерим обращение к внешниму сервису
+
+    response.Then {
+        statusCode(204)
+    }
+}
+
+@Test
+fun `returns 400 when provided oms has no agreement to be used in external system`(wm: WireMockRuntimeInfo) {
+    // Given
+    // ...
+    wm.wireMock.willFailOnIdentifyAccountRequest(
+        oms = linkAccountRequest.oms, 
+        birthDate = linkAccountRequest.birthDate,
+        externalSystemErrorCode = ExternalSystem.ErrorCodes.NO_AGREEMENT
+    )
+
+    // When
+    // Триггерим обращение к внешниму сервису
+
+    response.Then {
+        statusCode(400)
+        body("errorCode", equalTo("agreement-for-external-system-usage-not-found"))
+    }
+}
+----
+
+=== Сетап тестового дубля для тестирования отправки сообщений в RabbitMQ
+
+Для тестирования эффектов публикации сообщений в RabbitMQ в Проекте Э используется пара наколенных хелперов.
+
+Первый - фейковый лисенер:
+
+.TestRabbitMqListener
+[source,kotlin]
+----
+class TestRabbitMqListener<T : Any>(
+    private val rabbitTemplate: RabbitTemplate,
+    private val messageType: KClass<T>,
+    private val queue: String,
+) {
+
+    private val log = LoggerFactory.getLogger(javaClass)
+
+    fun receive(count: Int, timeout: Long = 2000): List<T> {
+        val job = CompletableFuture.supplyAsync {
+            val messagesSeq: Sequence<T?> =
+                generateSequence {
+                    rabbitTemplate.receiveAndConvert(
+                        queue,
+                        timeout,
+                        ParameterizedTypeReference.forType(messageType.java)
+                    )
+                }
+
+            messagesSeq
+                .onEachIndexed { idx, msg -> log.info("Message #$idx received: {}", msg) }
+                .takeWhile { msg: T? -> msg != null }
+                .take(count)
+                .filterNotNull()
+                .toList()
+        }
+
+        return job.get()
+    }
+
+}
+----
+
+В этот лисенер передаётся очередь и кол-во сообщений для получения, после чего он запускает отдельный поток, который, собственно, и получает заданное кол-во сообщений из заданной очереди.
+
+Далее есть второй хелпер, который собирает тестовый маршрут и тестовый лисенер:
+
+.RabbitMqFixtures
+[source,kotlin]
+----
+class RabbitMqFixtures(
+    private val ampqAdmin: AmqpAdmin,
+    private val rabbitTemplate: RabbitTemplate
+) {
+
+    val defaultExchange = DirectExchange("amq.direct")
+
+    fun <T : Any> createListener(
+        messageType: KClass<T>,
+        routingKey: String,
+        queueName: String = "",
+        exchange: DirectExchange? = null,
+    ): TestRabbitMqListener<T> {
+        val queue = Queue(queueName, queueName.isNotEmpty(), false, false)
+        ampqAdmin.declareQueue(queue)
+        ampqAdmin.declareBinding(
+            BindingBuilder.bind(queue).to(exchange ?: defaultExchange).with(
+                routingKey
+            )
+        )
+        return TestRabbitMqListener(rabbitTemplate, messageType, queue.actualName)
+    }
+
+}
+----
+
+Этот хелпер умеет создавать лисенров, которые будут получать сообщения по определённому ключу маршрутизации.
+
+И далее он используется для проверки того, что в результате вызова тестируемой операции, требуемые события публикуются в Кролика.
+Например:
+
+.Тест на отправку доменных событий о создании событий дневника
+[source,kotlin]
+----
+@Test
+fun `Project E publishes DiaryEventCreated domain events when diary events are created`() {
+    // Given
+    // ...
+    val eventsListener = rabbitMqFixtures.createListener(
+        DiaryEventCreated::class,
+        DIARY_EVENT_CREATED
+    )
+
+    // When
+    // Триггерим код отправки сообщения в Кролика
+
+    // Then
+    val messages = eventsListener.receive(msgCount)
+    // Верифицируем сообщения
+}
+----
+
+В этом тесте мы проверяем, что после добавления событий дневника через АПИ приложения пациента, для каждого события дневника в Кролика публикуется доменное событие.
+
+=== Сетап тестового дубля для тестирования отправки сообщений в Kafka
+
+С учётом того, что тестовый слушатель Кафки определён как Spring-бин, тесты отправки сообщений в Кафку состоят из четырёх шагов:
+
+. Заавтовайрить бин слушателя;
+. Сбросить состояние слушателя;
+. Вызвать тестируемый метод;
+. Дождаться (с таймаутом) появления сообщения в тестовом слушателе.
+
+Такого реального теста без лишних сложностей (сетапа фикстуры и Wiremock-ов внешней системы) в Проекте Э нет, поэтому тут приведу схематичный пример теста:
+
+.Пример теста отправки сообщения в Kafka
+
+[source,kotlin]
+----
+@ContextConfiguration(
+    classes = [KafkaTestConfig::class],
+)
+class SendEventsTest(
+    @Autowired private val testKafkaListener: TestKafkaListener
+) : ExternalSystemAppBaseTest() {
+
+
+    @BeforeEach
+    fun setUp() {
+        testKafkaListener.clearEvents()
+    }
+
+    private val tenMillis = Duration.ofMillis(10)
+
+    @Test
+    fun `send measurements event`() {
+        // Given
+        // ...
+
+        // When
+        // Триггерим код отправки сообщения в Кафку
+
+        // Then
+        val events = await
+            .withPollDelay(tenMillis)
+            .untilCallTo { testKafkaListener.getEvents() }
+            .has { size == 1 }
+
+        // Верифицируем сообщения
+    }
+}
+----
+
+[NOTE]
+====
+Для ожидания появления сообщения используется https://github.com/awaitility/awaitility/wiki/Kotlin[Kotlin DSL для Awaitility].
+====
+
+=== Сетап тестового дубля для тестирования отправки сообщений в MQTT-брокера
+
+По аналогии с Кроликом, в Проекте Э есть наколенный слушатель, который умеет вытаскивать сообщения из MQTT-брокера:
+
+.TestingMqttClient
+
+[source,kotlin]
+----
+class TestingMqttClient(
+    private val mqttProps: mqttProps,
+) {
+
+    private val log = LoggerFactory.getLogger(javaClass)
+
+    private val mqttClient = setupMqttClient()
+
+    val receivedMessages = mutableListOf<String>()
+
+    fun subscribeToServer() {
+        mqttClient.subscribe(
+            MqttSubscription(mqttProps.topic, 2),
+            null,
+            null,
+            { _, message ->
+                val msg = String(message.payload)
+                log.info("Message received: {}", msg)
+                receivedMessages += msg
+                mqttClient.messageArrivedComplete(message.id, 2)
+            },
+            MqttProperties().apply {
+                setSubscriptionIdentifiers(listOf(0))
+                setSubscriptionIdentifier(1)
+            }
+        )
+        log.info("Mqtt subscribed")
+    }
+
+    private fun setupMqttClient(): MqttAsyncClient {
+        val mqttClient = MqttAsyncClient(
+            mqttProps.address,
+            "myServer",
+            MemoryPersistence()
+        )
+        mqttClient.connect(mqttConnectOptions()).waitForCompletion()
+        log.info("Mqtt client connected")
+        return mqttClient
+    }
+
+    private fun mqttConnectOptions(): MqttConnectionOptions {
+        return MqttConnectionOptions().apply {
+            this.isCleanStart = false
+            this.isAutomaticReconnect = false
+            this.userName = mqttProps.username
+            this.password = mqttProps.password.toByteArray()
+            this.keepAliveInterval = 60
+        }
+    }
+}
+----
+
+Далее, тесты на отправку данных в MQTT:
+
+. Наследуют базовый класс, который запускает MQTT-Брокер;
+. Создают тестовый слушатель;
+. Чистят его очередь.
+  Это какое-то "эхо [line-through]#войны# реинжиниринга юниорами" - по идее так не должно быть, но сейчас без этой чистки тесты падают;
+. Триггерят отправку сообщений;
+. Смотрят, что пришло в слушателя.
+
+В коде это выглядит так:
+
+.MqttTest
+
+[source,kotlin]
+----
+class MqttTest(
+    @Autowired mqttProps: mqttProps
+) : ProjectEIntegrationTest() {
+
+    val mqttClient = TestingMqttClient(mqttProps)
+        .apply { subscribeToServer() }
+
+    @BeforeEach
+    fun cleanupMqtt() {
+        mqttClient.receivedMessages.clear()
+    }
+
+    @Test
+    fun `sends events to mqtt server`(): Unit = runTest {
+        // Given
+        // ..
+
+        // When
+        // Триггерим отправку сообщений в MQTT
+
+        eventually(20.milliseconds) {
+            val messages = listOf(mqttClient.receivedMessages)
+            // Верифицируем сообщения
+        }
+    }
+} 
+----
+
+[NOTE]
+====
+Здесь используются https://kotest.io/docs/assertions/eventually.html[недетерменированные ассёрты из библиотеки kotest].
+====

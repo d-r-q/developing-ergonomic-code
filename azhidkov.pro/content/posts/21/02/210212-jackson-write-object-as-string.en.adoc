@@ -2,6 +2,9 @@
 title: "Non-Ergonomic Jackson"
 date: 2021-02-23T13:25:37+07:00
 draft: false
+tags:
+- ergo-approach
+- whyfp
 ---
 :source-highlighter: rouge
 :rouge-theme: github

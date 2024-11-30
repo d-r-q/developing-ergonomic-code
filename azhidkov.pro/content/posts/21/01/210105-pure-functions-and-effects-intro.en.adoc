@@ -2,6 +2,10 @@
 title: "Pure and efficient functions: Introduction"
 date: 2021-01-05T09:19:22+07:00
 draft: false
+tags:
+- fp
+- terminology
+- effects
 ---
 :source-highlighter: rouge
 :rouge-theme: github

@@ -3,6 +3,10 @@ title: "On Systems Decomposition"
 description: An algorithm for breaking the system down into modules.
 date: 2021-03-24T13:25:37+07:00
 draft: false
+tags:
+- ergo-approach
+- effects-diagram
+- design
 ---
 :source-highlighter: rouge
 :rouge-theme: github

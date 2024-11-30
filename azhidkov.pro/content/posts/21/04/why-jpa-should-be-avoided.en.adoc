@@ -4,6 +4,8 @@ description: JPA/Hibernate’s design is causing you to create sluggish & poorly
 date: 2021-04-03T13:25:37+07:00
 
 draft: false
+tags:
+- whynojpa
 ---
 :source-highlighter: rouge
 :rouge-theme: github

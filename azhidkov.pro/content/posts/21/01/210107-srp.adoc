@@ -2,6 +2,9 @@
 title: "Single Responsibility Principle considered harmful"
 date: 2021-01-07T07:25:37+07:00
 draft: false
+tags:
+- solid
+- rant
 ---
 :source-highlighter: rouge
 :rouge-theme: github

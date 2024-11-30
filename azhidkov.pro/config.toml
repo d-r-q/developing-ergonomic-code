@@ -93,3 +93,6 @@ ignoreFiles = ['-pdf.adoc$']
 [security]
   [security.exec]
     allow = ['^dart-sass-embedded$', '^go$', '^npx$', '^postcss$', 'asciidoctor']
+
+[pagination]
+  pagerSize = 20

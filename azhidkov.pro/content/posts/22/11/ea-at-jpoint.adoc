@@ -1,0 +1,210 @@
+---
+title: "Эргономичный подход на JPoint"
+date: 2022-11-18T08:25:37+07:00
+draft: false
+tags:
+- talks
+- ergo-approach
+aliases:
+- /microposts/22/11/ea-at-jpoint
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:sectlinks:
+:imagesdir: /microposts/22/11/images
+
+[NOTE]
+--
+Этот материал является "микропостом" - текстом, написанным в режиме потока сознания без особой редактуры.
+
+Следить за обновлениями блога можно в моём канале: https://t.me/ergonomic_code[Эргономичный код]
+--
+
+Привет!
+
+[line-through]#У меня ребёнок начал стабильно ходить в детский сад!#
+Пока писал пост - снова заболел🤦‍♂️.
+
+Как это касается вас?
+Во-первых, если у вас сейчас первый ребёнок до трёх лет - верьте, свет в конце туннеля есть, вместе с садом у вас начнётся новая жизнь:)
+
+Например, у вас снова появится время смотреть видосики в интернете:)
+И я вот посмотрел доклад c JPoint "[line-through]#Эргономичный подход# https://www.youtube.com/watch?v=YBsihlkI1E8&list=PLVe-2wcL84b88Ec7BFQZ5aEcu_h6U9isn&index=3[TDD&DDD — гайд по разработке бизнес-логики]".
+https://git.codemonsters.team/guides/ddd-code-toolkit/src/branch/dev[Репозиторий доклада].
+
+Это очередной материал, про который я могу сказать "посмотрите его, возьмите Диаграмму Эффектов для декомпозиции и получите ЭП".
+Поэтому в целом рекомендую к просмотру, но хочу предостеречь от части, которую я попробовал и откинул.
+А именно - https://fsharpforfunandprofit.com/rop/[Railway-oriented Programming] на монадах.
+
+При том, что сама идея мне нравится и я продолжаю ей придерживаться в императивном стиле (guard-clause с выбросом исключения, "пролетарскйий ROP"), в стиле на монадах она не подошла потому что:
+
+. В моём коде процентов 95% обработки ошибок заключается в их маппинге на правильный статус HTTP-ответа.
+  И Скотт Влашин, сам пишет, что https://fsharpforfunandprofit.com/posts/against-railway-oriented-programming/#2----dont-use-result-to-reinvent-exceptions[не надо использовать ROP там, где нужны исключения].
+. В Котлине она требует слишком много шума.
+  Например, в Котлине буквально любой вызов может выбросить буквально любое исключение, соотвественно, каждую верхне-уровневую функцию надо оборачивать в Result.runCatching, например.
+  И вообще разница в объёмах кода видна из примера ниже.
+
+Вот перечень достоинств (+ мои комментарии) этого подхода из https://git.codemonsters.team/guides/ddd-code-toolkit/src/branch/dev/src/main/kotlin/team/codemonsters/ddd/toolkit/domain/subscriberDataUpdate/SubscriberDataUpdateService.kt#L12[репозитория]:
+
+. просто прочитать и осознать.
++
+_На мой взгляд пролетарский ROP проще читать и осознавать._
+
+. является низкоуровневой документацией
++
+_В полной мере относится и к ЭП_
+
+. использует ROP - отсутствуют исключения как возможный неявный результат выполнения бизнес-логики
++
+_В Котлине исключения *всегда* один из возможных неявных результатов выполнения бизнес-логики.
+И если вся обработка исключения заключается в прервании потока исполнения, то лучше это исключение не обрабатывать, а дать специально предназначенному для этого механизму сделать свою работу_
+
+. бизнес логика отделена от координирующего слоя
++
+_В полной мере относится и к ЭП_
+
+. при таком подходе сам сервис выступает тупой трубой, который максимум использует паттерн canExecute/execute
++
+_В полной мере относится и к ЭП_
+
+. тестировать его не обязатально - можно покрыть минимум точек верхнеуровневым интеграционным тестом контроллера
++
+_В полной мере относится и к ЭП_
+
+. при тестировании можно сфокусироваться на тестировании сильной доменной модели - тестировании бизнес-логики
++
+_В полной мере относится и к ЭП_
+
+В общем пишите меньше простого года, продолжая разделять ввод-ввывод и обработку данных и реализую обработку данных (и только её) в виде чистых функций - и будет вам простое девелоперское счастье:)
+
+.Сравнение ROP-а на монадах и пролетарского ROP-а
+[cols="1,1"]
+|===
+
+a|
+https://git.codemonsters.team/guides/ddd-code-toolkit/src/branch/dev/src/main/kotlin/team/codemonsters/ddd/toolkit/domain/subscriberDataUpdate/SubscriberDataUpdateService.kt#L22[Ссылка на репозиторий]
+[source,kotlin]
+----
+fun dataUpdateProcess(
+        dataUpdateRequest: SubscriberDataUpdateRequest
+): Mono<Result<SubscriberDataUpdateResponse>> =
+   getDataUpdate(dataUpdateRequest)
+     .flatMap { getSubscriber(it) }
+     .flatMap { prepareSubscriberUpdateRequest(it) }
+     .flatMap { updateSubscriber(it) }
+
+ private fun getDataUpdate(
+     dataUpdateRequest: SubscriberDataUpdateRequest
+): Mono<Result<DataUpdate>> =
+     _subscribersClient.findDataUpdate(dataUpdateRequest.dataUpdateId)
+
+
+private fun getSubscriber(
+    dataUpdate: Result<DataUpdate>
+): Mono<Result<SubscriberDataUpdate>> =
+    Mono.just(dataUpdate)
+        .filter { it.isSuccess }
+        .flatMap { getSubscriber(it.getOrThrow()) }
+        .switchIfEmpty(incomingFailInDataUpdate(dataUpdate))
+
+private fun getSubscriber(
+    dataUpdate: DataUpdate
+): Mono<Result<SubscriberDataUpdate>> =
+    _subscribersClient.findSubscriber(dataUpdate.subscriberId)
+        .map {
+            SubscriberDataUpdate.emerge(dataUpdate, it)
+        }
+
+private fun prepareSubscriberUpdateRequest(
+           subscriberDataUpdate: Result<SubscriberDataUpdate>
+) : Mono<Result<SubscriberUpdateRequest>> =
+  Mono.just(subscriberDataUpdate)
+    .filter { it.isSuccess }
+    .flatMap { prepareRequest(it.getOrThrow()) }
+                //^ подготовка запроса на обновление абонента
+    .switchIfEmpty(
+        incomingFailInSubscriberDataUpdate(
+            subscriberDataUpdate))
+
+private fun prepareRequest(
+         subscriberDataUpdate: SubscriberDataUpdate
+): Mono<Result<SubscriberUpdateRequest>> =
+    Mono.just(subscriberDataUpdate.prepareUpdateRequest())
+              //^ бизнес-логика в Доменном
+
+// updateSubscriber на самом деле не делает ничего, поэтому
+// я его опустил
+----
+
+a|
+
+[source,kotlin]
+----
+suspend fun dataUpdateProcess(
+    dataUpdateRequest: SubscriberDataUpdateRequest
+): SubscriberDataUpdateResponse {
+   val dataUpdate = getDataUpdate(dataUpdateRequest)
+   val subscriber = getSubscriber(dataUpdate)
+   if (!subscriber.isUpdateRequired()) {
+       throw RuntimeException("No Update Required") // (1)
+   }
+   val updateRequest = subscriber
+       .prepareSubscriberUpdateRequest()
+   val subscriberUpdateResult = updateSubscriber(it)
+   return subscriberUpdateResult
+}
+
+private fun getDataUpdate(
+    dataUpdateRequest: SubscriberDataUpdateRequest
+): DataUpdate =
+    _subscribersClient.findDataUpdate(dataUpdateRequest.dataUpdateId)
+
+suspend fun getSubscriber(
+    dataUpdate: DataUpdate
+): SubscriberDataUpdateRequest {
+    val dataUpdateDto =
+        _subscribersClient
+            .findDataUpdate(dataUpdateRequest.dataUpdateId)
+
+    return SubscriberDataUpdate.emerge(dataUpdate, dataUpdateDto)
+}
+----
+
+|===
+
+(1) взял из https://git.codemonsters.team/guides/ddd-code-toolkit/src/commit/76cc94ced11f969d934afbfecf30ed7ddcafc5e6/src/main/kotlin/team/codemonsters/ddd/toolkit/domain/subscriberDataUpdate/SubscriberDataUpdate.kt#L22[оригинального кода].
+
+На мой взгляд, в эргономичной версии намного проще читается, что логика операции следующая:
+
+. запросить данные для обновления абонента
+. запросить текущие данные абонента в системе
+. сформировать запрос на обновление абонента
+. отправить запрос обновления данных абонента
+
+И более того, в эргономичной версии ещё и сразу подсвечен альтернативный ход сценария "обновление не требуется".
+
+А вот свежий пример эргономичного кода c "пролетарским ROP-ом" уже из Проекта Э:
+
+[source,kotlin]
+----
+class AnalysisService(
+    private val diaryService: DiaryService,
+    private val analysisReportCalculator: AnalysisReportCalculator,
+) {
+
+    fun getAnalysisReport(userId: Int, start: Instant, end: Instant): AnalysisReport {
+        val reportEvents = diaryService.getReportEvents(userId, start, end)
+        val analysisReport = analysisReportCalculator.calculateAnalysisReport(reportEvents, start, end)
+        return analysisReport
+    }
+
+}
+----
+
+Реализация `calculateAnalysisReport` на 300 строк в виде чистой функции:
+
+image::ea-at-jpoint-db379.png[]
+
+Конкретно этот код писал не я, но я его ревьювил и поставил на нём штамп "Соответсвует принципам ЭП".
+Именно так должен выглядеть идеальный эргономичный код - три линейных строчки в сервисе приложения, и куча чистого кода в доменном сервисе.

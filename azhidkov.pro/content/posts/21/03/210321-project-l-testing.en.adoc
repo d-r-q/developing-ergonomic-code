@@ -3,6 +3,11 @@ title: "The Tests You Can Trust"
 description: How to devise a testing strategy that'll result in 0 (zero) regressions
 date: 2021-03-13T13:25:37+07:00
 draft: false
+tags:
+- case
+- project-l
+- tdd
+- ergo-testing
 ---
 :source-highlighter: rouge
 :rouge-theme: github

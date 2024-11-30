@@ -3,6 +3,8 @@ title: "Многоликий принцип единственности отв�
 description: "Принцип единственности ответственности? Что именно вы имеете ввиду?"
 date: 2021-06-21T11:25:37+07:00
 draft: false
+tags:
+- solid
 ---
 :source-highlighter: rouge
 :rouge-theme: github

@@ -2,6 +2,10 @@
 title: "Типы функций: функции-мошенники"
 date: 2021-01-26T13:25:37+07:00
 draft: false
+tags:
+- fp
+- whyfp
+- why-no-side-effects
 ---
 :source-highlighter: rouge
 :rouge-theme: github

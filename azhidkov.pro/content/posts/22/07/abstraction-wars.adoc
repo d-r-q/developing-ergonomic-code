@@ -3,6 +3,10 @@ title: "Абстрактные войны: public interface IAbstraction про�
 description: "Почти 30 лет назад в классической книге , авторы сформулировали один из недопонятых принципов в истории программирования: Program to an interface, not an implementation. Разбираемся почему для следования этому принципу недостаточно просто добавлять интерфейсы."
 date: 2022-07-06T05:25:37+07:00
 draft: false
+tags:
+- design
+- ergo-approach
+- spring-data-jdbc
 ---
 :source-highlighter: rouge
 :rouge-theme: github

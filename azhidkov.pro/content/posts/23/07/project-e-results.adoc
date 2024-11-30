@@ -2,6 +2,15 @@
 title: "Сравнение эффективности работы команд Проекта Э до и после реинжинирига"
 date: 2023-07-14T08:25:37+07:00
 draft: false
+tags:
+- project-e
+- case
+- management
+- ergo-approach
+- why-ergo-approach
+aliases:
+- micorposts/23/07/project-e-retro-v2
+- micorposts/23/07/project-e-retro-v3
 ---
 :icons: font
 :sectlinks:

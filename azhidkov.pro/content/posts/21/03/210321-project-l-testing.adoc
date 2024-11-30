@@ -3,6 +3,11 @@ title: "Тесты, которым можно доверять"
 description: Опыт организации тестирования проекта с 0 (нулём) регрессий.
 date: 2021-03-13T13:25:37+07:00
 draft: false
+tags:
+- case
+- project-l
+- tdd
+- ergo-testing
 ---
 :source-highlighter: rouge
 :rouge-theme: github

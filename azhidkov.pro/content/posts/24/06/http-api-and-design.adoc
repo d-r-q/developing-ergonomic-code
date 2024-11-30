@@ -7,7 +7,7 @@ tags:
 - http-api
 - functional-architecture
 - type-driven-design
-- make-invalid-states-unrepresentible
+- make-invalid-states-unrepresentable
 aliases:
 - /posts/24/06
 ---

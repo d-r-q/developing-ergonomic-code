@@ -2,10 +2,21 @@
 title: "Неэргономичный Jackson"
 date: 2021-02-23T13:25:37+07:00
 draft: false
+tags:
+- ergo-approach
+- whyfp
+- why-no-side-effects
 ---
 :source-highlighter: rouge
 :rouge-theme: github
 :icons: font
+
+[NOTE]
+--
+Этот материал является "микропостом" - текстом, написанным в режиме потока сознания без особой редактуры.
+
+Следить за обновлениями блога можно в моём канале: https://t.me/ergonomic_code[Эргономичный код]
+--
 
 В последнее вермя несколько раз писал примерно такой код для сериализации объекта в json https://github.com/FasterXML/jackson[Jackson-ом]:
 

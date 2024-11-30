@@ -3,6 +3,13 @@ title: "Рациональный подход к декомпозиции сис
 description: "Рациональный подход к декомпозиции систем на модули или микросервисы"
 date: 2023-04-15T01:25:37+07:00
 draft: false
+tags:
+- case
+- ergo-approach
+- design
+- effects-diagram
+- talks
+- project-camp
 ---
 :source-highlighter: rouge
 :rouge-theme: github

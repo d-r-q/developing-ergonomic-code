@@ -2,6 +2,10 @@
 title: "Как я превратил легаси-проект в конфетку за полгода. Том 1"
 date: 2023-09-13T01:25:37+07:00
 draft: false
+tags:
+- project-e
+- case
+- why-ergo-approach
 ---
 :source-highlighter: rouge
 :rouge-theme: github

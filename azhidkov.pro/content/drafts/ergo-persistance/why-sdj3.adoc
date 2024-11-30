@@ -2,7 +2,12 @@
 title: "Пишем бакэнды в функциональном стиле на Kotlin и Spring Data JDBC. Почему и как."
 date: 2024-05-21T08:25:37+07:00
 draft: false
-tags: ergo-persistance spring-data-jdbc jpa functional-architecture immutable-data-model
+tags:
+- ergo-persistance 
+- spring-data-jdbc
+- jpa 
+- functional-architecture 
+- immutable-domain-model
 ---
 
 == Введение

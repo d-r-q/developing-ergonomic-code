@@ -2,6 +2,10 @@
 title: "Pure and dirty functions, effects, signal processing, side effects: pure functions"
 date: 2021-01-12T13:25:37+07:00
 draft: false
+tags:
+- fp
+- ergo-approach
+- whyfp
 ---
 :source-highlighter: rouge
 :rouge-theme: github

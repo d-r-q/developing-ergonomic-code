@@ -2,6 +2,8 @@
 title: "Что почитать разработчику?"
 date: 2022-08-25T12:25:37+07:00
 draft: false
+tags:
+- books
 ---
 :source-highlighter: rouge
 :rouge-theme: github

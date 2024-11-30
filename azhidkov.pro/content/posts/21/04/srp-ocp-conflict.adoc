@@ -4,6 +4,8 @@ description: Применение OCP в классическом виде мо�
 date: 2021-04-28T13:25:37+07:00
 
 draft: false
+tags:
+- solid
 ---
 :source-highlighter: rouge
 :rouge-theme: github

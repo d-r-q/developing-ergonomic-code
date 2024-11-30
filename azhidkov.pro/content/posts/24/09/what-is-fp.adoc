@@ -15,7 +15,6 @@ aliases:
 :rouge-theme: github
 :icons: font
 :sectlinks:
-:imagesdir: /microposts/24/06/images/
 :toc:
 :toclevels: 4
 :toc-title: Содержание

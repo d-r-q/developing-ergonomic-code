@@ -2,7 +2,12 @@
 title: "Я и мой целибат"
 date: 2024-05-21T08:25:37+07:00
 draft: false
-tags: ergo-persistance spring-data-jdbc jpa functional-architecture immutable-data-model
+tags: 
+- ergo-persistance 
+- spring-data-jdbc 
+- jpa 
+- functional-architecture 
+- immutable-domain-model
 ---
 :source-highlighter: rouge
 :rouge-theme: github

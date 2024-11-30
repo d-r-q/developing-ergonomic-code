@@ -3,6 +3,9 @@ title: "Что я делаю не так"
 description: "Рассмотрим в чём разница для бизнеса между типовым и эргономичным подходами"
 date: 2021-11-06T12:25:37+07:00
 draft: false
+tags:
+- ergo-approach
+- why-ergo-approach
 ---
 :source-highlighter: rouge
 :rouge-theme: github
