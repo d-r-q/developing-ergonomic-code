@@ -2,7 +2,7 @@
 &lt;p>Следить за обновлениями блога можно в Telegram-канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>.&lt;/p>&lt;/aside>
 &lt;section class="doc-section level-1">&lt;h2 id="_введение">&lt;a class="link" href="#_введение">Введение&lt;/a>&lt;/h2>&lt;p>Я сторонник тестов с минимумом моков и сделал это одним из столпов &lt;a href="https://azhidkov.pro/ergo-approach/landing/">Эргономичного подхода&lt;/a>.
 Среди прочего, это влечёт использование реальной БД в тестах - известного источника проблем с их скоростью и стабильностью.
-В целом я нашёл &lt;a href="https://azhidkov.pro/microposts/24/04/trainer-advisor-testing-test-suite-setup/">схему подготовки БД&lt;/a>, которая решает обе эти проблемы.&lt;/p>
+В целом я нашёл &lt;a href="https://azhidkov.pro/posts/24/04/trainer-advisor-testing-test-suite-setup/">схему подготовки БД&lt;/a>, которая решает обе эти проблемы.&lt;/p>
 &lt;p>Однако на &lt;a href="https://t.me/ergonomic_code/443">Проекте Р&lt;/a> стал серьёзным испытанием для моей схемы.&lt;/p>
 &lt;p>По определённым причинам, мы решили делать Проект Р поверх БД Проекта У.&lt;/p>
 &lt;p>А самому Проекту У восемь лет, за которые он разжился 300+ таблицами, которые создаются 1389 миграциями.

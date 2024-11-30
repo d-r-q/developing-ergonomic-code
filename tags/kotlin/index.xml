@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Kotlin on Алексей Жидков</title><link>https://azhidkov.pro/tags/kotlin/</link><description>Recent content in Kotlin on Алексей Жидков</description><generator>Hugo</generator><language>ru-ru</language><lastBuildDate>Sat, 30 Mar 2024 08:25:37 +0700</lastBuildDate><atom:link href="https://azhidkov.pro/tags/kotlin/index.xml" rel="self" type="application/rss+xml"/><item><title>Работа с данным - Kotlin vs Java</title><link>https://azhidkov.pro/posts/24/03/kotlin-data-processing/</link><pubDate>Sat, 30 Mar 2024 08:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/24/03/kotlin-data-processing/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в Telegram-канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>.&lt;/p>&lt;/aside>
+&lt;p>Этот пост - краткий ответ на комментарий к &lt;a href="https://t.me/ergonomic_code/406">посту&lt;/a> в канале и здесь я привожу несколько примеров того, что назвал &amp;#34;утилит манипуляции данными&amp;#34;, но это далеко не исчерпвывающий список.&lt;/p>
+&lt;p>Поехали.&lt;/p>
+&lt;section class="doc-section level-1">&lt;h2 id="_java_21_dop_стиль">&lt;a class="link" href="#_java_21_dop_стиль">Java 21 + DOP-стиль&lt;/a>&lt;/h2>&lt;/section>
+&lt;section class="doc-section level-1">&lt;h2 id="_упражнение_1_достаём_значение_по_цепочке_нуллабельных_объектов">&lt;a class="link" href="#_упражнение_1_достаём_значение_по_цепочке_нуллабельных_объектов">Упражнение №1 - достаём значение по цепочке нуллабельных объектов&lt;/a>&lt;/h2>&lt;div class="table-block layout">&lt;table class="frame-all grid-all stretch">&lt;colgroup>&lt;col style="width: 50%;"/>&lt;col style="width: 50%;"/>&lt;/colgroup>&lt;thead>&lt;tr>&lt;th class="halign-left valign-top">Kotlin&lt;/th>&lt;th class="halign-left valign-top">Java&lt;/th>&lt;/tr>&lt;/thead>&lt;tbody>&lt;tr>&lt;td class="halign-left valign-top">&lt;div class="listing-block">&lt;pre class="rouge highlight">&lt;code data-lang="kotlin">&lt;table class="linenotable">&lt;tbody>&lt;tr>&lt;td class="linenos gl">&lt;pre class="lineno">1
+2
+3
+4
+5
+6
+7
+&lt;/pre>&lt;/td>&lt;td class="code">&lt;pre>&lt;span class="kd">data class&lt;/span> &lt;span class="nc">MultiLangValue&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kd">val&lt;/span> &lt;span class="py">ru&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">String&lt;/span>&lt;span class="p">?,&lt;/span> &lt;span class="kd">val&lt;/span> &lt;span class="py">en&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">String&lt;/span>&lt;span class="p">?)&lt;/span>
+
+&lt;span class="kd">data class&lt;/span> &lt;span class="nc">ValueHolder&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kd">val&lt;/span> &lt;span class="py">value&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">MultiLangValue&lt;/span>&lt;span class="p">?)&lt;/span>
+
+&lt;span class="k">fun&lt;/span> &lt;span class="nf">getRuValue&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">valueHolder&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">ValueHolder&lt;/span>&lt;span class="p">?):&lt;/span> &lt;span class="nc">String&lt;/span> &lt;span class="p">{&lt;/span>
+ &lt;span class="k">return&lt;/span> &lt;span class="n">valueHolder&lt;/span>&lt;span class="o">?.&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="o">?.&lt;/span>&lt;span class="n">ru&lt;/span> &lt;span class="o">?:&lt;/span> &lt;span class="s">&amp;#34;&amp;#34;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;/pre>&lt;/td>&lt;/tr>&lt;/tbody>&lt;/table>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>

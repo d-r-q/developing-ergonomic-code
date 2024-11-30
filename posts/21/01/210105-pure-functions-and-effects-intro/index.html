@@ -19,7 +19,7 @@
 […] Example side effects include modifying a non-local variable, modifying a static local variable, modifying a mutable argument passed by reference, performing I/O or calling other side-effect functions.</p><footer>— <cite>Wikipedia</cite></footer></blockquote></div><p>Тут уже получше, но всё равно возникает ряд вопросов.
 И самый главный - эффект побочный чему?
 Вычислению?
-А если я вызываю функцию только ради ""побочного" эффекта?
+А если я вызываю функцию только ради "побочного" эффекта?
 <code>printf</code>, например - он тоже побочный?</p><p>Кажется, что помимо побочных эффектов должны существовать и просто эффекты.</p><p>Другой вопрос - что между чистыми функциями и функциями с сайд эффектами?
 Например функция чтения текущего времени.
 Или функция возвращающая значение глобальной переменной?

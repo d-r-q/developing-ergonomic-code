@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Effects on Алексей Жидков</title><link>https://azhidkov.pro/tags/effects/</link><description>Recent content in Effects on Алексей Жидков</description><generator>Hugo</generator><language>ru-ru</language><lastBuildDate>Tue, 19 Jan 2021 09:19:22 +0700</lastBuildDate><atom:link href="https://azhidkov.pro/tags/effects/index.xml" rel="self" type="application/rss+xml"/><item><title>Чистые и эффективные функции: Эффекты</title><link>https://azhidkov.pro/posts/21/01/210119-effects/</link><pubDate>Tue, 19 Jan 2021 09:19:22 +0700</pubDate><guid>https://azhidkov.pro/posts/21/01/210119-effects/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>Начало темы
+&lt;a href="https://azhidkov.pro/posts/21/01/210105-pure-functions-and-effects-intro/">здесь&lt;/a>
+и
+&lt;a href="https://azhidkov.pro/posts/21/01/210112-pure-functions/">здесь&lt;/a>.&lt;/p>
+&lt;p>Сегодня расскажу о том, что я понимаю под эффектами и обработкой
+сигналов.&lt;/p>
+&lt;section class="doc-section level-1">&lt;h2 id="_что_я_понимаю_под_эффектами_и_сигналами">Что я понимаю под эффектами и сигналами&lt;/h2>&lt;p>&lt;strong>Обработка сигнала&lt;/strong> - акт чтения глобальной изменяемой памяти.&lt;/p>
+&lt;p>&lt;strong>Отправка сигнала&lt;/strong> - акт записи глобальной изменяемой памяти.&lt;/p>
+&lt;p>&lt;strong>Глобальная изменяемая память&lt;/strong> - область памяти, на которую в момент
+чтения/записи замаплено изменяемое поле объекта или структуры,
+достижимого из GC root.&lt;/p>
+&lt;p>&lt;strong>Эффект&lt;/strong> - операция отправки или обработки сигнала. Является
+подмножеством понятия побочный эффект, часто встречаемого в литературе.&lt;/p>
+&lt;div class="quote-block">&lt;blockquote>&lt;p>Примечание&lt;/p>
+&lt;p>Термин обработка/отправка сигнала мне самому не очень нравится, но он не
+лишён смысла.&lt;/p>
+&lt;p>Если рассматривать ввод/вывод, то даже вроде бы синхронный вызов read,
+на деле асинхронный и внутри вызова выполняется обработка сигнала
+(прерывания) ``данные готовы&amp;#39;&amp;#39;. А вызов write - это собственно отправка
+сигнала на запись устройству вывода.&lt;/p>
+&lt;p>Глобальные переменные тоже можно за уши натянуть на эту терминологию -
+если вы читаете изменяемую переменную, то ожидаете, что кто-то её
+предварительно записал, тем самым послав вам сигнал.&lt;/p>&lt;/blockquote>&lt;/div></description></item><item><title>Чистые и эффективные функции: Введение</title><link>https://azhidkov.pro/posts/21/01/210105-pure-functions-and-effects-intro/</link><pubDate>Tue, 05 Jan 2021 09:19:22 +0700</pubDate><guid>https://azhidkov.pro/posts/21/01/210105-pure-functions-and-effects-intro/</guid><description>&lt;p>В этом блоге и &lt;a href="https://azhidkov.pro/book/ergo/">своей книге&lt;/a> я постоянно повторяю мантру о &amp;#34;разделении эффектов и логики&amp;#34; и поэтому мне необходимо, чтобы читатели однозначно меня понимали.
+Однако когда я начал разбирать существующую терминологию, с удивлением обнаружил, что общепринятой вообще нет, а те варианты что есть не отражают важных мне нюансов.
+Поэтому я решил написать цикл статей об используемой мной терминологии.&lt;/p>
+&lt;p>С чистыми функциями всё более-менее просто, у них на вики
+&lt;a href="https://ru.wikipedia.org/wiki/%D0%A7%D0%B8%D1%81%D1%82%D0%BE%D1%82%D0%B0_%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8">есть&lt;/a>
+внятное определение:&lt;/p>
+&lt;div class="quote-block">&lt;blockquote>&lt;p>это функция, которая:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>является детерминированной;&lt;/li>&lt;li>не обладает побочными эффектами.&lt;/li>&lt;/ol>&lt;/div></description></item></channel></rss>

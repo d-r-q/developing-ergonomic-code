@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Ergo-Approach on Aleksey Zhidkov</title><link>https://azhidkov.pro/en/tags/ergo-approach/</link><description>Recent content in Ergo-Approach on Aleksey Zhidkov</description><generator>Hugo</generator><language>en-en</language><lastBuildDate>Wed, 24 Mar 2021 13:25:37 +0700</lastBuildDate><atom:link href="https://azhidkov.pro/en/tags/ergo-approach/index.xml" rel="self" type="application/rss+xml"/><item><title>On Systems Decomposition</title><link>https://azhidkov.pro/en/posts/21/03/250326-project-decomposition/</link><pubDate>Wed, 24 Mar 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/03/250326-project-decomposition/</guid><description>&lt;p>*Dislaimer: here’s a brief link post on a topic that’s book chapter worthy.&lt;/p>
+&lt;p>Finally, your dream has come true.
+You’ll now get to build a project from the ground up.
+Finally, you can do everything right yourself instead of fighting legacy code written a hundred
+years ago by people you’ve never even seen.&lt;/p>
+&lt;p>How would you do that, though?
+How to build a system you won’t be cursed for by your successors?&lt;/p>
+&lt;p>I’ve already given half the answer—in some way—in my book.
+Basically, it’s all about the &lt;a href="https://azhidkov.pro/book/ergo/#_таблица_эффектов">effects table (rus)&lt;/a> and &lt;a href="https://azhidkov.pro/book/ergo/#_принципы_проектирования_системы">components (rus)&lt;/a>.&lt;/p>
+&lt;p>The effects table is a way to describe &lt;a href="https://azhidkov.pro/posts/21/01/210119-effects/">which effects get triggered by various operations (rus)&lt;/a>.
+Or, in other words, it’s a way to describe the program’s behavior—that is, its functional specification.&lt;/p>
+&lt;p>Components imply encapsulated state.
+The good old conceptual objects that comprise multiple objects of several levels in the runtime.&lt;/p>
+&lt;p>There’s just one catch.
+When you’re going from the functional spec to the components, that’s exactly what &amp;#39;software design&amp;#39;
+per se is.
+And these days, people who can do quality software design are few and far between in our industry.&lt;/p>
+&lt;p>So the second part of the answer is an algorithm to take you from the effects table straight to components.
+The algorithm goes something like this:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>Make a graph based on the effects table.
+In that graph, the edges will contain the signals and the effects, but the vertices will contain the relation between them.&lt;/li>&lt;li>Break the graph down into subgraphs.
+There should be high cohesion within subgraphs and low coupling among them.&lt;/li>&lt;li>Voila, the components are ready.
+Each subgraph is a separate component that encapsulates the state changed by this subgraph’s effects as a result of processing the signals of the subgraph.&lt;/li>&lt;/ol>&lt;/div></description></item><item><title>Non-Ergonomic Jackson</title><link>https://azhidkov.pro/en/posts/21/02/210212-jackson-write-object-as-string/</link><pubDate>Tue, 23 Feb 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/02/210212-jackson-write-object-as-string/</guid><description>&lt;p>Recently, I’ve written this code (or something like that) to serialize a JSON object via &lt;a href="https://github.com/FasterXML/jackson">Jackson&lt;/a>:&lt;/p>
+&lt;div class="listing-block">&lt;pre class="rouge highlight">&lt;code data-lang="java">&lt;span class="kd">public&lt;/span> &lt;span class="nc">String&lt;/span> &lt;span class="nf">renderToJson&lt;/span>&lt;span class="o">(&lt;/span>&lt;span class="nc">Object&lt;/span> &lt;span class="n">dto&lt;/span>&lt;span class="o">)&lt;/span> &lt;span class="o">{&lt;/span>
+ &lt;span class="k">try&lt;/span> &lt;span class="o">{&lt;/span>
+ &lt;span class="k">return&lt;/span> &lt;span class="n">objectMapper&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="na">writeValueAsString&lt;/span>&lt;span class="o">(&lt;/span>&lt;span class="n">dto&lt;/span>&lt;span class="o">);&lt;/span>
+ &lt;span class="o">}&lt;/span> &lt;span class="k">catch&lt;/span> &lt;span class="o">(&lt;/span>&lt;span class="nc">IOException&lt;/span> &lt;span class="n">e&lt;/span>&lt;span class="o">)&lt;/span> &lt;span class="o">{&lt;/span>
+ &lt;span class="k">throw&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nf">AssertionError&lt;/span>&lt;span class="o">(&lt;/span>&lt;span class="s">&amp;#34;Unexpected IOException converting object to json&amp;#34;&lt;/span>&lt;span class="o">);&lt;/span>
+ &lt;span class="o">}&lt;/span>
+&lt;span class="o">}&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;p>It was almost offensive to my eye.
+I was creating a string object in memory.
+What the heck would that have to do with IO?
+I had no time to ponder about this, though.&lt;/p>
+&lt;p>So there I was reading
+&lt;a href="https://softwareengineering.stackexchange.com/questions/147059/the-modern-way-to-perform-error-handling">The
+modern way to perform error handling&lt;/a>.
+And voila, here’s the answer, emerging right from the depths of my mind!
+You know what?
+That’s still the same topic of mixing policies with effects, and all the problems rooted in this.&lt;/p>
+&lt;p>If you take a deep look at &lt;code>writeValueAsString&lt;/code> &amp;#39;s inner workings, you’ll see that this
+&lt;a href="https://azhidkov.pro/posts/21/01/210119-effects/">pure (rus)&lt;/a>—per
+se—method is just a wrap for &lt;code>_writeValueAndClose(JsonGenerator g, Object value)&lt;/code>.&lt;/p>
+&lt;p>g in turn is a wrap for &lt;code>java.io.Writer&lt;/code>.
+Then you have Writer throwing the &lt;code>java.io.IOException&lt;/code>.
+Boom, there goes your IOException when you’re generating a string in memory.&lt;/p>
+&lt;p>The cause of that problem is this: the policy and the effects are jumbled into one function
+(namely, _writeValueAndClose).
+The former defines the set of rules according to which the JSON gets formed, based on the Java object.
+The latter writes the result into the abstract receiver.&lt;/p>
+&lt;p>To make this code
+&lt;a href="https://azhidkov.pro/book/ergo/#_таблица_эффектов">ergonomic&lt;/a>,
+we have to keep these two apart:&lt;/p>
+&lt;div class="listing-block">&lt;pre class="rouge highlight">&lt;code data-lang="kotlin">&lt;span class="k">fun&lt;/span> &lt;span class="nf">transform&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Any&lt;/span>&lt;span class="p">):&lt;/span> &lt;span class="nc">Sequence&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nc">Char&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="p">=&lt;/span>
+ &lt;span class="c1">// the intricate yet clean algorithm that re-renders the json&lt;/span>
+
+&lt;span class="k">fun&lt;/span> &lt;span class="nf">writeValueAsString&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Any&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">transform&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nf">joinToString&lt;/span>&lt;span class="p">()&lt;/span>
+
+&lt;span class="nd">@Throws&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nc">IOException&lt;/span>&lt;span class="o">::&lt;/span>&lt;span class="k">class&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="k">fun&lt;/span> &lt;span class="nf">writeValue&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Any&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">w&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Writer&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">transform&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nf">forEach&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="n">w&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">append&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">it&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Pure and dirty functions, effects, signal processing, side effects: pure functions</title><link>https://azhidkov.pro/en/posts/21/01/210112-pure-functions/</link><pubDate>Tue, 12 Jan 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/01/210112-pure-functions/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>You can follow the blog’s updates in my channel: &lt;a href="https://t.me/ergonomic_code">Ergonomic Code (rus)&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>The first part of my terminology series can be found &lt;a href="https://azhidkov.pro/en/posts/21/01/210105-pure-functions-and-effects-intro/">here&lt;/a>&lt;/p>
+&lt;p>&lt;em>Note that I’ve broadened the topic I’m covering here.
+Apart from dirty functions announced yesterday, I also mentioned signals.
+The title is long-ish, but let’s keep it this way for now :)
+Today, we’ll be talking about pure functions.&lt;/em>&lt;/p>
+&lt;p>Pure functions are functions with no effects and no side effects. :)
+Or functions as they are understood in math.
+Their output is determined by the parameters only, and they have just one output, that is, the value
+they return.&lt;/p>
+&lt;p>Here are some signs the function isn’t pure:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>&lt;p>It has no result (the functions returns void or Unit).
+In theory, this could be a pure function.
+There would be little point to this, though.
+It could only ever be used as some mock output function.&lt;/p>&lt;p>A typical example is printf/println.&lt;/p>&lt;/li>&lt;li>&lt;p>It has no arguments.
+Again, in theory, you could make such a function pure. There would be little point to this, though, as
+it could only be used as some input helper function.&lt;/p>&lt;p>A typical example is currentTime.&lt;/p>&lt;/li>&lt;li>&lt;p>Being called with the same parameters at a different time, it can return different results.
+Any such function wouldn’t be pure by its very definition.&lt;/p>&lt;p>A typical example Files.readString(Path.of(``/tmp/test’’))&lt;/p>&lt;/li>&lt;li>&lt;p>Being determined, it has an observable effect apart from returning the value.
+Again, any such function isn’t pure by definition.&lt;/p>&lt;p>Typical examples include: determined caching and logging in determined functions.&lt;/p>&lt;/li>&lt;/ol>&lt;/div></description></item></channel></rss>

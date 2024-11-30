@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Rest-Api on Алексей Жидков</title><link>https://azhidkov.pro/tags/rest-api/</link><description>Recent content in Rest-Api on Алексей Жидков</description><generator>Hugo</generator><language>ru-ru</language><lastBuildDate>Tue, 27 Jun 2023 08:25:37 +0700</lastBuildDate><atom:link href="https://azhidkov.pro/tags/rest-api/index.xml" rel="self" type="application/rss+xml"/><item><title>REST, фронт и все-все-все</title><link>https://azhidkov.pro/posts/23/06/rest-fronts-and-others/</link><pubDate>Tue, 27 Jun 2023 08:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/23/06/rest-fronts-and-others/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>Я прочитал штук пять книг по REST, включая диссертацию Филдинга и для себя пришёл к выводу, что REST без HATEOS - это не REST.
+А HATEOS в случае толстых клиентов не работает.
+Соответственно смирился с тем, что мы (90% индустрии) на самом деле делаем RPC over HTTP и успокоился.&lt;/p>
+&lt;p>А потом наткнулся на &lt;a href="https://htmx.org/">htmx&lt;/a> и &lt;a href="https://alpinejs.dev/">alpine.js&lt;/a>, с которым сейчас потихоньку играюсь и пока что в восторге - для проектов, в которых я участвовал за всю свою карьеру этого более чем достаточно и они намного проще React-ового адка, имхо.
+И тут уже HATEOS вполне себе работает.&lt;/p>
+&lt;p>Однако, я пока не представляю как хотя бы на вэб затащить htmx+alpine в коммерческих проектах, а с нативными фронтами вообще труба.
+Поэтому для меня HATEOS оставался скорее академической штукой, чем практической.&lt;/p>
+&lt;p>Пока я не посмотрел &lt;a href="https://www.youtube.com/watch?v=93UK4gwV41c&amp;amp;list=PLe6FX2SlkJdTlHjktJqUWaFtaRBOkZ8JZ&amp;amp;index=38">REST next level: Crafting domain-driven web APIs by Julien Topçu @ Spring I/O 2023&lt;/a>.
+И вот тут у меня что-то наконец щёлкнуло и я, кажется, понял как превратить HATEOS в решение, которое повысит скорость разработки и стабильность моих систем за счёт снижения сцепленности фронтов с бэком и снижения кол-ва бизенс-логики во фронтах (и как следствие упрощения её тестирования).&lt;/p>
+&lt;p>Делать далеко идущие выводы я пока не готов, но совершенно точно готов дать HATEOS второй шанс в каком-нибудь пет-проекте.&lt;/p>
+&lt;hr/>
+&lt;p>Знаю, что у меня в подписчиках много молодых разработчиков - следующая история для вас, мои дорогие:)&lt;/p>
+&lt;p>Недавно на Проекте Э у нас был примерно такой случай.&lt;/p>
+&lt;p>QA заводит баг, говорит генерация отчётов не работает, бэк возвращает ошибку и вешает его на бэк.
+Бакэндер его смотрит и говорит - ну у нас конечно есть проблема на бэке, что отчёт долго генерируется, но вообще-то это фронт дурак - присылает второй запрос до получения ответа.
+А у нас отчёты генерируются по одноразовому токену, соответственно второй запрос тут же получает ошибку.
+И возвращает баг на фронт.&lt;/p>
+&lt;p>Приходит фронтендер и говорит: сами вы дураки - я один раз запрос отправляю.&lt;/p>
+&lt;p>За пару недель это цикл в вялотекущем режиме повторился сколько-то раз.&lt;/p>
+&lt;p>Пока я не пришёл, не открыл слева логи браузера, справа логи бэка и не увидел, что фронт действительно отсылает один запрос, а на бэк их приходит два.&lt;/p>
+&lt;p>Мистика?
+Нет, если знать ещё два бита информации:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>В наследство нам досталась генерация отчёта (с инвалидацией токена) GET-методом;&lt;/li>&lt;li>Между фронтом и бэком у нас сидит nginx.&lt;/li>&lt;/ol>&lt;/div></description></item></channel></rss>

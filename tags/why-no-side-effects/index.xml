@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Why-No-Side-Effects on Алексей Жидков</title><link>https://azhidkov.pro/tags/why-no-side-effects/</link><description>Recent content in Why-No-Side-Effects on Алексей Жидков</description><generator>Hugo</generator><language>ru-ru</language><lastBuildDate>Tue, 23 Feb 2021 13:25:37 +0700</lastBuildDate><atom:link href="https://azhidkov.pro/tags/why-no-side-effects/index.xml" rel="self" type="application/rss+xml"/><item><title>Неэргономичный Jackson</title><link>https://azhidkov.pro/posts/21/02/210212-jackson-write-object-as-string/</link><pubDate>Tue, 23 Feb 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/21/02/210212-jackson-write-object-as-string/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>В последнее вермя несколько раз писал примерно такой код для сериализации объекта в json &lt;a href="https://github.com/FasterXML/jackson">Jackson-ом&lt;/a>:&lt;/p>
+&lt;div class="listing-block">&lt;pre class="rouge highlight">&lt;code data-lang="java">&lt;span class="kd">public&lt;/span> &lt;span class="nc">String&lt;/span> &lt;span class="nf">renderToJson&lt;/span>&lt;span class="o">(&lt;/span>&lt;span class="nc">Object&lt;/span> &lt;span class="n">dto&lt;/span>&lt;span class="o">)&lt;/span> &lt;span class="o">{&lt;/span>
+ &lt;span class="k">try&lt;/span> &lt;span class="o">{&lt;/span>
+ &lt;span class="k">return&lt;/span> &lt;span class="n">objectMapper&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="na">writeValueAsString&lt;/span>&lt;span class="o">(&lt;/span>&lt;span class="n">dto&lt;/span>&lt;span class="o">);&lt;/span>
+ &lt;span class="o">}&lt;/span> &lt;span class="k">catch&lt;/span> &lt;span class="o">(&lt;/span>&lt;span class="nc">IOException&lt;/span> &lt;span class="n">e&lt;/span>&lt;span class="o">)&lt;/span> &lt;span class="o">{&lt;/span>
+ &lt;span class="k">throw&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nf">AssertionError&lt;/span>&lt;span class="o">(&lt;/span>&lt;span class="s">&amp;#34;Unexpected IOException converting object to json&amp;#34;&lt;/span>&lt;span class="o">);&lt;/span>
+ &lt;span class="o">}&lt;/span>
+&lt;span class="o">}&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;p>И мне это глаз резало - я генерирую строку в памяти, какой нафик IO???
+Но задуматься времени не было.&lt;/p>
+&lt;p>А тут за чтением &lt;a href="https://softwareengineering.stackexchange.com/questions/147059/the-modern-way-to-perform-error-handling">The modern way to perform error handling&lt;/a> из глубин подсознания внезапно всплыл ответ:)
+И знаете что я вам скажу?
+Это всё в тот же топик смеси политик/алгоритмов и эффектов и проблем вызываемых этим.&lt;/p>
+&lt;p>Если заглянуть в кишочки &lt;code>writeValueAsString&lt;/code>, то этот &lt;a href="https://telegra.ph/CHistye-i-gryaznye-funkcii-ehffekty-i-obrabotka-signalov-sajdehffekty-chistye-funkcii-01-12">чистый&lt;/a> по сути метод является обёрткой вокруг &lt;code>_writeValueAndClose(JsonGenerator g, Object value)&lt;/code>.
+g - это обёртка вокруг &lt;code>java.io.Writer&lt;/code>.
+Writer выбрасывает &lt;code>java.io.IOException&lt;/code>.
+И привет IOException при генерации строки в памяти.&lt;/p>
+&lt;p>Эта проблема обусловлена смешанием в одной функции (_writeValueAndClose) политики (правил формирования json-а по ява-объекту) и эффекта (записи результата формирования в абстрактный приёмник).&lt;/p>
+&lt;p>Для того чтобы этот код сделать &lt;a href="https://github.com/d-r-q/developing-ergonomic-code/blob/master/book-rus/developing-ergonomic-code.adoc">эргономичиным&lt;/a>, надо растащить две эти &amp;#34;штуки&amp;#34;:&lt;/p>
+&lt;div class="listing-block">&lt;pre class="rouge highlight">&lt;code data-lang="kotlin">&lt;span class="k">fun&lt;/span> &lt;span class="nf">transform&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Any&lt;/span>&lt;span class="p">):&lt;/span> &lt;span class="nc">Sequence&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nc">Char&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="p">=&lt;/span>
+ &lt;span class="c1">// весь этот адовый, но чистый алгоритм по ренедренду json-а&lt;/span>
+
+&lt;span class="k">fun&lt;/span> &lt;span class="nf">writeValueAsString&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Any&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">transform&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nf">joinToString&lt;/span>&lt;span class="p">()&lt;/span>
+
+&lt;span class="nd">@Throws&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nc">IOException&lt;/span>&lt;span class="o">::&lt;/span>&lt;span class="k">class&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="k">fun&lt;/span> &lt;span class="nf">writeValue&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Any&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">w&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Writer&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">transform&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nf">forEach&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="n">w&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">append&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">it&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Типы функций: функции-мошенники</title><link>https://azhidkov.pro/posts/21/01/210126-fraud-functions/</link><pubDate>Tue, 26 Jan 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/21/01/210126-fraud-functions/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>Начало темы
+&lt;a href="https://azhidkov.pro/posts/21/01/210105-pure-functions-and-effects-intro/">здесь&lt;/a>,
+&lt;a href="https://azhidkov.pro/posts/21/01/210112-pure-functions/">здесь&lt;/a>
+и &lt;a href="https://azhidkov.pro/posts/21/01/210119-effects/">здесь&lt;/a>.&lt;/p>
+&lt;p>&lt;em>С второго взгляда терминология оказалась не такой уж чудесной, как показалась на первый взгляд, но я на этом посте засиделся, так что публикую как есть.
+В посте с итогами ещё раз попробую составить приличную терминологию.&lt;/em>&lt;/p>
+&lt;p>Как я уже писал в прошлой статье, эффекты - это то ради чего пишутся программы, и тот критерий, по которому программы оцениваются.
+Однако если не соблюдать определённую &amp;#34;эффективную гигиену&amp;#34;, то эффекты выходят из-под контроля, что приводит к появлению багов.
+&amp;#34;Эффективная гигиена&amp;#34; заключается в разделении сложной логики и эффектов и выделении их в разные функции.
+Если же этого не делать, то появляются функции-мошенники.&lt;/p>
+&lt;p>Функции-мошенники бывают двух типов:&lt;/p>
+&lt;div class="ulist">&lt;ul>&lt;li>откровенные жулики, которые врут прямо в глаза;&lt;/li>&lt;li>&amp;#34;честный бизнес&amp;#34;, который пишет всю правду, но мелким шрифтом.&lt;/li>&lt;/ul>&lt;/div></description></item></channel></rss>

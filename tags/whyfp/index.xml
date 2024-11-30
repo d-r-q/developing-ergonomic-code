@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Whyfp on Алексей Жидков</title><link>https://azhidkov.pro/tags/whyfp/</link><description>Recent content in Whyfp on Алексей Жидков</description><generator>Hugo</generator><language>ru-ru</language><lastBuildDate>Tue, 31 Oct 2023 08:25:37 +0700</lastBuildDate><atom:link href="https://azhidkov.pro/tags/whyfp/index.xml" rel="self" type="application/rss+xml"/><item><title>ФП виновно в снижении стоимости программ. Вот мои доказательства, господа присяжные заседатели</title><link>https://azhidkov.pro/posts/23/10/why-fp/</link><pubDate>Tue, 31 Oct 2023 08:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/23/10/why-fp/</guid><description>&lt;section class="doc-section level-1">&lt;h2 id="_введение">&lt;a class="link" href="#_введение">Введение&lt;/a>&lt;/h2>&lt;p>Среди особенностей Эргономичного подхода у моих заказчиков, коллег и студентов наибольшее сопротивление вызывает использование Spring Data JDBC, а не [Spring Data] JPA (де-факто стандарта работы с БД на платформе Java).&lt;/p>
+&lt;p>Изначально я собирался писать пост &amp;#34;Почему не JPA&amp;#34;, но немного подумав понял, что ответ умещается в одно предложение: потому что JPA по своей природе (persistence context и dirty checking) не поддерживает неизменяемую модель данных - неотъемлемую часть функционального стиля программирования, который, в свою очередь, является неотъемлемой частью Эргономичного подхода.
+И это объективный факт.&lt;/p>
+&lt;p>Почему для ЭП я выбрал ФП, а не &amp;#34;нормальное&amp;#34; императивное программирование?
+На этот вопрос также можно ответить одним предложением: потому что функциональный стиль помогает мне &lt;a href="https://azhidkov.pro/posts/23/07/project-e-results/">снижать стоимость разработки для бизнеса&lt;/a> и &lt;a href="https://azhidkov.pro/ergo-approach/landing/#_кейсы">делать руководителей проектов счастливыми&lt;/a>.&lt;/p>
+&lt;p>Уверен, многие не согласятся с истинностью утверждения &amp;#34;применение функционального стиля ведёт к снижению стоимости разработки&amp;#34;.
+Поэтому я пока буду называть его Гипотезой и приведу факты, доказывающие её истинность.&lt;/p>
+&lt;p>Главный из этих фактов - эмпирическое подтверждение Гипотезы, описанное в книге Structured Design.&lt;/p>&lt;/section>
+&lt;section class="doc-section level-1">&lt;h2 id="_структурный_дизайн">&lt;a class="link" href="#_структурный_дизайн">Структурный дизайн&lt;/a>&lt;/h2>&lt;p>В 60-ых годах прошлого века учёный &lt;a href="https://en.wikipedia.org/wiki/Larry_Constantine">Ларри Константин&lt;/a> написал книгу Structured Design.
+В этой книге он впервые ввёл понятия сцепленности (coupling) и функциональной связанности (cohesion), которые до сих пор лежат в основе большинства подходов к проектированию и кодированию программ.&lt;/p>
+&lt;p>Помимо этого, в главе &lt;a href="https://archive.org/details/structureddesign00edwa/page/128/mode/2up">&amp;#34;THE MORPHOLOGY OF SIMPLE SYSTEMS&amp;#34; &lt;/a> (для просмотра необходимо пройти бесплатную регистрацию и &amp;#34;занять&amp;#34; книгу), Константин приводит иллюстрацию того, что он называет моделью, ориентированной на трансформацию (выделение цветами моё):&lt;/p>
+&lt;div class="image-block">&lt;img src="https://azhidkov.pro/posts/23/10/images/why-fp-286c9.png" alt="why fp 286c9"/>&lt;/div></description></item><item><title>Функциональные программы проще понимать</title><link>https://azhidkov.pro/posts/22/12/why-fp-simpler/</link><pubDate>Thu, 22 Dec 2022 08:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/22/12/why-fp-simpler/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>Последние несколько дней перечитывают &lt;a href="https://www.tedinski.com/archive/">блог&lt;/a> (кто бы мог подумать, чтоб блоги тоже можно перечитывать) Тэда Каминского.
+Во-первых, в очередной раз настоятельно рекомендую его почитать - там очень много очень мудрых мыслей, мужик прям понимает суть программирования.&lt;/p>
+&lt;p>Во-вторых, там снова откопал &lt;a href="https://semantic-domain.blogspot.com/2018/04/are-functional-programs-easier-to.html">пост&lt;/a>, который объясняет почему ФП проще.&lt;/p>
+&lt;p>Автор берёт за аксиому то, что понимать программы сильно сложнее, когда они используют подпрограммы (методы, функции, процедуры), ссылки/указатели и изменяемое состояние.
+Их комбинация лишает разрботчика возможности понять что делает подпрограмма, глядя только на саму подпрограмму (и декларации вызываемых подпрограмм).
+Уберите любое из трёх - и такая возможность появляется.
+ФП убирает изменяемое состояние.
+И делает возможным понять что делает подпрограмма, глядя только на саму подпрограмму.
+Что проще чем, изучить всё поддерево вызовов.&lt;/p>
+&lt;p>ч.т.д.&lt;/p>
+&lt;p>Осталось только доказать аксиому.
+Я не могу привести формального доказательства этой аксиомы, но небольшой примерчик в её пользу - вполне:)&lt;/p>
+&lt;p>Возьмём программу:&lt;/p>
+&lt;div class="listing-block">&lt;pre class="rouge highlight">&lt;code data-lang="kotlin">&lt;span class="k">fun&lt;/span> &lt;span class="nf">main&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+ &lt;span class="kd">val&lt;/span> &lt;span class="py">els&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">ArrayList&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nc">Int&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">arrayListOf&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">2&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">2&lt;/span>&lt;span class="p">)&lt;/span>
+ &lt;span class="kd">val&lt;/span> &lt;span class="py">sum&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">sum&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">els&lt;/span>&lt;span class="p">)&lt;/span>
+ &lt;span class="nf">println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Сумма ${els[0]} + ${els[1]} = $sum&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">}&lt;/span>
+
+&lt;span class="k">fun&lt;/span> &lt;span class="nf">sum&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">els&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">ArrayList&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nc">Int&lt;/span>&lt;span class="p">&amp;gt;):&lt;/span> &lt;span class="nc">Int&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nc">TODO&lt;/span>&lt;span class="p">()&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Неэргономичный Jackson</title><link>https://azhidkov.pro/posts/21/02/210212-jackson-write-object-as-string/</link><pubDate>Tue, 23 Feb 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/21/02/210212-jackson-write-object-as-string/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>В последнее вермя несколько раз писал примерно такой код для сериализации объекта в json &lt;a href="https://github.com/FasterXML/jackson">Jackson-ом&lt;/a>:&lt;/p>
+&lt;div class="listing-block">&lt;pre class="rouge highlight">&lt;code data-lang="java">&lt;span class="kd">public&lt;/span> &lt;span class="nc">String&lt;/span> &lt;span class="nf">renderToJson&lt;/span>&lt;span class="o">(&lt;/span>&lt;span class="nc">Object&lt;/span> &lt;span class="n">dto&lt;/span>&lt;span class="o">)&lt;/span> &lt;span class="o">{&lt;/span>
+ &lt;span class="k">try&lt;/span> &lt;span class="o">{&lt;/span>
+ &lt;span class="k">return&lt;/span> &lt;span class="n">objectMapper&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="na">writeValueAsString&lt;/span>&lt;span class="o">(&lt;/span>&lt;span class="n">dto&lt;/span>&lt;span class="o">);&lt;/span>
+ &lt;span class="o">}&lt;/span> &lt;span class="k">catch&lt;/span> &lt;span class="o">(&lt;/span>&lt;span class="nc">IOException&lt;/span> &lt;span class="n">e&lt;/span>&lt;span class="o">)&lt;/span> &lt;span class="o">{&lt;/span>
+ &lt;span class="k">throw&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nf">AssertionError&lt;/span>&lt;span class="o">(&lt;/span>&lt;span class="s">&amp;#34;Unexpected IOException converting object to json&amp;#34;&lt;/span>&lt;span class="o">);&lt;/span>
+ &lt;span class="o">}&lt;/span>
+&lt;span class="o">}&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;p>И мне это глаз резало - я генерирую строку в памяти, какой нафик IO???
+Но задуматься времени не было.&lt;/p>
+&lt;p>А тут за чтением &lt;a href="https://softwareengineering.stackexchange.com/questions/147059/the-modern-way-to-perform-error-handling">The modern way to perform error handling&lt;/a> из глубин подсознания внезапно всплыл ответ:)
+И знаете что я вам скажу?
+Это всё в тот же топик смеси политик/алгоритмов и эффектов и проблем вызываемых этим.&lt;/p>
+&lt;p>Если заглянуть в кишочки &lt;code>writeValueAsString&lt;/code>, то этот &lt;a href="https://telegra.ph/CHistye-i-gryaznye-funkcii-ehffekty-i-obrabotka-signalov-sajdehffekty-chistye-funkcii-01-12">чистый&lt;/a> по сути метод является обёрткой вокруг &lt;code>_writeValueAndClose(JsonGenerator g, Object value)&lt;/code>.
+g - это обёртка вокруг &lt;code>java.io.Writer&lt;/code>.
+Writer выбрасывает &lt;code>java.io.IOException&lt;/code>.
+И привет IOException при генерации строки в памяти.&lt;/p>
+&lt;p>Эта проблема обусловлена смешанием в одной функции (_writeValueAndClose) политики (правил формирования json-а по ява-объекту) и эффекта (записи результата формирования в абстрактный приёмник).&lt;/p>
+&lt;p>Для того чтобы этот код сделать &lt;a href="https://github.com/d-r-q/developing-ergonomic-code/blob/master/book-rus/developing-ergonomic-code.adoc">эргономичиным&lt;/a>, надо растащить две эти &amp;#34;штуки&amp;#34;:&lt;/p>
+&lt;div class="listing-block">&lt;pre class="rouge highlight">&lt;code data-lang="kotlin">&lt;span class="k">fun&lt;/span> &lt;span class="nf">transform&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Any&lt;/span>&lt;span class="p">):&lt;/span> &lt;span class="nc">Sequence&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nc">Char&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="p">=&lt;/span>
+ &lt;span class="c1">// весь этот адовый, но чистый алгоритм по ренедренду json-а&lt;/span>
+
+&lt;span class="k">fun&lt;/span> &lt;span class="nf">writeValueAsString&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Any&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">transform&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nf">joinToString&lt;/span>&lt;span class="p">()&lt;/span>
+
+&lt;span class="nd">@Throws&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nc">IOException&lt;/span>&lt;span class="o">::&lt;/span>&lt;span class="k">class&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="k">fun&lt;/span> &lt;span class="nf">writeValue&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Any&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">w&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Writer&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">transform&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">value&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nf">forEach&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="n">w&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">append&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">it&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Типы функций: функции-мошенники</title><link>https://azhidkov.pro/posts/21/01/210126-fraud-functions/</link><pubDate>Tue, 26 Jan 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/21/01/210126-fraud-functions/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>Начало темы
+&lt;a href="https://azhidkov.pro/posts/21/01/210105-pure-functions-and-effects-intro/">здесь&lt;/a>,
+&lt;a href="https://azhidkov.pro/posts/21/01/210112-pure-functions/">здесь&lt;/a>
+и &lt;a href="https://azhidkov.pro/posts/21/01/210119-effects/">здесь&lt;/a>.&lt;/p>
+&lt;p>&lt;em>С второго взгляда терминология оказалась не такой уж чудесной, как показалась на первый взгляд, но я на этом посте засиделся, так что публикую как есть.
+В посте с итогами ещё раз попробую составить приличную терминологию.&lt;/em>&lt;/p>
+&lt;p>Как я уже писал в прошлой статье, эффекты - это то ради чего пишутся программы, и тот критерий, по которому программы оцениваются.
+Однако если не соблюдать определённую &amp;#34;эффективную гигиену&amp;#34;, то эффекты выходят из-под контроля, что приводит к появлению багов.
+&amp;#34;Эффективная гигиена&amp;#34; заключается в разделении сложной логики и эффектов и выделении их в разные функции.
+Если же этого не делать, то появляются функции-мошенники.&lt;/p>
+&lt;p>Функции-мошенники бывают двух типов:&lt;/p>
+&lt;div class="ulist">&lt;ul>&lt;li>откровенные жулики, которые врут прямо в глаза;&lt;/li>&lt;li>&amp;#34;честный бизнес&amp;#34;, который пишет всю правду, но мелким шрифтом.&lt;/li>&lt;/ul>&lt;/div></description></item><item><title>Чистые и грязные функции, эффекты и обработка сигналов, сайдэффекты: чистые функции</title><link>https://azhidkov.pro/posts/21/01/210112-pure-functions/</link><pubDate>Tue, 12 Jan 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/21/01/210112-pure-functions/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>Начало темы &lt;a href="https://azhidkov.pro/posts/21/01/210105-pure-functions-and-effects-intro/">здесь&lt;/a>&lt;/p>
+&lt;p>&lt;em>Обращаю ваше внимание, что топик расширился - помимо анонсированных вчера грязных функций, вчера же я ещё &amp;#34;открыл&amp;#34; сигналы.
+Заголовок конечно длинноват, но пока так:)
+Но обо всём по порядку и сегодня у нас чистые функции.&lt;/em>&lt;/p>
+&lt;p>Чистая функция - это функция без эффектов и сайдэффектов:)
+Или функция в математическом смысле - её результат определяется исключительно параметрами и у неё только один результат - возвращаемое значение.&lt;/p>
+&lt;p>Признаки нечистоты функций:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>&lt;p>У неё нет результата (возвращает void/Unit).
+ Теоретически можно сделать такую чистую функцию, но пользы от неё будет очень мало - её можно будет использовать только в качестве
+затычки для какого-то вывода.&lt;/p>&lt;p>Типичный пример - printf/println.&lt;/p>&lt;/li>&lt;li>&lt;p>У неё нет аргументов.
+Опять же, теоретически можно сделать такую функцию, но пользы от неё будет очень мало - её можно будет использовать только в качестве затычки для какого-то ввода.&lt;/p>&lt;p>Типичный пример - currentTime.&lt;/p>&lt;/li>&lt;li>&lt;p>Будучи вызванной с одними параметрами в разное время, она может вернуть разные результаты.
+Тут уже без вариантов, по определению все такие функции не являются чистыми&lt;/p>&lt;p>Типичный пример - Files.readString(Path.of(``/tmp/test’’))&lt;/p>&lt;/li>&lt;li>&lt;p>Будучи детерминированной, она обладает наблюдаемым эффектом, помимо возврата значения.
+Опять же без вариантов, все такие функции не чистые по определению.&lt;/p>&lt;p>Типичные примеры: кэширование детерминированных функций и логгирование в детерминированных функциях.&lt;/p>&lt;/li>&lt;/ol>&lt;/div></description></item></channel></rss>

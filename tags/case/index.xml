@@ -20,4 +20,232 @@
 Однако он звучит неуклюже даже в английском варианте, поэтому далее по тексту я, вслед за Пейдж-Джонсом, автором &lt;a href="https://archive.org/details/practicalguideto0000page_e3j1">&amp;#34;The practical guide to structured systems design&amp;#34;&lt;/a> — следующей книги по структурному дизайну, буду использовать термин balanced system — сбалансированная система.&lt;/p>&lt;/aside>
 &lt;p>Идея предельно проста: при разработке код надо разделять на четыре типа — управляющий код, код чтения данных, код трансформации и код записи данных.&lt;/p>
 &lt;p>И если систему, разработанную с разделением кода на эти типы, представить в виде структурной схемы, то получится примерно такая картинка (здесь и далее все картинки кликабельные):&lt;/p>
-&lt;div class="image-block">&lt;a class="image bare" href="https://azhidkov.pro/posts/24/11/images/transform-centered-morphology-model.png" title="Open the image in full size" aria-label="Open the image in full size">&lt;img src="https://azhidkov.pro/posts/24/11/images/transform-centered-morphology-model.png" alt="transform centered morphology model"/>&lt;/a>&lt;/div></description></item></channel></rss>
+&lt;div class="image-block">&lt;a class="image bare" href="https://azhidkov.pro/posts/24/11/images/transform-centered-morphology-model.png" title="Open the image in full size" aria-label="Open the image in full size">&lt;img src="https://azhidkov.pro/posts/24/11/images/transform-centered-morphology-model.png" alt="transform centered morphology model"/>&lt;/a>&lt;/div></description></item><item><title>Проектирование модели данных клинического мышления в Trainer Advisor</title><link>https://azhidkov.pro/posts/24/01/trainer-advisor-modeling/</link><pubDate>Mon, 15 Jan 2024 07:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/24/01/trainer-advisor-modeling/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>На текущий момент самой сложной частью &lt;a href="https://azhidkov.pro/posts/23/11/trainer-advisor/">Trainer Advisor (ранее - QYoga)&lt;/a> является модель &amp;#34;клинического мышления&amp;#34; - то, как терапевт подбирает упражнения для клиента.
+В этом посте я расскажу то, как мы проектировали модель данных для неё.&lt;/p>
+&lt;p>Естественно, первым делом мы с экспертом нарисовали ER-диаграмму этой модели (в &lt;a href="https://azhidkov.pro/posts/23/11/immutable-relation-data-model-v2/">Эргономичной нотации&lt;/a>):&lt;/p>
+&lt;p>&lt;a class="image" href="https://azhidkov.pro/posts/24/01/images/clinical-thinking-model.drawio.svg">&lt;img src="https://azhidkov.pro/posts/24/01/images/clinical-thinking-model.drawio.svg" alt="clinical thinking model.drawio"/>&lt;/a>&lt;/p>
+&lt;p>Потом посидели, посмотрели на неё, подумали и решили что вроде бы всё ок.&lt;/p>
+&lt;p>Однако, что-то мне не давало покоя, и я придумал, как позже выяснилось, гениальную штуку - провести верификацию модели посредством описания с её помощью реальных клиентов и упражнений эксперта.&lt;/p>
+&lt;p>Для того чтобы это сделать, я завёл такой Excel-файл:&lt;/p>
+&lt;div class="image-block">&lt;a class="image bare" href="https://azhidkov.pro/posts/24/01/images/2024-01-15-08-37-44.png" title="Open the image in full size" aria-label="Open the image in full size">&lt;img src="https://azhidkov.pro/posts/24/01/images/2024-01-15-08-37-44.png" alt="2024 01 15 08 37 44"/>&lt;/a>&lt;/div></description></item><item><title>Trainer Advisor</title><link>https://azhidkov.pro/posts/23/11/trainer-advisor/</link><pubDate>Wed, 13 Dec 2023 08:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/23/11/trainer-advisor/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>В этом посте я общими словами опишу Trainer Advisor (ранее - QYoga, &lt;a href="https://github.com/ergonomic-code/Trainer-Advisor">репозиторий на GitHub&lt;/a>) - проект, на примере которого я буду демонстрировать &lt;a href="https://azhidkov.pro/ergo-approach/landing/">Эргономичный подход&lt;/a>.&lt;/p>
+&lt;p>Trainer Advisor - это сервис для йогатерапевтов и тренеров умного фитнеса, который призван решить следующие их боли:&lt;/p>
+&lt;div class="ulist">&lt;ul>&lt;li>При большом количестве клиентов сложно держать в голове анамнез каждого клиента;&lt;/li>&lt;li>При большом количестве занятий сложно обеспечить высокую вариативность программ;&lt;/li>&lt;li>Подготовка программы, учитывающей особенности и историю клиента, требует большого количества времени и усилий;&lt;/li>&lt;li>Подготовка документа с программой для самостоятельной практики требует большого количества времени и усилий;&lt;/li>&lt;li>Подбор диагностических опросников, подходящих для определенной задачи, требует большого количества времени и усилий.&lt;/li>&lt;/ul>&lt;/div></description></item><item><title>Как я превратил легаси-проект в конфетку за полгода. Том 2</title><link>https://azhidkov.pro/posts/23/10/project-e-part2/</link><pubDate>Tue, 26 Sep 2023 01:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/23/10/project-e-part2/</guid><description>&lt;section class="doc-section level-1">&lt;h2 id="_введение">&lt;a class="link" href="#_введение">Введение&lt;/a>&lt;/h2>&lt;p>Это второй том эпопеи, о том как, я превратил легаси-систему в конфетку за полгода:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>&lt;a href="https://azhidkov.pro/posts/23/09/project-e-part1/">Том первый. &amp;#34;Пациент скорее мёртв, чем жив&amp;#34;&lt;/a> - описание проекта, история получения разрешения на реинжиниринг и планирование работ&lt;/li>&lt;li>Том второй. &amp;#34;Доктор сказал в морг, значит в морг&amp;#34; - описание процесса работы, что пошло не по плану, как факапились в проде и чем всё закончилось&lt;/li>&lt;li>Том третий. &amp;#34;Анатомический атлас конфетки&amp;#34; - детали реализации &amp;#34;конфетки&amp;#34;&lt;/li>&lt;li>Том четвёртый. &amp;#34;Это наследственное&amp;#34; - какие проблемы были вызваны сменой архитектуры и стека, а также необходимостью параллельной работы со старым бэком&lt;/li>&lt;/ol>&lt;/div></description></item><item><title>Как я превратил легаси-проект в конфетку за полгода. Том 1</title><link>https://azhidkov.pro/posts/23/09/project-e-part1/</link><pubDate>Wed, 13 Sep 2023 01:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/23/09/project-e-part1/</guid><description>&lt;section class="doc-section level-1">&lt;h2 id="_введение">&lt;a class="link" href="#_введение">Введение&lt;/a>&lt;/h2>&lt;p>Недавно мне удалось за шесть месяцев превратить полный боли, багов и сорванных дедлайнов легаси-проект на микросервисной архитектуре в полный фана проект на монолите, в котором мы стабильно попадаем в дедлайны, а существенные баги в коде бэка доходят до команды QA пару раз в квартал.&lt;/p>
+&lt;p>Эта эпопея не сильно уступает по объёму &amp;#34;Войне и Миру&amp;#34;, поэтому я разбил её на четыре тома:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>Том первый. &amp;#34;Пациент скорее мёртв, чем жив&amp;#34; - описание проекта, история получения разрешения на реинжиниринг и планирование работ&lt;/li>&lt;li>&lt;a href="https://azhidkov.pro/posts/23/10/project-e-part2/">Том второй. &amp;#34;Доктор сказал в морг, значит в морг&amp;#34;&lt;/a> - описание процесса работы, что пошло не по плану и как факапились в проде&lt;/li>&lt;li>Том третий. &amp;#34;Анатомический атлас конфетки&amp;#34; - детали реализации &amp;#34;конфетки&amp;#34;&lt;/li>&lt;li>Том четвёртый. &amp;#34;Это наследственное&amp;#34; - описание проблем, вызванных сменой архитектуры и стэка, а также необходимостью параллельной работы со старым бэком&lt;/li>&lt;/ol>&lt;/div></description></item><item><title>Перевод сервиса на Spring Boot Native</title><link>https://azhidkov.pro/posts/23/09/spring-boot-native/</link><pubDate>Mon, 11 Sep 2023 08:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/23/09/spring-boot-native/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>Я начал двигать &lt;a href="https://azhidkov.pro/posts/23/09/project-e-part1/">Проект Э&lt;/a> в сторону микроядерной архитектуры.
+Пока план такой что, в оригинальном монолите останутся ядерные модули, которые, частично в силу предметной области, а частично в силу дизайна оригинального бэка, который я перенёс как есть при реинжинирнге, довольно сильно сцеплены между собой, а интеграции (которых у нас уже три и предвидится ещё пачка) мы будем делать в отдельных сервисах.&lt;/p>
+&lt;p>Но есть нюанс - на дев стенде у нас дефицит памяти.
+Поэтому я пошёл смотреть на Spring Boot Native.&lt;/p>
+&lt;p>Посмотрел, и в этом микропосте поделюсь впечатлениями.&lt;/p>
+&lt;section class="doc-section level-1">&lt;h2 id="_сервис">&lt;a class="link" href="#_сервис">Сервис&lt;/a>&lt;/h2>&lt;p>Эксперементировать, естественно, я начал на котике - сервисе, реализующим интеграцию с ЕМИАС, о котором я &lt;a href="https://azhidkov.pro/posts/23/08/emias-integration/">уже писал&lt;/a>.
+В сервисе 65 продовых котлин-файлов, он выставляет один HTTP-эндпоинт и слушает одну очередь в RabbitMQ и ходит в два HTTP-эндпоинта ЕМИАСа и публикует сообщения в один топик Кафки ЕМИАСа.
+Так же сервис пишет данные в три таблички через Spring Data JDBC.&lt;/p>
+&lt;p>Сервис сделан на JDK 17, Kotlin 1.9, Spring Boot 3.1.3 и собирается Гредлом 8.2.1 с билд-файлом на Kotlin DSL.&lt;/p>
+&lt;p>Зависимости проекта:&lt;/p>
+&lt;div class="listing-block">&lt;pre class="rouge highlight">&lt;code data-lang="kotlin">&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.springframework.boot:spring-boot-starter-web&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.springframework.boot:spring-boot-starter-security&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.springframework.boot:spring-boot-starter-data-jdbc&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.springframework.boot:spring-boot-starter-amqp&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.springframework.boot:spring-boot-starter-actuator&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.springdoc:springdoc-openapi-starter-common:2.0.2&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.springframework:spring-aspects:6.0.8&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.flywaydb:flyway-core&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.postgresql:postgresql&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.apache.httpcomponents.client5:httpclient5:5.2.1&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+
+&lt;span class="c1">// Для публикации в Кафку ЕМИАС выдаёт либу с джарником, которая работает с Кафкой напрямую...&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.apache.kafka:kafka-clients:3.2.1&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nf">files&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;lib/client-lib-4.6.0.jar&amp;#34;&lt;/span>&lt;span class="p">))&lt;/span>
+
+&lt;span class="nf">api&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;io.jsonwebtoken:jjwt-api:0.11.5&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">runtimeOnly&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;io.jsonwebtoken:jjwt-impl:0.11.5&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">runtimeOnly&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;io.jsonwebtoken:jjwt-jackson:0.11.5&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;com.fasterxml.jackson.module:jackson-module-kotlin&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.jetbrains.kotlin:kotlin-reflect&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">runtimeOnly&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;com.github.therapi:therapi-runtime-javadoc:0.15.0&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">kapt&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;com.github.therapi:therapi-runtime-javadoc-scribe:0.15.0&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Дизайн интеграции с ЕМИАС</title><link>https://azhidkov.pro/posts/23/08/emias-integration/</link><pubDate>Tue, 01 Aug 2023 08:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/23/08/emias-integration/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>В Проекте Э появилась задача выполнить интеграцию с ЕМИАС города Москвы.
+В какой-то момент показалось, что там будет &lt;a href="https://azhidkov.pro/posts/23/04/ergonomic-decomposition/#_ручное_завершение_кластеризации">&amp;#34;сложный случай&amp;#34;&lt;/a> в кластеризации диаграммы эффектов.
+В конечном итоге всё обошлось, но я решил собрать из этого микропост с демонстрацией того, что делать в сложных случаях.&lt;/p>
+&lt;p>Интеграция с ЕМИАС состоит из трёх частей:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>При регистрации, пользователь может проставить галочку, ввести дополнительные данные (номер полиса ОМС и дату рождения) и в этом случае, система должна идентифицировать пользователя в ЕМИАС и дать отлуп, если не получилось.
+Вот здесь в конечном итоге обошлось и привязку пользователя к ЕМИАС вынесли в отдельный шаг.&lt;/li>&lt;li>При подключении устройства пользователя к МП, его также надо привязывать и в ЕМИАС.
+У нас сейчас на бэке устройств нет, но мы их давно хотим.&lt;/li>&lt;li>При сохранении замеров с устройства на бэке, их надо переслать в ЕМИАС.
+Это у нас уже третья подобная интеграция, так что события об изменении дневников у нас уже публикуются в RabbitMQ и на них надо просто подписаться.&lt;/li>&lt;/ol>&lt;/div></description></item><item><title>Сравнение эффективности работы команд Проекта Э до и после реинжинирига</title><link>https://azhidkov.pro/posts/23/07/project-e-results/</link><pubDate>Fri, 14 Jul 2023 08:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/23/07/project-e-results/</guid><description>&lt;section class="doc-section level-1">&lt;h2 id="_введение">&lt;a class="link" href="#_введение">Введение&lt;/a>&lt;/h2>&lt;p>Мы закончили реинжиниринг &lt;a href="https://azhidkov.pro/ergo-approach/landing/#_проект_э">Проекта Э&lt;/a>, поработали три месяца только с новой кодовой базой и пришло время подводить итоги.&lt;/p>
+&lt;p>В изначальных критериях успеха реинжиниринга Проекта Э я целился в то, чтобы как минимум удвоить скорость разработки - лучше и объективно, и субъективно по мнению РП и заказчика.
+Но субъективные ощущения РП и заказчика не совпадают - РП видит увеличение скорости разработки, а заказчик - нет.
+Поэтому я перелопатил 517 задач в Jira, чтобы понять объективное состояние дел.&lt;/p>
+&lt;p>ТЛДР - по статистике количество трудозатрат и багов и правда удалось снизилось в 2 раза.
+Подробности исследования - далее в посте.&lt;/p>&lt;/section>
+&lt;section class="doc-section level-1">&lt;h2 id="_методика_оценки_результатов_по_jira">&lt;a class="link" href="#_методика_оценки_результатов_по_jira">Методика оценки результатов по Jira&lt;/a>&lt;/h2>&lt;p>Оценка результатов затруднена целым спектром проблем:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>О разработке оригинальной версии данных практически нет.
+Есть только история гита, по которой можно понять размер команды (1 человек) и календарные сроки (9 месяцев - с 13 января - по 8 октября);&lt;/li>&lt;li>Над проектом работали три разные команды - оригинальная, .net-команда у нас и kotlin-команда у нас;&lt;/li>&lt;li>В Jira, откровенно говоря, у нас бардачок.
+Есть закрытые (и сделанные) задачи без трека.
+Есть небольшие задачи, в которые затрекано десятки часов.&lt;/li>&lt;/ol>&lt;/div></description></item><item><title>REST, фронт и все-все-все</title><link>https://azhidkov.pro/posts/23/06/rest-fronts-and-others/</link><pubDate>Tue, 27 Jun 2023 08:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/23/06/rest-fronts-and-others/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>Я прочитал штук пять книг по REST, включая диссертацию Филдинга и для себя пришёл к выводу, что REST без HATEOS - это не REST.
+А HATEOS в случае толстых клиентов не работает.
+Соответственно смирился с тем, что мы (90% индустрии) на самом деле делаем RPC over HTTP и успокоился.&lt;/p>
+&lt;p>А потом наткнулся на &lt;a href="https://htmx.org/">htmx&lt;/a> и &lt;a href="https://alpinejs.dev/">alpine.js&lt;/a>, с которым сейчас потихоньку играюсь и пока что в восторге - для проектов, в которых я участвовал за всю свою карьеру этого более чем достаточно и они намного проще React-ового адка, имхо.
+И тут уже HATEOS вполне себе работает.&lt;/p>
+&lt;p>Однако, я пока не представляю как хотя бы на вэб затащить htmx+alpine в коммерческих проектах, а с нативными фронтами вообще труба.
+Поэтому для меня HATEOS оставался скорее академической штукой, чем практической.&lt;/p>
+&lt;p>Пока я не посмотрел &lt;a href="https://www.youtube.com/watch?v=93UK4gwV41c&amp;amp;list=PLe6FX2SlkJdTlHjktJqUWaFtaRBOkZ8JZ&amp;amp;index=38">REST next level: Crafting domain-driven web APIs by Julien Topçu @ Spring I/O 2023&lt;/a>.
+И вот тут у меня что-то наконец щёлкнуло и я, кажется, понял как превратить HATEOS в решение, которое повысит скорость разработки и стабильность моих систем за счёт снижения сцепленности фронтов с бэком и снижения кол-ва бизенс-логики во фронтах (и как следствие упрощения её тестирования).&lt;/p>
+&lt;p>Делать далеко идущие выводы я пока не готов, но совершенно точно готов дать HATEOS второй шанс в каком-нибудь пет-проекте.&lt;/p>
+&lt;hr/>
+&lt;p>Знаю, что у меня в подписчиках много молодых разработчиков - следующая история для вас, мои дорогие:)&lt;/p>
+&lt;p>Недавно на Проекте Э у нас был примерно такой случай.&lt;/p>
+&lt;p>QA заводит баг, говорит генерация отчётов не работает, бэк возвращает ошибку и вешает его на бэк.
+Бакэндер его смотрит и говорит - ну у нас конечно есть проблема на бэке, что отчёт долго генерируется, но вообще-то это фронт дурак - присылает второй запрос до получения ответа.
+А у нас отчёты генерируются по одноразовому токену, соответственно второй запрос тут же получает ошибку.
+И возвращает баг на фронт.&lt;/p>
+&lt;p>Приходит фронтендер и говорит: сами вы дураки - я один раз запрос отправляю.&lt;/p>
+&lt;p>За пару недель это цикл в вялотекущем режиме повторился сколько-то раз.&lt;/p>
+&lt;p>Пока я не пришёл, не открыл слева логи браузера, справа логи бэка и не увидел, что фронт действительно отсылает один запрос, а на бэк их приходит два.&lt;/p>
+&lt;p>Мистика?
+Нет, если знать ещё два бита информации:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>В наследство нам досталась генерация отчёта (с инвалидацией токена) GET-методом;&lt;/li>&lt;li>Между фронтом и бэком у нас сидит nginx.&lt;/li>&lt;/ol>&lt;/div></description></item><item><title>Потоковый джоин в Проекте Э</title><link>https://azhidkov.pro/posts/23/06/streaming-join/</link><pubDate>Thu, 15 Jun 2023 08:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/23/06/streaming-join/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>При реинжинринге Проекта Э мы сохранили разделение БД, хранящих персональные и медицинские данные пользователей.
+Во имя соответствия ФЗ-152.&lt;/p>
+&lt;p>У меня до сих пор вызывает сомнения утверждение, что ФЗ-152 действительно требует раздельного хранения, но толком вникнуть в тему и предоставить контраргументов я не смог, поэтому поехали дальше как есть.&lt;/p>
+&lt;p>В БД персональных данных у нас ожидаются десятки тысяч строк, а в БД медицинских - десятки-сотни миллионов.&lt;/p>
+&lt;p>И ещё у нас есть админка, где заказчик хочет в одной выгрузке видеть объединённые данные по пользователю.
+С возможностью сортировки и фильтрации по колонкам из обоих баз.
+И выгрузкой в Excel с ограничением в максимальное кол-во строк в xlsx - 1М.
+А ещё есть выгрузка событий, где есть все те же прелести, плюс связь между базами данных - 1 к Н.
+Ну и в качестве вишенки на торте - ссылки между базами данных закодированы: строки медицинских данных ссылаются на персональные данные не по иду, а по коду, который вычисляется в приложении из ида.&lt;/p>
+&lt;p>Я долго грел голову как это сделать и не придумал ничего лучше, чем руками запилить стандартный для баз данных &lt;a href="https://en.wikipedia.org/wiki/Block_nested_loop">block nested loop join&lt;/a>.&lt;/p>
+&lt;p>Что мы собственно и сделали.
+Упрощённо, всё это выглядит так:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>В зависимости от выбранной сортировки выбираем лидирующую БД;&lt;/li>&lt;li>В лидирующей БД открываем курсор с нужной сортировкой, &lt;a href="https://use-the-index-luke.com/no-offset">смещением страницы по ключу&lt;/a> и фильтрацией по соответствующим колонкам;&lt;/li>&lt;li>Достаём из этого курсора пачки строк (размер запрошенной страницы * 3);&lt;/li>&lt;li>Делаем запрос к ведомой БД с фильтрацией по её колонкам плюс фильтрацией по ссылкам (чтобы они входили в иды строк из пачки предыдущего шага);&lt;ol class="loweralpha" type="a">&lt;li>В случае джоина 1 к Н, тут мы тоже открываем курсор, а не тянем всё сразу;&lt;/li>&lt;/ol>&lt;/li>&lt;li>Выполняем джоин строк лидирующей и ведомой БД;&lt;/li>&lt;li>Если страница набралась - на выход, если нет - на шаг 3.&lt;/li>&lt;/ol>&lt;/div></description></item><item><title>Рациональный подход к декомпозиции систем на модули или микросервисы</title><link>https://azhidkov.pro/posts/23/04/ergonomic-decomposition/</link><pubDate>Sat, 15 Apr 2023 01:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/23/04/ergonomic-decomposition/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Данный пост является базовым материалом для моего &lt;a href="https://jpoint.ru/talks/329f3cb2b72e4ec6a0e931207191546b/">доклада на JPoint 2023&lt;/a>&lt;/p>&lt;/aside>
+&lt;section class="doc-section level-1">&lt;h2 id="_чего_от_разработки_по_хотят_разработчики_продакты_и_владельцы_бизнеса">&lt;a class="link" href="#_чего_от_разработки_по_хотят_разработчики_продакты_и_владельцы_бизнеса">Чего от разработки ПО хотят разработчики, продакты и владельцы бизнеса?&lt;/a>&lt;/h2>&lt;p>Одного и того же - побольше дофаминчика (гормон счастья), поменьше кортизольчика (гормон стресса).
+Притом источники и дофамина, и кортизола у них одни и те же.
+Дофамин вырабатывается, когда фичи выпускаются в срок и без багов, а кортизол - когда сроки срываются и вылазят баги и регрессии.
+Бизнесу будет ближе финансовая версия — срыв сроков и баги очевидным образом приводят к увлечению стоимости разработки.
+Что приводит к выбросу кортизола уже у владельцев.&lt;/p>&lt;/section>
+&lt;section class="doc-section level-1">&lt;h2 id="_как_обеспечить_высокий_уровень_дофамина_всей_команды">&lt;a class="link" href="#_как_обеспечить_высокий_уровень_дофамина_всей_команды">Как обеспечить высокий уровень дофамина всей команды?&lt;/a>&lt;/h2>&lt;p>Для того чтобы поддерживать высокий уровень дофамина и низкий уровень кортизола у всех участников процесса, нам необходимо декомпозировать системы на модули.
+Декомпозиция помогает обеспечить высокую скорость и качество разработки за счёт:&lt;/p>
+&lt;div class="ulist">&lt;ul>&lt;li>Ограничения объёма информации, которую надо осознать и закодировать на этапе первичной реализации функциональности;&lt;/li>&lt;li>Ограничения объёма кода, который необходимо изучить и адаптировать к изменениям в требованиях;&lt;/li>&lt;li>Исключения конфликтов при параллельной разработке независимых функций системы;&lt;/li>&lt;li>Создания возможности независимого выпуска и развёртывания отдельных функций системы.&lt;/li>&lt;/ul>&lt;/div></description></item><item><title>Опыт внедрения инструментов статического анализа кода в Проект Э</title><link>https://azhidkov.pro/posts/23/03/project-e-static-analysis/</link><pubDate>Thu, 09 Mar 2023 08:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/23/03/project-e-static-analysis/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>Привет!&lt;/p>
+&lt;p>Я внедрил в &lt;a href="https://t.me/ergonomic_code/231">Проект Э&lt;/a> три тула статического анализа кода - &lt;a href="https://detekt.dev/">Detekt&lt;/a>, &lt;a href="https://github.com/Kotlin/kotlinx-kover">Kover&lt;/a> и &lt;a href="https://www.archunit.org/">ArchUnit&lt;/a> - и хочу поделиться, что из этого вышло.&lt;/p>
+&lt;section class="doc-section level-1">&lt;h2 id="_detekt">&lt;a class="link" href="#_detekt">Detekt&lt;/a>&lt;/h2>&lt;p>Детект появился с подачи РП, если не вдаваться в детали.
+В какой-то момент у нас был ботлнек на моём ревью, и РП хотел так его решить.
+Но у меня уже был не особо позитивный опыт со статическим анализом, поэтому я к этой идее отнёсся скептически.&lt;/p>
+&lt;p>Но вопрос всё равно то и дело всплывал, и нам в команду ожидается новый разработчик без опыта работы на Котлине и мои дипломники начали отдавать код на ревью…​
+В общем я решил всё-таки попробовать.&lt;/p>
+&lt;p>Прикрутил его без проблем.
+Включил все чеки, которые мне показались разумными.
+После этого он думал 6 секунд на моей машине (i7-8700, 32GB Ram, SSD) (больше 10% процентов времени сборки) и выдал 1500 &amp;#34;проблем&amp;#34;.
+При ближайшем рассмотрении, выяснилось что настоящие проблемы можно буквально по пальцам одной руки пересчитать, а всё остальное - белый шум.&lt;/p>
+&lt;p>Белый шум я &amp;#34;забейзлайнил&amp;#34; и вмёржил.
+После чего упёрлись в то, что у него правила форматирования не совпадают с правилами форматирования в идеи.
+А ревью проходить быстрее так и не стали.
+И пока что это всё, что можно рассказать про детект - я подкрепил свой скепсис по отношению к тулам статического анализа.&lt;/p>
+&lt;p>Сейчас попробую оставить только те проверки, которые выявили настоящие проблемы - если время сборки вернётся к нормальному оставлю.
+Если не вернётся - вынесу в отдельный пайплайн, не блокирующий сборку и деплой и посмотрю сколько будет генерять ошибок - если мало и по делу - оставлю, если нет - выкашу нафиг.&lt;/p>
+&lt;p>Вердикт: ожидается, возможно будет полезен молодым разработчикам и новичкам в Котлине.&lt;/p>&lt;/section>
+&lt;section class="doc-section level-1">&lt;h2 id="_kover">&lt;a class="link" href="#_kover">Kover&lt;/a>&lt;/h2>&lt;p>Ковер тоже появился с подачи условного РП - возник вопрос о проценте покрытия кода тестами, я сказал что хз и не заморачиваюсь этим.
+Но стало интересно.&lt;/p>
+&lt;p>Прикрутил без проблем, порадовался - 100% покрытие эндпоинтов (наша явно озвученная цель), 85-90% покрытия строк (побочный эффект эргономичного подхода).
+Из плохих новостей - покрытие веток ~65%.
+Но это вызвано тем, что сроки у нас довольно жёсткие и мы осознанно покрываем тестами только хэппи пасы и баги.&lt;/p>
+&lt;p>Потом без особых проблем на всякий случай прикрутил верификацию покрытия по этим правилам - 100% строк в классах *Controller и &amp;gt;85% строк всего.&lt;/p>
+&lt;p>А потом я посмотрел на время сборки и ужаснулся.
+15 секунд, ~30% времени сборки.
+Пока живём с этим, но в ближайшее время планирую вынести верификацию покрытия в отдельный пайплайн, не блокирующий мёрж и деплой.&lt;/p>
+&lt;p>Вердикт: с эргономичным подходом - найс ту хэв.&lt;/p>&lt;/section>
+&lt;section class="doc-section level-1">&lt;h2 id="_archunit">&lt;a class="link" href="#_archunit">ArchUnit&lt;/a>&lt;/h2>&lt;p>Поигравшись с детектом и ковером я вошёл в раж и прикрутил ArchUnit.
+Он нашёл (и вынудил пофиксать) все уже известные мажорные проблемы и пару минорных.
+Но сожрал ещё 6 секунд.
+Его я тоже собираюсь вынести из основного пайплайна сборки, но оставить в качестве информации.&lt;/p>
+&lt;p>Вердикт: рекомендую, но вне основного процесса разработки&lt;/p>&lt;/section>
+&lt;section class="doc-section level-1">&lt;h2 id="_итоги">&lt;a class="link" href="#_итоги">Итоги&lt;/a>&lt;/h2>&lt;p>Ничего фатального статические тулы не нашли, но увеличили время сборки больше, чем на 50%.
+Детект у меня пока под вопросом, ковер и арчюнит оставлю в качестве доп. источника информации о состоянии кода.&lt;/p>&lt;/section></description></item><item><title>Планирование реинженеринга Проекта Э</title><link>https://azhidkov.pro/posts/22/10/project-e-planning/</link><pubDate>Mon, 24 Oct 2022 08:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/22/10/project-e-planning/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>В этом микропосте я решил рассказать, как я спланировал работы по &lt;a href="https://t.me/ergonomic_code/231">реинженерингу Проекта Э&lt;/a>.&lt;/p>
+&lt;p>Начал я с того, что с помощью одного из джунов построил граф эндпоинтов (как REST, так и RabbitMQ) микросервисов и зависимостей между ними.
+Каждому эндпоинту я на глаз присвоил &amp;#34;размер&amp;#34; - xs, s, m, l, xl.
+Для того, чтобы граф был более нагляден, я цветом закодировал тип эндпоинта (зелёных - REST, синий - RabbitMQ RPC, красный - RabbitMQ Event), а насыщенностью - его размер.&lt;/p>
+&lt;p>В итоге получилась вот такая иллюстрация термина &amp;#34;Distributed Big Ball of Mud&amp;#34; (по клику открывается 2-мегабайтная картинка в большом разрешении):&lt;/p>
+&lt;div class="image-block">&lt;a class="image" href="https://azhidkov.pro/posts/22/10/images/project-e-large.jpg">&lt;img src="https://azhidkov.pro/posts/22/10/images/project-e-small.jpg" alt="project e small"/>&lt;/a>&lt;/div></description></item><item><title>Потока-сознания-пост: и снова о декомпозиции</title><link>https://azhidkov.pro/posts/22/08/decomposition-history/</link><pubDate>Tue, 09 Aug 2022 08:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/22/08/decomposition-history/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;section class="doc-section level-1">&lt;h2 id="_предистория">&lt;a class="link" href="#_предистория">Предистория&lt;/a>&lt;/h2>&lt;p>Давным-давно, я знал только один подход к декомпозиции систем на базе &lt;a href="https://azhidkov.pro/book/ergo/#_мой_подход_к_разбиению_классов">&amp;#34;здравого смысла&amp;#34; и кластерного анализа&lt;/a>.
+Декомпозиция по слоям - не в счёт, это не подход к декомпозиции, а избегание этой самой декомпозиции.
+Этим подходом, на самом деле, я пользуюсь до сих пор в случаях, когда надо максимально быстро выкатить первый &amp;#34;ходячий скелет&amp;#34; проекта.
+Однако, его сложно применять для планирования и оценки работ, и он опирается на то, что первые 10-20 классов критической массы будут спроектированны более-менее прилично, что не под силу молодым разработчикам, например.&lt;/p>
+&lt;p>Поэтому я начал думать дальше в поисках методики, которую можно было бы объяснить и молодым разработчикам и которая помогала бы им проектировать хорошие системы.
+Следующим шагом на этом пути стала &lt;a href="https://azhidkov.pro/book/ergo/#_принципы_проектирования_системы">идея компонентов&lt;/a>.
+И на тот момент это была именно что идея - без конкретной методики декомпозиции системы на компоненты.
+Я сделал в такой парадигме пару небольших проектов и получилось в целом достаточно хорошо.&lt;/p>
+&lt;p>Но, во-первых, я это сделал по большому счёт интуитивно (хотя для одного из проектов нарисовал некоторое подобие диаграммы Эффектов).
+Во-вторых, сами компоненты я реализовывал по Чистой архитектуре, в которой (после этих же проектов) разочаровался.
+В-третьих, я все компоненты свалил в одно место - и компоненты мониторинга, и компоненты предметной области, и компоненты инфраструктуры.
+Наконец, меня смущало нарушение &lt;a href="https://en.wikipedia.org/wiki/Package_principles">Common Reuse Principle&lt;/a> - если операция компонента А требует данных компонента Б, то компонент А тащит в зависимости весь компонент Б.&lt;/p>
+&lt;p>Поэтому на следующей итерации я попробовал &lt;a href="https://azhidkov.pro/posts/21/10/211018-ergo-approach-post/#_эргономичный_дизайн">разделить слои домена и приложения&lt;/a>.
+И, честно говоря, либо я уже не помню, что меня на самом деле это сподвигло, либо это было помутнение сознания - дурацкая затея, вобщем, была.
+Но тем не менее, следующий проект я начал делать в этой парадигме.&lt;/p>
+&lt;p>Однако это была тупиковая ветвь эволюции Эргономичного подхода.
+Тот пост заканчивался словами &amp;#34;Вот у вас есть требования, вам надо спроектировать ядро - как это сделать? Ответ в следующем посте.&amp;#34;.
+И &amp;#34;следующего поста&amp;#34; не было.
+Я не осилил придумать методику проектирования таких модулей и это стало одной из причин &lt;a href="https://t.me/ergonomic_code/140">моего идейного кризиса начала года&lt;/a>.&lt;/p>
+&lt;p>В итоге из этой части идейного кризиса я вышел отказавшись от CRP в пользу сокрытия информации и низкой сцепленности и вернувшись к парадигме ядра состоящего из равноценных компонентов.
+При том одумался я вовремя, и успел отрефакторить проект, который начал делать по слоям и он тоже завершён вполне благополучно и в ближайшие дни планируется его выход в прод.&lt;/p>
+&lt;p>Где-то в этот период я вплотную взялся за &lt;a href="https://azhidkov.pro/posts/22/05/220519-effects-diagram-intro/">диаграмму Эффектов&lt;/a> и именно она стала ответом на вопрос &amp;#34;Вот у вас есть требования, вам надо спроектировать ядро - как это сделать?&amp;#34;.
+И на этот раз ответ у меня уже сформирован, осталось его только отредактировать и опубликовать (первую часть - уже в августе).&lt;/p>
+&lt;p>&lt;a href="https://azhidkov.pro/posts/22/06/220611-true-story-project/">Очередной проект&lt;/a> я начал с построения диаграммы Эффектов (в её текущей реинкарнации) и декомпозиции её на компоненты.
+Активную работу над проектом я закончил ещё в мае, но из-за бюрократических проволочек он ещё не в проде.
+Поэтому судить об успехе проекта с точки зрения заказчика ещё рано, но с технической точки зрения он был вполне успешен - у меня ни разу не было аналитического паралича и получившаяся декомпозиция и эстетически и по формальным метрикам хороша.&lt;/p>
+&lt;p>Казалось бы, вот он наш хэппи энд.
+Но не тут-то было.
+Или тут.
+Поехали к истории.&lt;/p>&lt;/section>
+&lt;section class="doc-section level-1">&lt;h2 id="_история">&lt;a class="link" href="#_история">История&lt;/a>&lt;/h2>&lt;p>Я сейчас &amp;#34;лидю&amp;#34; медицинский легаси проект (Проект Э).
+Там среди прочего есть медицинский профиль пользователя и дневник наблюдений.
+Они разнесены по разным микросервисам и микросервис дневника зависит от профиля.&lt;/p>
+&lt;p>И теперь надо добавить в систему административную панель, где среди прочего надо показывать профили пользователя.
+И последнее события из дневника.
+В одной строке одной таблицы.
+Вопрос куда засунуть операцию получения страниц этой таблицы.&lt;/p>
+&lt;p>В дневник мы не можем её засунуть, т.к. у нас первичным источником являются профили, и не у всех есть события, и в этом случае мы потеряем часть профилей.
+Теоретически, можно закостылять это и залезть из дневника в базу профиля, но боюсь боги микросервисов поразят меня молнией сразу же после коммита.&lt;/p>
+&lt;p>А если положить операцию в профиль - появится цикл.
+Тут я уже сам скорее застрелюсь, чем допущу цикл.&lt;/p>
+&lt;p>&lt;em>На самом деле нет - так и будем сейчас делать, ибо сроки жмут…​&lt;/em>&lt;/p>
+&lt;p>Дилемма, вобщем.
+А я там в посте про декомпозицию подробненько покопался в подходе &lt;a href="http://www.codingthearchitecture.com/2013/04/08/mapping_software_architecture_to_code.html">пакетирования по компонентам&lt;/a>.
+По нему инфы мало, но такое ощущение, что он по сути совпадает с тем, что делаю я.
+Только вот Браун контроллеры выносит в отдельный слой.
+Как раз то, что я недавно счёл тупиковой ветвью эволюции.
+А тут у меня ситуация, которая плохо ложится на мой текущий способ декомпозиции.
+А вот если вытащить контроллер из компонентов, то уже он будет зависеть и от профиля и от дневника и &amp;#34;все щасливы&amp;#34;.
+И я снова задумался: не попытаться ли мне ещё раз глянуть в сторону разделения на слои?&lt;/p>
+&lt;p>Нет.
+Изначальная команда Проекта Э декомпозировала его некорректно - по факту по сущностям.
+В итоге практически любая операция системы затрагивает от 3 до 6 микросервисов.
+Удачного дебага, сучки.
+Блин этош я…​:(
+В общем это реально больно.
+Но я отвлёкся.&lt;/p>
+&lt;p>Так вот я (пока ещё) не занимался изучением вопроса как правильно декомпозировать эту систему.
+Но, полагаю, я бы пошёл одним из двух путей:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>Развернул бы зависимость, т.к. дневник является по сути частью агрегата профиля - при удалении профиля весь дневник должен быть удалён, создать дневник без профиля невозможно.
+Технически я бы выделил дневник в отдельный агрегат, но только исходя из &lt;a href="https://azhidkov.pro/posts/22/04/220401-aggregates/#_принципы_декомпозиции_модели_информации_на_агрегаты">принципа малых агрегатов&lt;/a>.&lt;/li>&lt;li>Сделал бы общий компонент/объект/модуль &amp;#34;Patients&amp;#34;, с единым сервисом-интерфейсом инкапсулирующий ресурсы коллекции профилей и дневников&lt;/li>&lt;/ol>&lt;/div></description></item><item><title>Тесты, которым можно доверять</title><link>https://azhidkov.pro/posts/21/03/210321-project-l-testing/</link><pubDate>Sat, 13 Mar 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/21/03/210321-project-l-testing/</guid><description>&lt;p>Я сейчас делаю проект с чистого листа, в котором я основой и ведущий бакэндер.
+И, естественно, я его делаю в соответствии с Эргономичным Подходом.&lt;/p>
+&lt;p>Главным условием для того, чтобы кодовая база была эргономичной является набор тестов, которым можно доверять.
+Если тесты прошли - можно релизать.
+И никак иначе.&lt;/p>
+&lt;p>В этом посте я расскажу, как я организовал тестирование &amp;#34;Проекта Л&amp;#34;.&lt;/p>
+&lt;section class="doc-section level-1">&lt;h2 id="_проект_л">Проект Л&lt;/h2>&lt;p>Проект под NDA, поэтому в подробностях я его описать не могу, но могу привести ряд ключевых характеристик:&lt;/p>
+&lt;div class="ulist">&lt;ul>&lt;li>Целью проекта является проверка бизнес-гипотезы;&lt;/li>&lt;li>У заказчика есть большое основное приложение, и Проект Л реализуется как внешний клиент этого приложения, работающий через публичное HTTP API;&lt;/li>&lt;li>Основная ценность проекта заключена во фронте, поэтому на бэке буквально три тривиальных бизнес-правила;&lt;/li>&lt;li>Большинство реализаций методов Проекта Л идёт за данными в несколько методов основного приложения;&lt;/li>&lt;li>Поэтому в Проекте Л довольно сложная схема трансформации и кэширования данных;&lt;/li>&lt;li>У основного проекта есть тестовая среда;&lt;/li>&lt;li>У Проекта Л фиксированные и довольно ограниченные бюджет и сроки;&lt;/li>&lt;li>На этапе анализа одного из этапов я допустил две ошибки, и реализацию пришлось два раза сильно перетрясти и отрефакторить.&lt;/li>&lt;/ul>&lt;/div></description></item></channel></rss>

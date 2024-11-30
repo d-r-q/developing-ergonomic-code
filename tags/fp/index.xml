@@ -6,4 +6,101 @@
 &lt;p>Плюс, я полагаю, кто-то из других оппонентов под ФП имеет ввиду монады и Haskell с сигнатурами вида &lt;code>loadUser(): &amp;lt;Future&amp;lt;Try&amp;lt;Optional&amp;lt;User&amp;gt;&amp;gt;&amp;gt;&amp;gt;&lt;/code>, а кто-то трансдюсеры и Clojure где вместо циклов только хвостовая рекурсия.&lt;/p>
 &lt;p>Поэтому я решил попытаться навести порядок в терминах и своей позиции относительно них.&lt;/p>&lt;/section>
 &lt;section class="doc-section level-1">&lt;h2 id="_лирика">&lt;a class="link" href="#_лирика">Лирика&lt;/a>&lt;/h2>&lt;p>Итак, у нас есть две бинарные переменные&lt;/p>
-&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>Есть ли ограничение на ИО и изменяемое состояние - да, нет?&lt;/li>&lt;li>Можно ли растаскивать код и данные - лучше не растаскивать, лучше растаскивать?&lt;/li>&lt;/ol>&lt;/div></description></item></channel></rss>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>Есть ли ограничение на ИО и изменяемое состояние - да, нет?&lt;/li>&lt;li>Можно ли растаскивать код и данные - лучше не растаскивать, лучше растаскивать?&lt;/li>&lt;/ol>&lt;/div></description></item><item><title>ФП виновно в снижении стоимости программ. Вот мои доказательства, господа присяжные заседатели</title><link>https://azhidkov.pro/posts/23/10/why-fp/</link><pubDate>Tue, 31 Oct 2023 08:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/23/10/why-fp/</guid><description>&lt;section class="doc-section level-1">&lt;h2 id="_введение">&lt;a class="link" href="#_введение">Введение&lt;/a>&lt;/h2>&lt;p>Среди особенностей Эргономичного подхода у моих заказчиков, коллег и студентов наибольшее сопротивление вызывает использование Spring Data JDBC, а не [Spring Data] JPA (де-факто стандарта работы с БД на платформе Java).&lt;/p>
+&lt;p>Изначально я собирался писать пост &amp;#34;Почему не JPA&amp;#34;, но немного подумав понял, что ответ умещается в одно предложение: потому что JPA по своей природе (persistence context и dirty checking) не поддерживает неизменяемую модель данных - неотъемлемую часть функционального стиля программирования, который, в свою очередь, является неотъемлемой частью Эргономичного подхода.
+И это объективный факт.&lt;/p>
+&lt;p>Почему для ЭП я выбрал ФП, а не &amp;#34;нормальное&amp;#34; императивное программирование?
+На этот вопрос также можно ответить одним предложением: потому что функциональный стиль помогает мне &lt;a href="https://azhidkov.pro/posts/23/07/project-e-results/">снижать стоимость разработки для бизнеса&lt;/a> и &lt;a href="https://azhidkov.pro/ergo-approach/landing/#_кейсы">делать руководителей проектов счастливыми&lt;/a>.&lt;/p>
+&lt;p>Уверен, многие не согласятся с истинностью утверждения &amp;#34;применение функционального стиля ведёт к снижению стоимости разработки&amp;#34;.
+Поэтому я пока буду называть его Гипотезой и приведу факты, доказывающие её истинность.&lt;/p>
+&lt;p>Главный из этих фактов - эмпирическое подтверждение Гипотезы, описанное в книге Structured Design.&lt;/p>&lt;/section>
+&lt;section class="doc-section level-1">&lt;h2 id="_структурный_дизайн">&lt;a class="link" href="#_структурный_дизайн">Структурный дизайн&lt;/a>&lt;/h2>&lt;p>В 60-ых годах прошлого века учёный &lt;a href="https://en.wikipedia.org/wiki/Larry_Constantine">Ларри Константин&lt;/a> написал книгу Structured Design.
+В этой книге он впервые ввёл понятия сцепленности (coupling) и функциональной связанности (cohesion), которые до сих пор лежат в основе большинства подходов к проектированию и кодированию программ.&lt;/p>
+&lt;p>Помимо этого, в главе &lt;a href="https://archive.org/details/structureddesign00edwa/page/128/mode/2up">&amp;#34;THE MORPHOLOGY OF SIMPLE SYSTEMS&amp;#34; &lt;/a> (для просмотра необходимо пройти бесплатную регистрацию и &amp;#34;занять&amp;#34; книгу), Константин приводит иллюстрацию того, что он называет моделью, ориентированной на трансформацию (выделение цветами моё):&lt;/p>
+&lt;div class="image-block">&lt;img src="https://azhidkov.pro/posts/23/10/images/why-fp-286c9.png" alt="why fp 286c9"/>&lt;/div></description></item><item><title>Функциональные программы проще понимать</title><link>https://azhidkov.pro/posts/22/12/why-fp-simpler/</link><pubDate>Thu, 22 Dec 2022 08:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/22/12/why-fp-simpler/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>Последние несколько дней перечитывают &lt;a href="https://www.tedinski.com/archive/">блог&lt;/a> (кто бы мог подумать, чтоб блоги тоже можно перечитывать) Тэда Каминского.
+Во-первых, в очередной раз настоятельно рекомендую его почитать - там очень много очень мудрых мыслей, мужик прям понимает суть программирования.&lt;/p>
+&lt;p>Во-вторых, там снова откопал &lt;a href="https://semantic-domain.blogspot.com/2018/04/are-functional-programs-easier-to.html">пост&lt;/a>, который объясняет почему ФП проще.&lt;/p>
+&lt;p>Автор берёт за аксиому то, что понимать программы сильно сложнее, когда они используют подпрограммы (методы, функции, процедуры), ссылки/указатели и изменяемое состояние.
+Их комбинация лишает разрботчика возможности понять что делает подпрограмма, глядя только на саму подпрограмму (и декларации вызываемых подпрограмм).
+Уберите любое из трёх - и такая возможность появляется.
+ФП убирает изменяемое состояние.
+И делает возможным понять что делает подпрограмма, глядя только на саму подпрограмму.
+Что проще чем, изучить всё поддерево вызовов.&lt;/p>
+&lt;p>ч.т.д.&lt;/p>
+&lt;p>Осталось только доказать аксиому.
+Я не могу привести формального доказательства этой аксиомы, но небольшой примерчик в её пользу - вполне:)&lt;/p>
+&lt;p>Возьмём программу:&lt;/p>
+&lt;div class="listing-block">&lt;pre class="rouge highlight">&lt;code data-lang="kotlin">&lt;span class="k">fun&lt;/span> &lt;span class="nf">main&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+ &lt;span class="kd">val&lt;/span> &lt;span class="py">els&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">ArrayList&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nc">Int&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">arrayListOf&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">2&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">2&lt;/span>&lt;span class="p">)&lt;/span>
+ &lt;span class="kd">val&lt;/span> &lt;span class="py">sum&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">sum&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">els&lt;/span>&lt;span class="p">)&lt;/span>
+ &lt;span class="nf">println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Сумма ${els[0]} + ${els[1]} = $sum&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">}&lt;/span>
+
+&lt;span class="k">fun&lt;/span> &lt;span class="nf">sum&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">els&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">ArrayList&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nc">Int&lt;/span>&lt;span class="p">&amp;gt;):&lt;/span> &lt;span class="nc">Int&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nc">TODO&lt;/span>&lt;span class="p">()&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Типы функций: функции-мошенники</title><link>https://azhidkov.pro/posts/21/01/210126-fraud-functions/</link><pubDate>Tue, 26 Jan 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/21/01/210126-fraud-functions/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>Начало темы
+&lt;a href="https://azhidkov.pro/posts/21/01/210105-pure-functions-and-effects-intro/">здесь&lt;/a>,
+&lt;a href="https://azhidkov.pro/posts/21/01/210112-pure-functions/">здесь&lt;/a>
+и &lt;a href="https://azhidkov.pro/posts/21/01/210119-effects/">здесь&lt;/a>.&lt;/p>
+&lt;p>&lt;em>С второго взгляда терминология оказалась не такой уж чудесной, как показалась на первый взгляд, но я на этом посте засиделся, так что публикую как есть.
+В посте с итогами ещё раз попробую составить приличную терминологию.&lt;/em>&lt;/p>
+&lt;p>Как я уже писал в прошлой статье, эффекты - это то ради чего пишутся программы, и тот критерий, по которому программы оцениваются.
+Однако если не соблюдать определённую &amp;#34;эффективную гигиену&amp;#34;, то эффекты выходят из-под контроля, что приводит к появлению багов.
+&amp;#34;Эффективная гигиена&amp;#34; заключается в разделении сложной логики и эффектов и выделении их в разные функции.
+Если же этого не делать, то появляются функции-мошенники.&lt;/p>
+&lt;p>Функции-мошенники бывают двух типов:&lt;/p>
+&lt;div class="ulist">&lt;ul>&lt;li>откровенные жулики, которые врут прямо в глаза;&lt;/li>&lt;li>&amp;#34;честный бизнес&amp;#34;, который пишет всю правду, но мелким шрифтом.&lt;/li>&lt;/ul>&lt;/div></description></item><item><title>Красная или синяя?</title><link>https://azhidkov.pro/posts/21/01/210122-pp-vs-fp/</link><pubDate>Fri, 22 Jan 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/21/01/210122-pp-vs-fp/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>Меня тут осенило. Возьмём вот такой кусочек кода на кложуре (чисто
+функциональном языке):&lt;/p>
+&lt;div class="listing-block">&lt;pre class="rouge highlight">&lt;code data-lang="clojure">&lt;span class="p">(&lt;/span>&lt;span class="k">def&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">users-service&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nf">new-users-service&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">conn&lt;/span>&lt;span class="p">))&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nf">my-app.users/reset-password&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">usersService&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">user&lt;/span>&lt;span class="p">)&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;p>Здесь переменная &lt;code>users-service&lt;/code> биндится на какое-то значение возвращаемое функцией &lt;code>new-users-service&lt;/code>, которая на вход получает некий conn, а потом вызывается функция &lt;code>reset-password&lt;/code> из неймспейса &lt;code>my-app.users&lt;/code> с параметрами &lt;code>users-service&lt;/code> и &lt;code>user&lt;/code>.&lt;/p>
+&lt;p>А потом сделаем несколько трансформаций.&lt;/p>
+&lt;p>Вжух, переносим скобку, меняем def на val и добавляем =:&lt;/p>
+&lt;div class="listing-block">&lt;pre class="rouge highlight">&lt;code data-lang="kotlin">&lt;span class="kd">val&lt;/span> &lt;span class="py">users-service&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">new-users-service&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">conn&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="n">my-app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">users&lt;/span>&lt;span class="p">/&lt;/span>&lt;span class="n">reset-password&lt;/span> &lt;span class="nf">users-service&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">user&lt;/span>&lt;span class="p">)&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Чистые и эффективные функции: Эффекты</title><link>https://azhidkov.pro/posts/21/01/210119-effects/</link><pubDate>Tue, 19 Jan 2021 09:19:22 +0700</pubDate><guid>https://azhidkov.pro/posts/21/01/210119-effects/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>Начало темы
+&lt;a href="https://azhidkov.pro/posts/21/01/210105-pure-functions-and-effects-intro/">здесь&lt;/a>
+и
+&lt;a href="https://azhidkov.pro/posts/21/01/210112-pure-functions/">здесь&lt;/a>.&lt;/p>
+&lt;p>Сегодня расскажу о том, что я понимаю под эффектами и обработкой
+сигналов.&lt;/p>
+&lt;section class="doc-section level-1">&lt;h2 id="_что_я_понимаю_под_эффектами_и_сигналами">Что я понимаю под эффектами и сигналами&lt;/h2>&lt;p>&lt;strong>Обработка сигнала&lt;/strong> - акт чтения глобальной изменяемой памяти.&lt;/p>
+&lt;p>&lt;strong>Отправка сигнала&lt;/strong> - акт записи глобальной изменяемой памяти.&lt;/p>
+&lt;p>&lt;strong>Глобальная изменяемая память&lt;/strong> - область памяти, на которую в момент
+чтения/записи замаплено изменяемое поле объекта или структуры,
+достижимого из GC root.&lt;/p>
+&lt;p>&lt;strong>Эффект&lt;/strong> - операция отправки или обработки сигнала. Является
+подмножеством понятия побочный эффект, часто встречаемого в литературе.&lt;/p>
+&lt;div class="quote-block">&lt;blockquote>&lt;p>Примечание&lt;/p>
+&lt;p>Термин обработка/отправка сигнала мне самому не очень нравится, но он не
+лишён смысла.&lt;/p>
+&lt;p>Если рассматривать ввод/вывод, то даже вроде бы синхронный вызов read,
+на деле асинхронный и внутри вызова выполняется обработка сигнала
+(прерывания) ``данные готовы&amp;#39;&amp;#39;. А вызов write - это собственно отправка
+сигнала на запись устройству вывода.&lt;/p>
+&lt;p>Глобальные переменные тоже можно за уши натянуть на эту терминологию -
+если вы читаете изменяемую переменную, то ожидаете, что кто-то её
+предварительно записал, тем самым послав вам сигнал.&lt;/p>&lt;/blockquote>&lt;/div></description></item><item><title>Чистые и грязные функции, эффекты и обработка сигналов, сайдэффекты: чистые функции</title><link>https://azhidkov.pro/posts/21/01/210112-pure-functions/</link><pubDate>Tue, 12 Jan 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/21/01/210112-pure-functions/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>Начало темы &lt;a href="https://azhidkov.pro/posts/21/01/210105-pure-functions-and-effects-intro/">здесь&lt;/a>&lt;/p>
+&lt;p>&lt;em>Обращаю ваше внимание, что топик расширился - помимо анонсированных вчера грязных функций, вчера же я ещё &amp;#34;открыл&amp;#34; сигналы.
+Заголовок конечно длинноват, но пока так:)
+Но обо всём по порядку и сегодня у нас чистые функции.&lt;/em>&lt;/p>
+&lt;p>Чистая функция - это функция без эффектов и сайдэффектов:)
+Или функция в математическом смысле - её результат определяется исключительно параметрами и у неё только один результат - возвращаемое значение.&lt;/p>
+&lt;p>Признаки нечистоты функций:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>&lt;p>У неё нет результата (возвращает void/Unit).
+ Теоретически можно сделать такую чистую функцию, но пользы от неё будет очень мало - её можно будет использовать только в качестве
+затычки для какого-то вывода.&lt;/p>&lt;p>Типичный пример - printf/println.&lt;/p>&lt;/li>&lt;li>&lt;p>У неё нет аргументов.
+Опять же, теоретически можно сделать такую функцию, но пользы от неё будет очень мало - её можно будет использовать только в качестве затычки для какого-то ввода.&lt;/p>&lt;p>Типичный пример - currentTime.&lt;/p>&lt;/li>&lt;li>&lt;p>Будучи вызванной с одними параметрами в разное время, она может вернуть разные результаты.
+Тут уже без вариантов, по определению все такие функции не являются чистыми&lt;/p>&lt;p>Типичный пример - Files.readString(Path.of(``/tmp/test’’))&lt;/p>&lt;/li>&lt;li>&lt;p>Будучи детерминированной, она обладает наблюдаемым эффектом, помимо возврата значения.
+Опять же без вариантов, все такие функции не чистые по определению.&lt;/p>&lt;p>Типичные примеры: кэширование детерминированных функций и логгирование в детерминированных функциях.&lt;/p>&lt;/li>&lt;/ol>&lt;/div></description></item><item><title>Чистые и эффективные функции: Введение</title><link>https://azhidkov.pro/posts/21/01/210105-pure-functions-and-effects-intro/</link><pubDate>Tue, 05 Jan 2021 09:19:22 +0700</pubDate><guid>https://azhidkov.pro/posts/21/01/210105-pure-functions-and-effects-intro/</guid><description>&lt;p>В этом блоге и &lt;a href="https://azhidkov.pro/book/ergo/">своей книге&lt;/a> я постоянно повторяю мантру о &amp;#34;разделении эффектов и логики&amp;#34; и поэтому мне необходимо, чтобы читатели однозначно меня понимали.
+Однако когда я начал разбирать существующую терминологию, с удивлением обнаружил, что общепринятой вообще нет, а те варианты что есть не отражают важных мне нюансов.
+Поэтому я решил написать цикл статей об используемой мной терминологии.&lt;/p>
+&lt;p>С чистыми функциями всё более-менее просто, у них на вики
+&lt;a href="https://ru.wikipedia.org/wiki/%D0%A7%D0%B8%D1%81%D1%82%D0%BE%D1%82%D0%B0_%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8">есть&lt;/a>
+внятное определение:&lt;/p>
+&lt;div class="quote-block">&lt;blockquote>&lt;p>это функция, которая:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>является детерминированной;&lt;/li>&lt;li>не обладает побочными эффектами.&lt;/li>&lt;/ol>&lt;/div></description></item></channel></rss>

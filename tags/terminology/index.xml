@@ -6,4 +6,22 @@
 &lt;p>Плюс, я полагаю, кто-то из других оппонентов под ФП имеет ввиду монады и Haskell с сигнатурами вида &lt;code>loadUser(): &amp;lt;Future&amp;lt;Try&amp;lt;Optional&amp;lt;User&amp;gt;&amp;gt;&amp;gt;&amp;gt;&lt;/code>, а кто-то трансдюсеры и Clojure где вместо циклов только хвостовая рекурсия.&lt;/p>
 &lt;p>Поэтому я решил попытаться навести порядок в терминах и своей позиции относительно них.&lt;/p>&lt;/section>
 &lt;section class="doc-section level-1">&lt;h2 id="_лирика">&lt;a class="link" href="#_лирика">Лирика&lt;/a>&lt;/h2>&lt;p>Итак, у нас есть две бинарные переменные&lt;/p>
-&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>Есть ли ограничение на ИО и изменяемое состояние - да, нет?&lt;/li>&lt;li>Можно ли растаскивать код и данные - лучше не растаскивать, лучше растаскивать?&lt;/li>&lt;/ol>&lt;/div></description></item></channel></rss>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>Есть ли ограничение на ИО и изменяемое состояние - да, нет?&lt;/li>&lt;li>Можно ли растаскивать код и данные - лучше не растаскивать, лучше растаскивать?&lt;/li>&lt;/ol>&lt;/div></description></item><item><title>Чем ОО-подход отличается от ПП-подхода?</title><link>https://azhidkov.pro/posts/22/06/what-is-oop/</link><pubDate>Sun, 26 Jun 2022 08:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/22/06/what-is-oop/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в Telegram-канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>.&lt;/p>&lt;/aside>
+&lt;p>Что такое ООП?
+Наследование, инкапсуляция и полиморфизм?
+У Алана Кея (автора термина) другое мнение:&lt;/p>
+&lt;div class="quote-block">&lt;blockquote>&lt;p>OOP to me means only messaging, local retention and protection and hiding of state-process, and extreme late-binding of all things.
+It can be done in Smalltalk and in LISP.
+There are possibly other systems in which this is possible, but I’m not aware of them.&lt;/p>
+&lt;hr/>
+&lt;p>ООП для меня означает только обмен сообщениями, локальное сохранение, защиту и скрытие состояния процесса и максимально позднее связывание всего.
+Это можно сделать в Smalltalk и LISP.
+Возможно, есть и другие системы, в которых это возможно, но я о них не знаю.&lt;/p>&lt;footer>— &lt;cite>Алан Кей, &lt;a href="http://userpage.fu-berlin.de/~ram/pub/pub_jf47ht81Ht/doc_kay_oop_en">Dr. Alan Kay on the Meaning of “Object-Oriented Programming”&lt;/a>&lt;/cite>&lt;/footer>&lt;/blockquote>&lt;/div></description></item><item><title>Чистые и эффективные функции: Введение</title><link>https://azhidkov.pro/posts/21/01/210105-pure-functions-and-effects-intro/</link><pubDate>Tue, 05 Jan 2021 09:19:22 +0700</pubDate><guid>https://azhidkov.pro/posts/21/01/210105-pure-functions-and-effects-intro/</guid><description>&lt;p>В этом блоге и &lt;a href="https://azhidkov.pro/book/ergo/">своей книге&lt;/a> я постоянно повторяю мантру о &amp;#34;разделении эффектов и логики&amp;#34; и поэтому мне необходимо, чтобы читатели однозначно меня понимали.
+Однако когда я начал разбирать существующую терминологию, с удивлением обнаружил, что общепринятой вообще нет, а те варианты что есть не отражают важных мне нюансов.
+Поэтому я решил написать цикл статей об используемой мной терминологии.&lt;/p>
+&lt;p>С чистыми функциями всё более-менее просто, у них на вики
+&lt;a href="https://ru.wikipedia.org/wiki/%D0%A7%D0%B8%D1%81%D1%82%D0%BE%D1%82%D0%B0_%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8">есть&lt;/a>
+внятное определение:&lt;/p>
+&lt;div class="quote-block">&lt;blockquote>&lt;p>это функция, которая:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>является детерминированной;&lt;/li>&lt;li>не обладает побочными эффектами.&lt;/li>&lt;/ol>&lt;/div></description></item></channel></rss>

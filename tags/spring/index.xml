@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Spring on Алексей Жидков</title><link>https://azhidkov.pro/tags/spring/</link><description>Recent content in Spring on Алексей Жидков</description><generator>Hugo</generator><language>ru-ru</language><lastBuildDate>Mon, 11 Sep 2023 08:25:37 +0700</lastBuildDate><atom:link href="https://azhidkov.pro/tags/spring/index.xml" rel="self" type="application/rss+xml"/><item><title>Перевод сервиса на Spring Boot Native</title><link>https://azhidkov.pro/posts/23/09/spring-boot-native/</link><pubDate>Mon, 11 Sep 2023 08:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/23/09/spring-boot-native/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в моём канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>Я начал двигать &lt;a href="https://azhidkov.pro/posts/23/09/project-e-part1/">Проект Э&lt;/a> в сторону микроядерной архитектуры.
+Пока план такой что, в оригинальном монолите останутся ядерные модули, которые, частично в силу предметной области, а частично в силу дизайна оригинального бэка, который я перенёс как есть при реинжинирнге, довольно сильно сцеплены между собой, а интеграции (которых у нас уже три и предвидится ещё пачка) мы будем делать в отдельных сервисах.&lt;/p>
+&lt;p>Но есть нюанс - на дев стенде у нас дефицит памяти.
+Поэтому я пошёл смотреть на Spring Boot Native.&lt;/p>
+&lt;p>Посмотрел, и в этом микропосте поделюсь впечатлениями.&lt;/p>
+&lt;section class="doc-section level-1">&lt;h2 id="_сервис">&lt;a class="link" href="#_сервис">Сервис&lt;/a>&lt;/h2>&lt;p>Эксперементировать, естественно, я начал на котике - сервисе, реализующим интеграцию с ЕМИАС, о котором я &lt;a href="https://azhidkov.pro/posts/23/08/emias-integration/">уже писал&lt;/a>.
+В сервисе 65 продовых котлин-файлов, он выставляет один HTTP-эндпоинт и слушает одну очередь в RabbitMQ и ходит в два HTTP-эндпоинта ЕМИАСа и публикует сообщения в один топик Кафки ЕМИАСа.
+Так же сервис пишет данные в три таблички через Spring Data JDBC.&lt;/p>
+&lt;p>Сервис сделан на JDK 17, Kotlin 1.9, Spring Boot 3.1.3 и собирается Гредлом 8.2.1 с билд-файлом на Kotlin DSL.&lt;/p>
+&lt;p>Зависимости проекта:&lt;/p>
+&lt;div class="listing-block">&lt;pre class="rouge highlight">&lt;code data-lang="kotlin">&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.springframework.boot:spring-boot-starter-web&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.springframework.boot:spring-boot-starter-security&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.springframework.boot:spring-boot-starter-data-jdbc&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.springframework.boot:spring-boot-starter-amqp&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.springframework.boot:spring-boot-starter-actuator&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.springdoc:springdoc-openapi-starter-common:2.0.2&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.springframework:spring-aspects:6.0.8&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.flywaydb:flyway-core&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.postgresql:postgresql&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.apache.httpcomponents.client5:httpclient5:5.2.1&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+
+&lt;span class="c1">// Для публикации в Кафку ЕМИАС выдаёт либу с джарником, которая работает с Кафкой напрямую...&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.apache.kafka:kafka-clients:3.2.1&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nf">files&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;lib/client-lib-4.6.0.jar&amp;#34;&lt;/span>&lt;span class="p">))&lt;/span>
+
+&lt;span class="nf">api&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;io.jsonwebtoken:jjwt-api:0.11.5&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">runtimeOnly&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;io.jsonwebtoken:jjwt-impl:0.11.5&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">runtimeOnly&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;io.jsonwebtoken:jjwt-jackson:0.11.5&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;com.fasterxml.jackson.module:jackson-module-kotlin&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">implementation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;org.jetbrains.kotlin:kotlin-reflect&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">runtimeOnly&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;com.github.therapi:therapi-runtime-javadoc:0.15.0&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">kapt&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;com.github.therapi:therapi-runtime-javadoc-scribe:0.15.0&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>

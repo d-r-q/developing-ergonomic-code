@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Fp on Aleksey Zhidkov</title><link>https://azhidkov.pro/en/tags/fp/</link><description>Recent content in Fp on Aleksey Zhidkov</description><generator>Hugo</generator><language>en-en</language><lastBuildDate>Tue, 12 Jan 2021 13:25:37 +0700</lastBuildDate><atom:link href="https://azhidkov.pro/en/tags/fp/index.xml" rel="self" type="application/rss+xml"/><item><title>Pure and dirty functions, effects, signal processing, side effects: pure functions</title><link>https://azhidkov.pro/en/posts/21/01/210112-pure-functions/</link><pubDate>Tue, 12 Jan 2021 13:25:37 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/01/210112-pure-functions/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>You can follow the blog’s updates in my channel: &lt;a href="https://t.me/ergonomic_code">Ergonomic Code (rus)&lt;/a>&lt;/p>&lt;/aside>
+&lt;p>The first part of my terminology series can be found &lt;a href="https://azhidkov.pro/en/posts/21/01/210105-pure-functions-and-effects-intro/">here&lt;/a>&lt;/p>
+&lt;p>&lt;em>Note that I’ve broadened the topic I’m covering here.
+Apart from dirty functions announced yesterday, I also mentioned signals.
+The title is long-ish, but let’s keep it this way for now :)
+Today, we’ll be talking about pure functions.&lt;/em>&lt;/p>
+&lt;p>Pure functions are functions with no effects and no side effects. :)
+Or functions as they are understood in math.
+Their output is determined by the parameters only, and they have just one output, that is, the value
+they return.&lt;/p>
+&lt;p>Here are some signs the function isn’t pure:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>&lt;p>It has no result (the functions returns void or Unit).
+In theory, this could be a pure function.
+There would be little point to this, though.
+It could only ever be used as some mock output function.&lt;/p>&lt;p>A typical example is printf/println.&lt;/p>&lt;/li>&lt;li>&lt;p>It has no arguments.
+Again, in theory, you could make such a function pure. There would be little point to this, though, as
+it could only be used as some input helper function.&lt;/p>&lt;p>A typical example is currentTime.&lt;/p>&lt;/li>&lt;li>&lt;p>Being called with the same parameters at a different time, it can return different results.
+Any such function wouldn’t be pure by its very definition.&lt;/p>&lt;p>A typical example Files.readString(Path.of(``/tmp/test’’))&lt;/p>&lt;/li>&lt;li>&lt;p>Being determined, it has an observable effect apart from returning the value.
+Again, any such function isn’t pure by definition.&lt;/p>&lt;p>Typical examples include: determined caching and logging in determined functions.&lt;/p>&lt;/li>&lt;/ol>&lt;/div></description></item><item><title>Pure and efficient functions: Introduction</title><link>https://azhidkov.pro/en/posts/21/01/210105-pure-functions-and-effects-intro/</link><pubDate>Tue, 05 Jan 2021 09:19:22 +0700</pubDate><guid>https://azhidkov.pro/en/posts/21/01/210105-pure-functions-and-effects-intro/</guid><description>&lt;p>In this blog and &lt;a href="https://azhidkov.pro/book/ergo/">my book (rus)&lt;/a>, I repeat, time and again, the same mantra
+about &amp;#34;separating the effects from the logic.&amp;#34;
+I think it’s necessary that my readers fully understand what I mean.
+However, when I started to analyze the existing terminology, I was surprised to find out there’s no
+uniform framework.
+The options that are available don’t include the nuances I believe to be important.
+Therefore, I decided to write an article series about the terminology I’m using.&lt;/p>
+&lt;p>Pure functions have it easy.
+There’s a &lt;a href="https://en.wikipedia.org/wiki/Pure_function">Wikipedia article&lt;/a> about these that provides a decent enough definition:&lt;/p>
+&lt;div class="quote-block">&lt;blockquote>&lt;p>&amp;lt;…​&amp;gt; a pure function is a function that has the following properties:
+. The function return values are identical for identical arguments (no variation with local static variables, non-local variables, mutable reference arguments or input streams).
+. The function application has no side effects (no mutation of local static variables, non-local variables, mutable reference arguments or input/output streams).&lt;/p>&lt;footer>— &lt;cite>Wikipedia&lt;/cite>&lt;/footer>&lt;/blockquote>&lt;/div></description></item></channel></rss>

@@ -1,0 +1,507 @@
+<!doctype html><html lang=ru-ru><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="Алексей Жидков"><meta name=description content="https://azhidkov.pro/"><meta property="og:site_name" content="Алексей Жидков"><meta property="og:title" content="
+  Тестирование Trainer Advisor: сетап теста, подготовка хранилищ - Алексей Жидков
+"><meta property="og:description" content><meta property="og:type" content="website"><meta property="og:url" content="https://azhidkov.pro/posts/24/04/trainer-advisor-testing-test-setup-generate-fixture/"><meta property="og:image" content="https://azhidkov.pro/"><meta name=twitter:card content="summary"><meta name=twitter:site content="https://azhidkov.pro/posts/24/04/trainer-advisor-testing-test-setup-generate-fixture/"><meta name=twitter:image content="https://azhidkov.pro/"><base href=https://azhidkov.pro/posts/24/04/trainer-advisor-testing-test-setup-generate-fixture/><title>Тестирование Trainer Advisor: сетап теста, подготовка хранилищ - Алексей Жидков
+</title><link rel=canonical href=https://azhidkov.pro/posts/24/04/trainer-advisor-testing-test-setup-generate-fixture/><link rel=stylesheet href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700"><link rel=stylesheet href=/css/normalize.min.css><link rel=stylesheet href=/css/style.min.css><link rel=stylesheet href=https://use.fontawesome.com/releases/v5.2.0/css/all.css><link rel=stylesheet href=https://azhidkov.pro/css/custom.css><link rel=stylesheet href=https://azhidkov.pro/css/github.css><link rel=stylesheet href=https://azhidkov.pro/css/JetBrains-Mono.css><link rel=icon type=image/png href=/images/favicon-32x32.png sizes=32x32><link rel=icon type=image/png href=/images/favicon-16x16.png sizes=16x16><link rel=alternate href=https://azhidkov.pro/index.xml type=application/rss+xml title="Алексей Жидков"><link href=https://azhidkov.pro/index.xml rel=feed type=application/rss+xml title="Алексей Жидков"><meta name=generator content="Hugo 0.137.0"></head><body><main class=wrapper><link rel=apple-touch-icon sizes=180x180 href=apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://azhidkov.pro/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://azhidkov.pro/favicon-16x16.png><link rel=manifest href=site.webmanifest><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><link href='https://fonts.googleapis.com/css?family=Roboto' rel=stylesheet type=text/css><nav class=navigation><section class=container style=height:100%><img src=https://azhidkov.pro/images/logo.svg class=logo>
+<a class=navigation-title href=/>Алексей Жидков
+</a><input type=checkbox id=menu-control>
+<label class="menu-mobile float-right" for=menu-control><span class="btn-mobile float-right">&#9776;</span><ul class=navigation-list><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/ergo-approach/landing>Эргономичный подход</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/effects-diagram/landing>Диаграмма Эффектов</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/posts>Блог</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/portfolio>Портфолио</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/>Контакты</a></li><li class=mobile-menu-lang-separator-full><hr></li></ul></label></section></nav><div class=content><section class="container post"><article><header><h1 class=title>Тестирование Trainer Advisor: сетап теста, подготовка хранилищ</h1><h2 class=date>April 20, 2024</h2></header><nav id=toc class=toc role=doc-toc><h2 id=toc-title>Содержание</h2><ol class="toc-list level-1"><li><a href=#_введение>Введение</a></li><li><a href=#_сброс_состояния_бд>Сброс состояния БД</a></li><li><a href=#_генерация_тестовых_данных>Генерация тестовых данных</a></li><li><a href=#_генерация_тестовых_доменных_объектов>Генерация тестовых доменных объектов</a><ol class="toc-list level-2"><li><a href=#_референсные_данные>Референсные данные</a><ol class="toc-list level-3"><li><a href=#_захардкоженные_идентификаторы>Захардкоженные идентификаторы</a></li><li><a href=#_внедрённые_идентификаторы>Внедрённые идентификаторы</a></li><li><a href=#_фейковые_идентификаторы>Фейковые идентификаторы</a></li><li><a href=#_бонус_трэк_отключение_проверки_внешних_ключей>Бонус трэк - отключение проверки внешних ключей</a></li></ol></li><li><a href=#_генерация_рандомных_доменных_данных>Генерация рандомных доменных данных</a></li><li><a href=#_генерация_коллекций_доменных_объектов>Генерация коллекций доменных объектов</a></li><li><a href=#_генерация_сложных_агрегатов>Генерация сложных агрегатов</a></li><li><a href=#_дедупликация_фикстуры_одной_логики_доступной_через_разные_эндпоинты>Дедупликация фикстуры одной логики, доступной через разные эндпоинты</a></li></ol></li><li><a href=#_вставка_фикстуры_теста>Вставка фикстуры теста</a><ol class="toc-list level-2"><li><a href=#_единичный_объект>Единичный объект</a></li><li><a href=#_дерево_произвольных_объектов>Дерево произвольных объектов</a></li><li><a href=#_коллекции_объектов>Коллекции объектов</a></li><li><a href=#_коллекция_уникальных_объектов>Коллекция уникальных объектов</a></li></ol></li><li><a href=#_заключение>Заключение</a></li></ol></nav><section class="doc-section level-1"><h2 id=_введение><a class=link href=#_введение>Введение</a></h2><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Этот материал является "микропостом" - текстом, написанным в режиме потока сознания без особой редактуры.</p><p>Следить за обновлениями блога можно в Telegram-канале: <a href=https://t.me/ergonomic_code>Эргономичный код</a>.</p></aside><p>Это третий пост о тестировании <a href=https://azhidkov.pro/posts/23/11/trainer-advisor/>Trainer Advisor</a>.
+Перед прочтением этого поста стоит ознакомиться с общими идеями и принципами, описанными в <a href=https://azhidkov.pro/posts/24/03/trainer-advisor-testing-theory/>первом посте</a> и с сетапом инфраструктуры и приложения во <a href=https://azhidkov.pro/posts/24/04/trainer-advisor-testing-test-suite-setup/>втором</a>.
+В этом посте я продолжаю описание работы с самой замороченной частью тестирования - фикстурой.</p><p>На самом верхнем уровне этот процесс состоит из следующих шагов:</p><div class="olist arabic"><ol class=arabic><li>Один раз на запуск набора тестов:<ol class=loweralpha type=a><li>Запустить или сбросить состояние запущенной инфраструктуры (сейчас - Postgres и Minio);</li><li>Запустить приложение;</li><li>Проинициализировать инфраструктуру (схему и бакеты);</li></ol></li><li>Для каждого тест кейса из набора:<ol class=loweralpha type=a><li>Подготовить хранилища;<ol class=lowerroman type=i><li>Привести данные в БД к эталонным;</li><li>Сформировать специфичные данные, которые sut загрузит из хранилищ неявно в процессе испытания (вызова метода в блоке Then);</li><li>Вставить эти данные в хранилища.</li></ol></li><li>Подготовить тестовые дубли.</li></ol></li></ol></div><p>Шага сетапа набора тестов я рассмотрел в предыдущем посте, а в этом посте рассмотрю первый шаг сетапа отдельного теста - подготовка хранилищ.</p><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Этот пост получился огромным, и я не нашёл вменяемого способа его разбить на части.
+Сейчас все три шага — вставка разделяемой фикстуры, генерация фикстуры тестов и её вставка в БД — неразрывно связаны друг с другом.
+Возможно, это наведено использованием ИДов сущностей, генерируемых БД и если бы я использовал для этих целей UUID-ы — можно было бы разделить генерацию тестовых графов объектов и их вставку в БД и, как следствие, разделить этот пост на два.</p><p>Это к вопросу о неожиданных проявлениях сцепленности в коде и как можно оторванные от кода вещи использовать для её поиска:)</p></aside></section><section class="doc-section level-1"><h2 id=_сброс_состояния_бд><a class=link href=#_сброс_состояния_бд>Сброс состояния БД</a></h2><p>Для того чтобы интеграционные тесты работали стабильно, они должны работать со стабильным (от запуска к запуску) окружением — состоянием внешних систем.
+В случае TA - это состояние Postgres и <s>Minio</s>*.
+В общем же случае это могут быть так же очереди сообщений, внешние сервисы с состоянием, почтовые серверы и т.п.</p><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p><sup>*</sup> Minio я сейчас не чищу между тестами.
+Но у меня ни разу и не было падения теста из-за "грязного" состояния — как только поймаю — добавлю чистку в сетап теста.</p></aside><p>Для сброса состояния PostgreSQL я использую небольшой SQL-скрипт:</p><figure class=listing-block><figcaption>Скрипт сброса состояния БД. <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/resources/db/shared-fixture.sql>Смотреть на GitHub</a></figcaption><pre class="rouge highlight"><code data-lang=sql><span class=k>TRUNCATE</span>
+    <span class=n>users</span><span class=p>,</span> <span class=n>clients</span><span class=p>,</span> <span class=n>therapists</span><span class=p>,</span> <span class=n>exercises</span><span class=p>,</span> <span class=n>exercise_steps</span><span class=p>,</span> <span class=n>therapeutic_tasks</span><span class=p>,</span> <span class=n>journal_entries</span><span class=p>,</span> <span class=n>files</span><span class=p>,</span> <span class=n>client_files</span><span class=p>,</span> <span class=n>programs</span><span class=p>,</span> <span class=n>program_exercises</span><span class=p>,</span> <span class=n>appointments</span><span class=p>,</span> <span class=n>appointment_types</span>
+    <span class=k>RESTART</span> <span class=k>IDENTITY</span><span class=p>;</span>
+
+<span class=k>INSERT</span> <span class=k>INTO</span> <span class=n>users</span> <span class=p>(</span><span class=n>email</span><span class=p>,</span> <span class=n>password_hash</span><span class=p>,</span> <span class=n>roles</span><span class=p>,</span> <span class=n>created_at</span><span class=p>,</span> <span class=k>version</span><span class=p>)</span>
+<span class=k>VALUES</span> <span class=p>(</span><span class=s1>&#39;therapist@qyoga.pro&#39;</span><span class=p>,</span> <span class=s1>&#39;password&#39;</span><span class=p>,</span> <span class=s1>&#39;{&#34;ROLE_THERAPIST&#34;}&#39;</span><span class=p>,</span> <span class=n>now</span><span class=p>(),</span> <span class=mi>1</span><span class=p>);</span>
+
+<span class=k>INSERT</span> <span class=k>INTO</span> <span class=n>therapists</span><span class=p>(</span><span class=n>id</span><span class=p>,</span> <span class=n>first_name</span><span class=p>,</span> <span class=n>last_name</span><span class=p>,</span> <span class=n>created_at</span><span class=p>,</span> <span class=k>version</span><span class=p>)</span>
+<span class=k>VALUES</span> <span class=p>(</span><span class=mi>1</span><span class=p>,</span> <span class=s1>&#39;Елена (тест)&#39;</span><span class=p>,</span> <span class=s1>&#39;Маркова&#39;</span><span class=p>,</span> <span class=n>now</span><span class=p>(),</span> <span class=mi>1</span><span class=p>);</span>
+
+<span class=k>INSERT</span> <span class=k>INTO</span> <span class=n>users</span> <span class=p>(</span><span class=n>email</span><span class=p>,</span> <span class=n>password_hash</span><span class=p>,</span> <span class=n>roles</span><span class=p>,</span> <span class=n>created_at</span><span class=p>,</span> <span class=k>version</span><span class=p>)</span>
+<span class=k>VALUES</span> <span class=p>(</span><span class=s1>&#39;admin@ta.pro&#39;</span><span class=p>,</span> <span class=s1>&#39;password&#39;</span><span class=p>,</span> <span class=s1>&#39;{&#34;ROLE_ADMIN&#34;}&#39;</span><span class=p>,</span> <span class=n>now</span><span class=p>(),</span> <span class=mi>1</span><span class=p>);</span>
+
+<span class=k>INSERT</span> <span class=k>INTO</span> <span class=n>therapists</span><span class=p>(</span><span class=n>id</span><span class=p>,</span> <span class=n>first_name</span><span class=p>,</span> <span class=n>last_name</span><span class=p>,</span> <span class=n>created_at</span><span class=p>,</span> <span class=k>version</span><span class=p>)</span>
+<span class=k>VALUES</span> <span class=p>(</span><span class=mi>2</span><span class=p>,</span> <span class=s1>&#39;Админ (тест)&#39;</span><span class=p>,</span> <span class=s1>&#39;Адамов&#39;</span><span class=p>,</span> <span class=n>now</span><span class=p>(),</span> <span class=mi>1</span><span class=p>);</span></code></pre></figure><p>Здесь первым шагом удаляются рабочие данные из всех таблиц, а потом заново вставляется пользователь-терапевт.
+Пользователя терапевта я добавляю в этом скрипте во имя экономии как в скорости запуска, так и в скорости разработки тестов - сейчас терапевт так или иначе требуется практически каждому тесту.</p><p>А зачем я добавляю админа - я не знаю.
+Надо удалить.</p><p>Далее, так как я не использую Spring-овую автомагию тестирования (так как она съедает 5-10% временнОго бюджета на запуск теста), этот скрипт я выполняю в @BeforeEach-методе корневого класса теста с помощью небольшой самописной утилитки, поверх Spring-овой утилитки:</p><figure class=listing-block><figcaption>Выполнение скрипта сброса состояния БД. <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/infra/web/QYogaAppBaseTest.kt#L24>Смотреть на GitHub</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=k>open</span> <span class=kd>class</span> <span class=nc>QYogaAppBaseTest</span> <span class=p>{</span>
+
+    <span class=k>private</span> <span class=kd>val</span> <span class=py>dataSource</span><span class=p>:</span> <span class=nc>DataSource</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=nf>getBean</span><span class=p>(</span><span class=nc>DataSource</span><span class=o>::</span><span class=k>class</span><span class=p>.</span><span class=n>java</span><span class=p>)</span>
+
+    <span class=nd>@BeforeEach</span>
+    <span class=k>fun</span> <span class=nf>setupTestData</span><span class=p>()</span> <span class=p>{</span>
+        <span class=n>dataSource</span><span class=p>.</span><span class=nf>setupDb</span><span class=p>()</span>
+    <span class=p>}</span>
+
+<span class=p>}</span></code></pre></figure><figure class=listing-block><figcaption>Утилита выполнения SQL-скриптов. <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/infra/db/DbInitializer.kt#L7>Смотреть на GitHub</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>DbInitializer</span><span class=p>(</span>
+    <span class=k>private</span> <span class=kd>val</span> <span class=py>dataSource</span><span class=p>:</span> <span class=nc>DataSource</span>
+<span class=p>)</span> <span class=p>{</span>
+
+    <span class=k>fun</span> <span class=nf>executeScripts</span><span class=p>(</span><span class=k>vararg</span> <span class=n>scripts</span><span class=p>:</span> <span class=nc>String</span><span class=p>)</span> <span class=p>{</span>
+        <span class=n>dataSource</span><span class=p>.</span><span class=n>connection</span><span class=p>.</span><span class=nf>use</span> <span class=p>{</span>
+            <span class=n>scripts</span><span class=p>.</span><span class=nf>forEach</span> <span class=p>{</span> <span class=n>script</span> <span class=p>-&gt;</span>
+                <span class=nc>ScriptUtils</span><span class=p>.</span><span class=nf>executeSqlScript</span><span class=p>(</span><span class=n>it</span><span class=p>,</span> <span class=nc>ClassPathResource</span><span class=p>(</span><span class=n>script</span><span class=p>))</span>
+            <span class=p>}</span>
+        <span class=p>}</span>
+    <span class=p>}</span>
+
+<span class=p>}</span>
+
+<span class=k>fun</span> <span class=nc>DataSource</span><span class=p>.</span><span class=nf>setupDb</span><span class=p>()</span> <span class=p>{</span>
+    <span class=nc>DbInitializer</span><span class=p>(</span><span class=k>this</span><span class=p>).</span><span class=nf>executeScripts</span><span class=p>(</span><span class=s>&#34;/db/shared-fixture.sql&#34;</span><span class=p>)</span>
+<span class=p>}</span></code></pre></figure><p>Наконец, у меня есть несколько констант, для использования этого представленного терапевта:</p><figure class=listing-block><figcaption>Users.kt. <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapists/Users.kt#L7>Смотреть на GitHub</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=k>const</span> <span class=kd>val</span> <span class=py>THE_THERAPIST_ID</span> <span class=p>=</span> <span class=mi>1L</span>
+
+<span class=k>const</span> <span class=kd>val</span> <span class=py>THE_THERAPIST_LOGIN</span> <span class=p>=</span> <span class=s>&#34;therapist@qyoga.pro&#34;</span>
+<span class=k>const</span> <span class=kd>val</span> <span class=py>THE_THERAPIST_PASSWORD</span> <span class=p>=</span> <span class=s>&#34;password&#34;</span>
+
+<span class=k>const</span> <span class=kd>val</span> <span class=py>THE_THERAPIST_FIRST_NAME</span> <span class=p>=</span> <span class=s>&#34;Елена (тест)&#34;</span>
+
+<span class=kd>val</span> <span class=py>THE_THERAPIST_REF</span> <span class=p>=</span> <span class=nc>AggregateReference</span><span class=p>.</span><span class=n>to</span><span class=p>&lt;</span><span class=nc>Therapist</span><span class=p>,</span> <span class=nc>Long</span><span class=p>&gt;(</span><span class=nc>THE_THERAPIST_ID</span><span class=p>)</span></code></pre></figure><p>После сетапа разделяемой фикстуры, следующим шагом идёт сетап фикстуры, специфичной для теста.
+В общем случае этот шаг делится на две части — генерация тестовых данных и их вставка в БД.</p></section><section class="doc-section level-1"><h2 id=_генерация_тестовых_данных><a class=link href=#_генерация_тестовых_данных>Генерация тестовых данных</a></h2><p>Раньше я для генерации случайных тестовых данных (примитивных значений) писал генераторы руками:</p><figure class=listing-block><figcaption>Генераторы случайных данных. <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/data/Text.kt#L5>Смотреть на GitHub</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>val</span> <span class=py>lowerCaseCyrillicLetters</span> <span class=p>=</span> <span class=p>(</span><span class=sc>&#39;а&#39;</span><span class=o>..</span><span class=sc>&#39;я&#39;</span><span class=p>).</span><span class=nf>toList</span><span class=p>()</span>
+<span class=kd>val</span> <span class=py>upperCaseCyrillicLetters</span> <span class=p>=</span> <span class=p>(</span><span class=sc>&#39;А&#39;</span><span class=o>..</span><span class=sc>&#39;Я&#39;</span><span class=p>).</span><span class=nf>toList</span><span class=p>()</span>
+<span class=kd>val</span> <span class=py>cyrillicLetters</span> <span class=p>=</span> <span class=n>lowerCaseCyrillicLetters</span> <span class=p>+</span> <span class=n>upperCaseCyrillicLetters</span>
+
+<span class=kd>val</span> <span class=py>lowerCaseLatinLetters</span> <span class=p>=</span> <span class=p>(</span><span class=sc>&#39;a&#39;</span><span class=o>..</span><span class=sc>&#39;z&#39;</span><span class=p>).</span><span class=nf>toList</span><span class=p>()</span>
+
+<span class=k>fun</span> <span class=nf>randomWord</span><span class=p>(</span><span class=n>letters</span><span class=p>:</span> <span class=nc>List</span><span class=p>&lt;</span><span class=nc>Char</span><span class=p>&gt;,</span> <span class=n>minLength</span><span class=p>:</span> <span class=nc>Int</span> <span class=p>=</span> <span class=mi>1</span><span class=p>,</span> <span class=n>maxLength</span><span class=p>:</span> <span class=nc>Int</span> <span class=p>=</span> <span class=mi>12</span><span class=p>)</span> <span class=p>=</span>
+    <span class=nf>buildString</span> <span class=p>{</span>
+        <span class=kd>val</span> <span class=py>length</span> <span class=p>=</span> <span class=nc>Random</span><span class=p>.</span><span class=nf>nextInt</span><span class=p>(</span><span class=n>minLength</span><span class=p>,</span> <span class=n>maxLength</span><span class=p>)</span>
+        <span class=nf>repeat</span><span class=p>(</span><span class=n>length</span><span class=p>)</span> <span class=p>{</span>
+            <span class=nf>append</span><span class=p>(</span><span class=n>letters</span><span class=p>[</span><span class=nc>Random</span><span class=p>.</span><span class=nf>nextInt</span><span class=p>(</span><span class=n>letters</span><span class=p>.</span><span class=n>size</span><span class=p>)])</span>
+        <span class=p>}</span>
+        <span class=nf>check</span><span class=p>(</span><span class=k>this</span><span class=p>.</span><span class=n>length</span> <span class=k>in</span> <span class=n>minLength</span><span class=o>..</span><span class=n>maxLength</span><span class=p>)</span>
+    <span class=p>}</span>
+
+<span class=k>fun</span> <span class=nf>randomCyrillicWord</span><span class=p>(</span><span class=n>minLength</span><span class=p>:</span> <span class=nc>Int</span> <span class=p>=</span> <span class=mi>1</span><span class=p>,</span> <span class=n>maxLength</span><span class=p>:</span> <span class=nc>Int</span> <span class=p>=</span> <span class=mi>12</span><span class=p>)</span> <span class=p>=</span>
+    <span class=nf>randomWord</span><span class=p>(</span><span class=n>cyrillicLetters</span><span class=p>,</span> <span class=n>minLength</span><span class=p>,</span> <span class=n>maxLength</span><span class=p>)</span></code></pre></figure><p>Но недавно наткнулся на библиотеку <a href=https://www.datafaker.net/>Datafaker</a> и теперь стараюсь использовать её (пока что использовал только три раза, поэтому не могу написать отзыв на неё).</p></section><section class="doc-section level-1"><h2 id=_генерация_тестовых_доменных_объектов><a class=link href=#_генерация_тестовых_доменных_объектов>Генерация тестовых доменных объектов</a></h2><p>В генерации тестовых доменных объектов у меня один из двух самых больших бардаков сейчас.</p><p>Пока что я могу сформулировать только две общих идеи, которых стараюсь придерживаться:</p><div class="olist arabic"><ol class=arabic><li>Все данные, нерелевантные для данного теста, должны генерироваться случайно;</li><li>Если у объекта есть нуллабельные поля - должно быть два отдельных метода для генерации объектов только с обязательными полями и со всеми полями.</li></ol></div><p>Код генерации объектов раскидан по <a href=https://martinfowler.com/bliki/ObjectMother.html>Object Mother-ам</a>, у которых общего только то, что они содержат методы с кучей параметров, со случайными дефолтными значениями:</p><figure class=listing-block><figcaption>Object Mother объектов типа Client. <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/clients/ClientsObjectMother.kt#L12>Смотреть на GitHub</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>object</span> <span class=nc>ClientsObjectMother</span> <span class=p>{</span>
+
+  <span class=k>fun</span> <span class=nf>createClientCardDto</span><span class=p>(</span>
+      <span class=n>firstName</span><span class=p>:</span> <span class=nc>String</span> <span class=p>=</span> <span class=n>faker</span><span class=p>.</span><span class=nf>name</span><span class=p>().</span><span class=nf>firstName</span><span class=p>(),</span>
+      <span class=n>lastName</span><span class=p>:</span> <span class=nc>String</span> <span class=p>=</span> <span class=n>faker</span><span class=p>.</span><span class=nf>name</span><span class=p>().</span><span class=nf>lastName</span><span class=p>(),</span>
+      <span class=n>middleName</span><span class=p>:</span> <span class=nc>String</span><span class=p>?</span> <span class=p>=</span> <span class=n>faker</span><span class=p>.</span><span class=nf>name</span><span class=p>().</span><span class=nf>nameWithMiddle</span><span class=p>().</span><span class=nf>split</span><span class=p>(</span><span class=s>&#34; &#34;</span><span class=p>)[</span><span class=mi>1</span><span class=p>],</span>
+      <span class=n>birthDate</span><span class=p>:</span> <span class=nc>LocalDate</span> <span class=p>=</span> <span class=nf>randomBirthDate</span><span class=p>(),</span>
+      <span class=n>phone</span><span class=p>:</span> <span class=nc>String</span> <span class=p>=</span> <span class=nf>randomPhoneNumber</span><span class=p>(),</span>
+      <span class=n>email</span><span class=p>:</span> <span class=nc>String</span><span class=p>?</span> <span class=p>=</span> <span class=nf>randomEmail</span><span class=p>(),</span>
+      <span class=n>address</span><span class=p>:</span> <span class=nc>String</span><span class=p>?</span> <span class=p>=</span> <span class=nf>randomCyrillicWord</span><span class=p>(),</span>
+      <span class=n>complains</span><span class=p>:</span> <span class=nc>String</span> <span class=p>=</span> <span class=nf>randomCyrillicWord</span><span class=p>(),</span>
+      <span class=n>anamnesis</span><span class=p>:</span> <span class=nc>String</span><span class=p>?</span> <span class=p>=</span> <span class=nf>randomSentence</span><span class=p>(),</span>
+      <span class=n>distributionSource</span><span class=p>:</span> <span class=nc>DistributionSource</span> <span class=p>=</span> <span class=nf>randomDistributionSource</span><span class=p>(),</span>
+  <span class=p>):</span> <span class=nc>ClientCardDto</span> <span class=p>=</span> <span class=nf>createClientCardDtoMinimal</span><span class=p>(</span>
+      <span class=n>firstName</span><span class=p>,</span>
+      <span class=n>lastName</span><span class=p>,</span>
+      <span class=n>middleName</span><span class=p>,</span>
+      <span class=n>birthDate</span><span class=p>,</span>
+      <span class=n>phone</span><span class=p>,</span>
+      <span class=n>email</span><span class=p>,</span>
+      <span class=n>address</span><span class=p>,</span>
+      <span class=n>complains</span><span class=p>,</span>
+      <span class=n>anamnesis</span><span class=p>,</span>
+      <span class=n>distributionSource</span><span class=p>,</span>
+  <span class=p>)</span>
+
+  <span class=k>fun</span> <span class=nf>createClientCardDtoMinimal</span><span class=p>(</span>
+      <span class=n>firstName</span><span class=p>:</span> <span class=nc>String</span> <span class=p>=</span> <span class=nf>randomCyrillicWord</span><span class=p>(),</span>
+      <span class=n>lastName</span><span class=p>:</span> <span class=nc>String</span> <span class=p>=</span> <span class=nf>randomCyrillicWord</span><span class=p>(),</span>
+      <span class=n>middleName</span><span class=p>:</span> <span class=nc>String</span><span class=p>?</span> <span class=p>=</span> <span class=k>null</span><span class=p>,</span>
+      <span class=n>birthDate</span><span class=p>:</span> <span class=nc>LocalDate</span><span class=p>?</span> <span class=p>=</span> <span class=k>null</span><span class=p>,</span>
+      <span class=n>phone</span><span class=p>:</span> <span class=nc>String</span> <span class=p>=</span> <span class=nf>randomPhoneNumber</span><span class=p>(),</span>
+      <span class=n>email</span><span class=p>:</span> <span class=nc>String</span><span class=p>?</span> <span class=p>=</span> <span class=k>null</span><span class=p>,</span>
+      <span class=n>address</span><span class=p>:</span> <span class=nc>String</span><span class=p>?</span> <span class=p>=</span> <span class=k>null</span><span class=p>,</span>
+      <span class=n>complains</span><span class=p>:</span> <span class=nc>String</span><span class=p>?</span> <span class=p>=</span> <span class=k>null</span><span class=p>,</span>
+      <span class=n>anamnesis</span><span class=p>:</span> <span class=nc>String</span><span class=p>?</span> <span class=p>=</span> <span class=k>null</span><span class=p>,</span>
+      <span class=n>distributionSource</span><span class=p>:</span> <span class=nc>DistributionSource</span><span class=p>?</span> <span class=p>=</span> <span class=k>null</span>
+  <span class=p>):</span> <span class=nc>ClientCardDto</span> <span class=p>=</span> <span class=nc>ClientCardDto</span><span class=p>(</span>
+      <span class=n>firstName</span><span class=p>,</span>
+      <span class=n>lastName</span><span class=p>,</span>
+      <span class=n>middleName</span><span class=p>,</span>
+      <span class=n>birthDate</span><span class=p>,</span>
+      <span class=n>phone</span><span class=p>,</span>
+      <span class=n>email</span><span class=p>,</span>
+      <span class=n>address</span><span class=p>,</span>
+      <span class=n>complains</span><span class=p>,</span>
+      <span class=n>anamnesis</span><span class=p>,</span>
+      <span class=n>distributionSource</span><span class=o>?.</span><span class=n>type</span><span class=p>,</span>
+      <span class=n>distributionSource</span><span class=o>?.</span><span class=n>comment</span><span class=p>,</span>
+  <span class=p>)</span>
+
+<span class=p>}</span></code></pre></figure><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Притом сейчас Object Mother-ы я создаю только для агрегатов - все сущности, ДТОшки и прочие штуки помещаются в Object Mother агрегата, с которыми они (на мой субъективный взгляд) связаны сильнее всего.</p></aside><p>Клиенты таких методов (в основном тест кейсы) при вызове передают только релевантные для данного случая параметры:</p><figure class=listing-block><figcaption>Пример использования Object Mother. <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/test/kotlin/pro/qyoga/tests/cases/app/therapist/clients/card/CreateClientPageTest.kt#L43>Смотреть на GitHub</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@Test</span>
+<span class=k>fun</span> <span class=nf>`Null</span> <span class=n>distribution</span> <span class=n>source</span> <span class=n>comment</span> <span class=n>should</span> <span class=n>be</span> <span class=n>persisted</span> <span class=k>as</span> <span class=k>null</span><span class=err>`</span><span class=p>()</span> <span class=p>{</span>
+    <span class=c1>// Given</span>
+    <span class=kd>val</span> <span class=py>therapist</span> <span class=p>=</span> <span class=nc>TherapistClient</span><span class=p>.</span><span class=nf>loginAsTheTherapist</span><span class=p>()</span>
+    <span class=kd>val</span> <span class=py>newClientRequest</span> <span class=p>=</span> <span class=nc>ClientsObjectMother</span><span class=p>.</span><span class=nf>createClientCardDto</span><span class=p>(</span>
+        <span class=n>distributionSource</span> <span class=p>=</span> <span class=nc>DistributionSource</span><span class=p>(</span><span class=nc>DistributionSourceType</span><span class=p>.</span><span class=nc>OTHER</span><span class=p>,</span> <span class=k>null</span><span class=p>)</span>
+    <span class=p>)</span>
+
+    <span class=c1>// When</span>
+    <span class=n>therapist</span><span class=p>.</span><span class=n>clients</span><span class=p>.</span><span class=nf>createClient</span><span class=p>(</span><span class=n>newClientRequest</span><span class=p>)</span>
+
+    <span class=c1>// Then</span>
+    <span class=kd>val</span> <span class=py>clients</span> <span class=p>=</span> <span class=n>backgrounds</span><span class=p>.</span><span class=n>clients</span><span class=p>.</span><span class=nf>getAllClients</span><span class=p>()</span>
+    <span class=n>clients</span><span class=p>.</span><span class=n>content</span><span class=p>.</span><span class=nf>forAny</span> <span class=p>{</span> <span class=n>it</span> <span class=n>shouldMatch</span> <span class=n>newClientRequest</span> <span class=p>}</span>
+<span class=p>}</span></code></pre></figure><p>Этот тест проверяет, что после создания карточки клиента со значением поля "Откуда вы о нас узнали" равным "Другое" и без комментария, комментарий должен сохраниться в БД как null.
+А не как пустая строка, видимо - я сейчас наверняка уже не помню, но скорее всего, этот тест я написал, когда при ручном тестировании словил какую-то проблему, связанную с сохранением пустого коммента пустой строкой.</p><p>Зачастую тесту вообще не важно значение атрибутов сущности:</p><figure class=listing-block><figcaption>Генерация произвольного клиента с помощью Object Mother. <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/test/kotlin/pro/qyoga/tests/cases/app/therapist/clients/ClientViewPageTest.kt#L30>Смотреть на GitHub</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@Test</span>
+<span class=k>fun</span> <span class=nf>`Edit</span> <span class=n>page</span> <span class=k>for</span> <span class=n>just</span> <span class=n>created</span> <span class=n>client</span> <span class=n>should</span> <span class=n>be</span> <span class=n>rendered</span> <span class=n>correctly</span> <span class=n>and</span> <span class=n>contain</span> <span class=n>empty</span> <span class=nf>log`</span><span class=p>()</span> <span class=p>{</span>
+    <span class=c1>// Given</span>
+    <span class=kd>val</span> <span class=py>therapist</span> <span class=p>=</span> <span class=nc>TherapistClient</span><span class=p>.</span><span class=nf>loginAsTheTherapist</span><span class=p>()</span>
+    <span class=kd>val</span> <span class=py>newClientRequest</span> <span class=p>=</span> <span class=nf>createClientCardDto</span><span class=p>()</span>
+    <span class=kd>val</span> <span class=py>client</span> <span class=p>=</span> <span class=n>backgrounds</span><span class=p>.</span><span class=n>clients</span><span class=p>.</span><span class=nf>createClients</span><span class=p>(</span><span class=nf>listOf</span><span class=p>(</span><span class=n>newClientRequest</span><span class=p>),</span> <span class=nc>THE_THERAPIST_ID</span><span class=p>).</span><span class=nf>first</span><span class=p>()</span>
+
+    <span class=c1>// When</span>
+    <span class=kd>val</span> <span class=py>document</span> <span class=p>=</span> <span class=n>therapist</span><span class=p>.</span><span class=n>clients</span><span class=p>.</span><span class=nf>getClientEditPage</span><span class=p>(</span><span class=n>client</span><span class=p>.</span><span class=n>id</span><span class=p>)</span>
+
+    <span class=c1>// Then</span>
+    <span class=n>document</span> <span class=n>shouldBe</span> <span class=nc>EmptyClientJournalPage</span>
+<span class=p>}</span></code></pre></figure><p>Тут стоит пояснить, что, по историческим причинам, за названием "страница редактирования клиента" скрывается таб-панель со всей информацией о клиенте, в которой по умолчанию открывается таб с журналом клиента:</p><p><img src=/microposts/24/04/images/client-journal-page-screenshot.png alt="client journal page screenshot"></p><p>И тест выше проверяет, что "страница редактирования клиента" корректно открывается для только что созданного клиента - в данном случае нам не важны конкретные значения атрибутов клиента.</p><p>В этом примере в передаче <code>THE_THERAPIST_ID</code> в метод <code>createClients</code> также видна одна из моих стратегий работы с референсными данными - ссылки на разделяемую фикстуру.</p><section class="doc-section level-2"><h3 id=_референсные_данные><a class=link href=#_референсные_данные>Референсные данные</a></h3><p>Подавляющее большинство доменных объектов ссылаются на другие доменные объекты.
+У меня ссылки между доменными объектами реализованы в виде свойств типа <a href=https://docs.spring.io/spring-data/jdbc/docs/current/api/org/springframework/data/jdbc/core/mapping/AggregateReference.html>AggregateReference</a> из Spring Data JDBC, который, по сути, является обёрткой над примитивным идентификатором.
+Но само значение этого идентификатора надо как-то получить, и я сейчас использую три способа:</p><div class=ulist><ul><li>Захардкоженные идентификаторы;</li><li>Внедрённые идентификаторы;</li><li>Фейковые идентификаторы.</li></ul></div><section class="doc-section level-3"><h4 id=_захардкоженные_идентификаторы><a class=link href=#_захардкоженные_идентификаторы>Захардкоженные идентификаторы</a></h4><p>Сейчас у меня захардкоженный идентификатор только один — <code>THE_THERAPIST_ID</code> — идентификатор терапевта.
+Так сделано потому, что практически каждый тест требует существование терапевта как минимум для того, чтобы аутентифицироваться и иметь возможность выполнять запросы.
+Кроме того, большинство других доменных объектов прямо или транзитивно привязаны к терапевту.</p><p>И для того, чтобы немного сэкономить на времени сетапа фикстуры, терапевт с этим идентификатором вставляется в БД через SQL.</p><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Сейчас подумал, что эта экономия не подтверждена цифрами и, возможно, стоит от неё отказаться.
+Потому что…​</p></aside><p>... <a href=https://azhidkov.pro/posts/23/10/project-e-part2/#_хрупкость_тестов>печальный опыт Проекта Э</a> показал, что злоупотреблять разделяемой фикстурой нельзя.</p><p>Во-первых, это приведёт к титаническим усилиям по обновлению скриптов после рефакторинга схемы БД.</p><p>А во-вторых, это снизит наглядность теста - входные данные придётся искать в другом месте и в них невозможно будет отличить атрибуты, которые влияют на результат теста, от тех, что нет.</p><p>Поэтому подавляющее большинство референсных данных я генерируют и вставляю с помощью Object Mother-ов и Background-ов.</p></section><section class="doc-section level-3"><h4 id=_внедрённые_идентификаторы><a class=link href=#_внедрённые_идентификаторы>Внедрённые идентификаторы</a></h4><p>В случае если мне нужна просто ссылка, чтобы создать целевой объект, я использую бэкграунды, чтобы сгенерировать случайный доменный объект, вставить его в БД и получить идентификатор для ссылки.
+При необходимости, проделав эту процедуру рекурсивно:</p><figure class=listing-block><figcaption>Вставка произвольных референсных данных. <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/test/kotlin/pro/qyoga/tests/cases/app/therapist/appointments/core/EditAppointmentPageTest.kt#L69>Смотреть на GitHub</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@Test</span>
+<span class=k>fun</span> <span class=nf>`Edit</span> <span class=n>of</span> <span class=n>minimal</span> <span class=n>appointment</span> <span class=n>to</span> <span class=n>full</span> <span class=n>should</span> <span class=n>be</span> <span class=nf>persistent`</span><span class=p>()</span> <span class=p>{</span>
+    <span class=c1>// Given</span>
+<span class=hll>    <span class=kd>val</span> <span class=py>appointment</span> <span class=p>=</span> <span class=n>backgrounds</span><span class=p>.</span><span class=n>appointments</span><span class=p>.</span><span class=nf>create</span><span class=p>()</span> <b class=conum>1</b>
+</span>    <span class=kd>val</span> <span class=py>newAppointmentType</span> <span class=p>=</span> <span class=n>backgrounds</span><span class=p>.</span><span class=n>appointmentTypes</span><span class=p>.</span><span class=nf>createAppointmentType</span><span class=p>()</span>
+    <span class=kd>val</span> <span class=py>therapeuticTask</span> <span class=p>=</span> <span class=n>backgrounds</span><span class=p>.</span><span class=n>therapeuticTasks</span><span class=p>.</span><span class=nf>createTherapeuticTask</span><span class=p>()</span>
+    <span class=kd>val</span> <span class=py>editedAppointment</span> <span class=p>=</span>
+<span class=hll>        <span class=nc>AppointmentsObjectMother</span><span class=p>.</span><span class=nf>appointmentPatchRequest</span><span class=p>(</span> <b class=conum>2</b>
+</span>            <span class=n>appointment</span><span class=p>,</span>
+<span class=hll>            <span class=n>newAppointmentType</span><span class=p>.</span><span class=nf>ref</span><span class=p>(),</span> <b class=conum>3</b>
+</span>            <span class=n>newAppointmentType</span><span class=p>.</span><span class=n>name</span><span class=p>,</span>
+<span class=hll>            <span class=n>therapeuticTask</span> <span class=p>=</span> <span class=n>therapeuticTask</span><span class=p>.</span><span class=nf>ref</span><span class=p>(),</span> <b class=conum>4</b>
+</span>            <span class=n>cost</span> <span class=p>=</span> <span class=nf>randomAppointmentCost</span><span class=p>(),</span>
+            <span class=n>payed</span> <span class=p>=</span> <span class=k>true</span><span class=p>,</span>
+            <span class=n>place</span> <span class=p>=</span> <span class=nf>randomCyrillicWord</span><span class=p>(),</span>
+            <span class=n>comment</span> <span class=p>=</span> <span class=nf>randomCyrillicWord</span><span class=p>()</span>
+        <span class=p>)</span></code></pre></figure><p>Это тест на то, что после редактирования минимального приёма с указанием значений опциональных атрибутов, все атрибуты имеют то же значение, при последующих запросах.
+Приём ссылается на терапевта, клиента, тип приёма и необязательную терапевтическую задачу.</p><p>И здесь создаётся произвольный, но минимальный приём, со ссылкой на THE_THERAPIST и произвольными клиентами и типом (<strong>1</strong>).</p><p>Затем, на базе созданного приёма создаётся ДТОшка обновления приёма (<strong>2</strong>), в которую внедряется сгенерённые с помощью бэкграундов ссылки на тип (<strong>3</strong>) и задачу приёма (<strong>4</strong>).</p></section><section class="doc-section level-3"><h4 id=_фейковые_идентификаторы><a class=link href=#_фейковые_идентификаторы>Фейковые идентификаторы</a></h4><p>Наконец, в некоторых случаях можно ссылаться на фейковые (или, скорее, transient) доменные объекты.</p><p>Первым видом таких случаев является опция "сошлись или создай".
+Например, в UI при создании приёма можно тип приёма либо прописать новый, либо выбрать существующий из выпадающего списка.</p><p>И это активно используется в тестах на создание приёмов.
+Настолько активно, что сейчас при генерации приёма внедрить его тип невозможно - в генераторе захардкожено использование фейкового типа:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>object</span> <span class=nc>AppointmentTypesObjectMother</span> <span class=p>{</span>
+
+    <span class=k>fun</span> <span class=nf>fakeAppointmentType</span><span class=p>()</span> <span class=p>=</span> <span class=nc>AggregateReferenceTarget</span><span class=p>(</span>
+        <span class=nc>AppointmentType</span><span class=p>(</span><span class=nc>THE_THERAPIST_REF</span><span class=p>,</span> <span class=s>&#34;Тренировка&#34;</span><span class=p>,</span> <span class=n>id</span> <span class=p>=</span> <span class=p>-</span><span class=mi>1</span><span class=p>)</span>
+    <span class=p>)</span>
+
+<span class=p>}</span>
+
+<span class=kd>object</span> <span class=nc>AppointmentsObjectMother</span> <span class=p>{</span>
+
+    <span class=k>fun</span> <span class=nf>randomAppointment</span><span class=p>(</span>
+        <span class=n>therapistRef</span><span class=p>:</span> <span class=nc>TherapistRef</span> <span class=p>=</span> <span class=nc>THE_THERAPIST_REF</span><span class=p>,</span>
+        <span class=n>client</span><span class=p>:</span> <span class=nc>ClientRef</span> <span class=p>=</span> <span class=nc>ClientsObjectMother</span><span class=p>.</span><span class=n>fakeClientRef</span><span class=p>,</span>
+        <span class=n>typeId</span><span class=p>:</span> <span class=nc>AppointmentTypeRef</span><span class=p>?</span> <span class=p>=</span> <span class=k>null</span><span class=p>,</span>
+        <span class=n>typeTitle</span><span class=p>:</span> <span class=nc>String</span> <span class=p>=</span> <span class=nf>randomCyrillicWord</span><span class=p>(),</span>
+        <span class=n>therapeuticTask</span><span class=p>:</span> <span class=nc>TherapeuticTaskRef</span><span class=p>?</span> <span class=p>=</span> <span class=k>null</span><span class=p>,</span>
+        <span class=n>dateTime</span><span class=p>:</span> <span class=nc>LocalDateTime</span> <span class=p>=</span> <span class=nf>randomAppointmentDate</span><span class=p>(),</span>
+        <span class=n>timeZone</span><span class=p>:</span> <span class=nc>ZoneId</span> <span class=p>=</span> <span class=nf>randomTimeZone</span><span class=p>(),</span>
+        <span class=n>duration</span><span class=p>:</span> <span class=nc>Duration</span> <span class=p>=</span> <span class=nf>randomAppointmentDuration</span><span class=p>(),</span>
+        <span class=n>place</span><span class=p>:</span> <span class=nc>String</span><span class=p>?</span> <span class=p>=</span> <span class=k>null</span><span class=p>,</span>
+        <span class=n>cost</span><span class=p>:</span> <span class=nc>Int</span><span class=p>?</span> <span class=p>=</span> <span class=k>null</span><span class=p>,</span>
+        <span class=n>payed</span><span class=p>:</span> <span class=nc>Boolean</span><span class=p>?</span> <span class=p>=</span> <span class=k>null</span><span class=p>,</span>
+        <span class=n>appointmentStatus</span><span class=p>:</span> <span class=nc>AppointmentStatus</span> <span class=p>=</span> <span class=nc>AppointmentStatus</span><span class=p>.</span><span class=n>entries</span><span class=p>.</span><span class=nf>random</span><span class=p>(),</span>
+        <span class=n>comment</span><span class=p>:</span> <span class=nc>String</span><span class=p>?</span> <span class=p>=</span> <span class=k>null</span>
+    <span class=p>):</span> <span class=nc>Appointment</span> <span class=p>{</span>
+        <span class=k>return</span> <span class=nc>Appointment</span><span class=p>(</span>
+            <span class=n>therapistRef</span><span class=p>,</span>
+            <span class=nf>randomEditAppointmentRequest</span><span class=p>(</span>
+                <span class=n>client</span><span class=p>,</span>
+                <span class=n>typeId</span><span class=p>,</span>
+                <span class=n>typeTitle</span><span class=p>,</span>
+                <span class=n>therapeuticTask</span><span class=p>,</span>
+                <span class=n>dateTime</span><span class=p>,</span>
+                <span class=n>timeZone</span><span class=p>,</span>
+                <span class=n>duration</span><span class=p>,</span>
+                <span class=n>place</span><span class=p>,</span>
+                <span class=n>cost</span><span class=p>,</span>
+                <span class=n>payed</span><span class=p>,</span>
+                <span class=n>appointmentStatus</span><span class=p>,</span>
+                <span class=n>comment</span>
+            <span class=p>),</span>
+<span class=hll>            <span class=nc>AppointmentTypesObjectMother</span><span class=p>.</span><span class=nf>fakeAppointmentType</span><span class=p>()</span>
+</span>        <span class=p>)</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></div><p>Второй случай, когда можно использовать фейковые ссылки на доменные объекты - когда эти ссылки не доберутся до БД.</p><p>Это, в свою очередь, также может быть по двум причинам.</p><p>Первой причиной является то, что обработка операции может прерваться (из-за ошибки) раньше обращения к БД:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>object</span> <span class=nc>ClientsObjectMother</span> <span class=p>{</span>
+
+    <span class=kd>val</span> <span class=py>fakeClientRef</span><span class=p>:</span> <span class=nc>ClientRef</span> <span class=p>=</span> <span class=nc>AggregateReferenceTarget</span><span class=p>(</span>
+        <span class=nc>Client</span><span class=p>(</span><span class=nc>THE_THERAPIST_ID</span><span class=p>,</span> <span class=nf>createClientCardDtoMinimal</span><span class=p>())</span>
+    <span class=p>)</span>
+
+<span class=p>}</span>
+
+<span class=kd>class</span> <span class=nc>CreateAppointmentPageControllerTest</span> <span class=p>:</span> <span class=nc>QYogaAppBaseTest</span><span class=p>()</span> <span class=p>{</span>
+
+    <span class=nd>@Test</span>
+    <span class=k>fun</span> <span class=nf>`Creation</span> <span class=n>of</span> <span class=n>appointment</span><span class=p>,</span> <span class=n>that</span> <span class=n>intersects</span> <span class=n>with</span> <span class=n>an</span> <span class=n>appointment</span> <span class=k>in</span> <span class=n>another</span> <span class=n>time</span> <span class=n>zone</span> <span class=n>should</span> <span class=nf>fail`</span><span class=p>()</span> <span class=p>{</span>
+        <span class=c1>// Given</span>
+        <span class=kd>val</span> <span class=py>existingAppointmentTimeZone</span> <span class=p>=</span> <span class=n>asiaNovosibirsk</span>
+        <span class=kd>val</span> <span class=py>newAppointmentTimeZone</span> <span class=p>=</span> <span class=n>europeMoscow</span>
+        <span class=kd>val</span> <span class=py>existingAppointmentLocalDateTime</span> <span class=p>=</span> <span class=n>aDateTime</span>
+
+        <span class=n>backgrounds</span><span class=p>.</span><span class=n>appointments</span><span class=p>.</span><span class=nf>create</span><span class=p>(</span>
+            <span class=n>dateTime</span> <span class=p>=</span> <span class=n>existingAppointmentLocalDateTime</span><span class=p>,</span>
+            <span class=n>timeZone</span> <span class=p>=</span> <span class=n>existingAppointmentTimeZone</span>
+        <span class=p>)</span>
+
+        <span class=kd>val</span> <span class=py>createNewAppointmentRequest</span> <span class=p>=</span> <span class=nf>randomEditAppointmentRequest</span><span class=p>(</span>
+<span class=hll>            <span class=n>client</span> <span class=p>=</span> <span class=nc>ClientsObjectMother</span><span class=p>.</span><span class=n>fakeClientRef</span><span class=p>,</span>
+</span>            <span class=n>dateTime</span> <span class=p>=</span> <span class=n>aDate</span><span class=p>.</span><span class=nf>atTime</span><span class=p>(</span><span class=n>existingAppointmentLocalDateTime</span><span class=p>.</span><span class=k>get</span><span class=p>(</span><span class=nc>ChronoField</span><span class=p>.</span><span class=nc>HOUR_OF_DAY</span><span class=p>)</span> <span class=p>-</span> <span class=n>timeZonesDiff</span><span class=p>,</span> <span class=mi>0</span><span class=p>),</span>
+            <span class=n>timeZone</span> <span class=p>=</span> <span class=n>newAppointmentTimeZone</span>
+        <span class=p>)</span>
+
+        <span class=c1>// When</span>
+        <span class=kd>val</span> <span class=py>result</span> <span class=p>=</span> <span class=n>controller</span><span class=p>.</span><span class=nf>createAppointment</span><span class=p>(</span>
+            <span class=n>createNewAppointmentRequest</span><span class=p>,</span>
+            <span class=n>theTherapistUserDetails</span>
+        <span class=p>)</span>
+
+        <span class=c1>// Then</span>
+        <span class=n>result</span><span class=p>.</span><span class=nf>shouldBeIntersectionError</span><span class=p>()</span>
+        <span class=n>backgrounds</span><span class=p>.</span><span class=n>appointments</span><span class=p>.</span><span class=nf>getDaySchedule</span><span class=p>(</span><span class=n>aDate</span><span class=p>)</span> <span class=n>shouldHaveSize</span> <span class=mi>1</span>
+    <span class=p>}</span>
+
+<span class=p>}</span></code></pre></div><p>Этот тест проверяет систему на соответствие требованию "Система должна исключить создание приёмов, пересекающихся по времени, даже если время для них указано в разных часовых поясах".
+И здесь фейковая ссылка на клиента в приёме до БД не дойдёт - до вставки приёма в БД выполнится проверка на пересечение, которая не пройдёт и выполнение метода прервётся выбросом исключения.</p><p>Вторая причина, по которой фейковая может не дойти до БД - она используется в юнит-тесте чистой логики:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>object</span> <span class=nc>AppointmentsObjectMother</span> <span class=p>{</span>
+
+    <span class=k>fun</span> <span class=nf>randomAppointment</span><span class=p>(</span>
+        <span class=n>therapistRef</span><span class=p>:</span> <span class=nc>TherapistRef</span> <span class=p>=</span> <span class=nc>THE_THERAPIST_REF</span><span class=p>,</span>
+        <span class=n>client</span><span class=p>:</span> <span class=nc>ClientRef</span> <span class=p>=</span> <span class=nc>ClientsObjectMother</span><span class=p>.</span><span class=n>fakeClientRef</span><span class=p>,</span> <span class=c1>// по умолчанию используется фейковый клиент</span>
+        <span class=c1>// остальные параметры</span>
+    <span class=p>):</span> <span class=nc>Appointment</span> <span class=p>{</span>
+        <span class=k>return</span> <span class=c1>// ...</span>
+    <span class=p>}</span>
+<span class=p>}</span>
+
+<span class=kd>class</span> <span class=nc>CalendarPageModelTest</span> <span class=p>{</span>
+
+    <span class=nd>@Test</span>
+    <span class=k>fun</span> <span class=nf>`Calendar</span> <span class=n>should</span> <span class=n>start</span> <span class=n>at</span> <span class=n>first</span> <span class=n>appointment</span> <span class=nf>time`</span><span class=p>()</span> <span class=p>{</span>
+        <span class=c1>// Given</span>
+        <span class=kd>val</span> <span class=py>firstAppointmentStartTime</span> <span class=p>=</span> <span class=nc>LocalTime</span><span class=p>.</span><span class=nf>of</span><span class=p>(</span><span class=mi>2</span><span class=p>,</span> <span class=mi>0</span><span class=p>)</span>
+        <span class=kd>val</span> <span class=py>today</span> <span class=p>=</span> <span class=nc>LocalDate</span><span class=p>.</span><span class=nf>now</span><span class=p>()</span>
+        <span class=kd>val</span> <span class=py>appointments</span> <span class=p>=</span> <span class=nf>listOf</span><span class=p>(</span>
+            <span class=nf>randomAppointment</span><span class=p>(</span> <span class=c1>// при вызове не указывается значение параметра client</span>
+                <span class=n>dateTime</span> <span class=p>=</span> <span class=n>today</span><span class=p>.</span><span class=nf>atTime</span><span class=p>(</span><span class=n>firstAppointmentStartTime</span><span class=p>),</span> <span class=n>timeZone</span> <span class=p>=</span> <span class=n>asiaNovosibirskTimeZone</span>
+            <span class=p>),</span>
+            <span class=nf>randomAppointment</span><span class=p>(</span>
+                <span class=n>dateTime</span> <span class=p>=</span> <span class=n>today</span><span class=p>.</span><span class=nf>atTime</span><span class=p>(</span><span class=mi>8</span><span class=p>,</span> <span class=mi>0</span><span class=p>),</span> <span class=n>timeZone</span> <span class=p>=</span> <span class=n>asiaNovosibirskTimeZone</span>
+            <span class=p>)</span>
+        <span class=p>)</span>
+
+        <span class=c1>// When</span>
+        <span class=kd>val</span> <span class=py>calendarPageModel</span> <span class=p>=</span> <span class=nc>CalendarPageModel</span><span class=p>.</span><span class=nf>of</span><span class=p>(</span><span class=n>today</span><span class=p>,</span> <span class=n>appointments</span><span class=p>)</span>
+
+        <span class=c1>// Then</span>
+        <span class=n>calendarPageModel</span><span class=p>.</span><span class=n>timeMarks</span><span class=p>.</span><span class=nf>first</span><span class=p>().</span><span class=n>time</span> <span class=n>shouldBe</span> <span class=n>firstAppointmentStartTime</span>
+    <span class=p>}</span>
+
+<span class=p>}</span></code></pre></div><p>В коде выше приведён один из двух на данный момент юнит-тестов в проекте.
+Этот тест проверяет соответствие системы требованию "Календарь должен начинаться со времени первого приёма".
+Тут также надо немного пояснить устройство системы.
+Расписание отображается терапевту в виде календаря — сетки с днями в столбцах и временем дня в строках:</p><div class=image-block><img src=/microposts/24/04/images/2024-03-16-15-36-31.png alt="2024 03 16 15 36 31"></div><p>По умолчанию отображается время с 7 до 22 часов.
+И тест выше проверяет, что если есть приём, который начинается раньше 7 утра, то в модели этой страницы сетка времени начинается со времени самого раннего приёма.</p><p>Код построения модели страницы, спрятанный за <code>CalendarPageModel.of</code> — чистый.
+Он получает на вход дату и список приёмов и возвращает сетку календаря с приёмами в ячейках.</p><p>И клиенты приёмов в данном случае совершенно не важны и не попадут в БД, но требуются для того, чтобы банально создать экземпляр объекта приёма.
+Поэтому я спокойно использую фейковые объекты (один и тот же, на самом деле).</p></section><section class="doc-section level-3"><h4 id=_бонус_трэк_отключение_проверки_внешних_ключей><a class=link href=#_бонус_трэк_отключение_проверки_внешних_ключей>Бонус трэк - отключение проверки внешних ключей</a></h4><p>Сам я так никогда не делал, но теоретически проблему ссылочных данных можно решить кардинально - с помощью отключения контроля целостности внешних ключей.</p><p>Сейчас не получается быстро нагуглить пример того, как это делать при тестировании и, воспользовавшись форматом микропоста, я не буду его изобретать сам и описывать.</p><p>Но это совершенно точно решаемая задача, при желании.</p></section></section><section class="doc-section level-2"><h3 id=_генерация_рандомных_доменных_данных><a class=link href=#_генерация_рандомных_доменных_данных>Генерация рандомных доменных данных</a></h3><p>Стоит упомянуть, что при генерации случайных данных я стараюсь, чтоб значения попадали в область реальных значений.
+Например, время начала примера - это не случайная пара часов и минут, а время в интервале с 8 до 21 часа и минуты кратные 5.
+И код генерации таких данных хоть и является, по сути, генератором примитивных данных - я его складываю рядом с Object Mother сущности, для генерации значений атрибутов которой он используется.</p><figure class=listing-block><figcaption>Генераторы случайных данных приёма. <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/appointments/AppointmentsObjectMother.kt#L140>Смотреть на GitHub</a>.</figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>object</span> <span class=nc>AppointmentsObjectMother</span> <span class=p>{</span>
+<span class=c1>// ...</span>
+<span class=p>}</span>
+
+<span class=k>fun</span> <span class=nf>randomAppointmentDate</span><span class=p>():</span> <span class=nc>LocalDateTime</span> <span class=p>=</span>
+    <span class=c1>// ...</span>
+
+<span class=k>fun</span> <span class=nf>randomAppointmentCost</span><span class=p>():</span> <span class=nc>Int</span> <span class=p>=</span>
+    <span class=c1>// ...</span>
+
+<span class=k>fun</span> <span class=nf>randomAppointmentDuration</span><span class=p>():</span> <span class=nc>Duration</span> <span class=p>=</span>
+    <span class=c1>// ...</span></code></pre></figure><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>На случай если вы и правда посмотрели на GitHub-е - надо отметить, что стараться я мог бы и получше.
+Для большего реализма стоимость приёма надо сделать положительной и кратной 50 рублям.</p><p>Но это лишь делает пример ещё больше приближенным к реальным проектам, не всегда совпадающим с идеалами собственных авторов:)</p></aside></section><section class="doc-section level-2"><h3 id=_генерация_коллекций_доменных_объектов><a class=link href=#_генерация_коллекций_доменных_объектов>Генерация коллекций доменных объектов</a></h3><p>Благодаря тому, что доменные объекты генерируются случайно — их можно генерировать в любых количествах.</p><p>Но сейчас это используется только в тестах просмотра списка объектов.</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@Test</span>
+<span class=k>fun</span> <span class=nf>`Clients</span> <span class=n>list</span> <span class=n>page</span> <span class=n>should</span> <span class=n>render</span> <span class=mi>10</span> <span class=n>rows</span> <span class=k>when</span> <span class=n>enough</span> <span class=n>clients</span> <span class=nf>exists`</span><span class=p>()</span> <span class=p>{</span>
+    <span class=c1>// Given</span>
+    <span class=c1>// Дублирование этой константы в тесте - спорная техника</span>
+    <span class=c1>// С одной стороны - если поменять её в продовом коде - это потребует</span>
+    <span class=c1>// изменений и в тесте, что, может показаться снижением устойчивости теста к рефакторингу</span>
+    <span class=c1>// С другой стороны, изменение кол-ва записей на странице - это изменение в требованиях,</span>
+    <span class=c1>// и в этом случае я ожидаю, что тест будет изменён</span>
+    <span class=kd>val</span> <span class=py>pageSize</span> <span class=p>=</span> <span class=mi>10</span>
+    <span class=kd>val</span> <span class=py>therapist</span> <span class=p>=</span> <span class=nc>TherapistClient</span><span class=p>.</span><span class=nf>loginAsTheTherapist</span><span class=p>()</span>
+    <span class=kd>val</span> <span class=py>clients</span> <span class=p>=</span> <span class=nc>ClientsObjectMother</span><span class=p>.</span><span class=nf>createClientCardDtos</span><span class=p>(</span><span class=n>pageSize</span> <span class=p>+</span> <span class=mi>1</span><span class=p>)</span>
+    <span class=c1>// Это может показаться тавтологией — повтором продовой логики в тесте</span>
+    <span class=c1>// но в проде этот же результат (данные отсортированы и ограничены) достигается</span>
+    <span class=c1>// средствами SQL, и если заменить код на явное перечисление записей,</span>
+    <span class=c1>// то, во-первых, это замусорит код тест кейса и, во-вторых, потребует</span>
+    <span class=c1>// комментария, который объяснит суть ожидаемого результата и фактически будет аналогом этого кода на естественном языке</span>
+    <span class=kd>val</span> <span class=py>firstPage</span> <span class=p>=</span> <span class=n>clients</span><span class=p>.</span><span class=nf>sortedBy</span> <span class=p>{</span> <span class=n>it</span><span class=p>.</span><span class=n>lastName</span><span class=p>.</span><span class=nf>lowercase</span><span class=p>()</span> <span class=p>}.</span><span class=nf>take</span><span class=p>(</span><span class=n>pageSize</span><span class=p>)</span>
+    <span class=n>backgrounds</span><span class=p>.</span><span class=n>clients</span><span class=p>.</span><span class=nf>createClients</span><span class=p>(</span><span class=n>clients</span><span class=p>)</span>
+
+    <span class=c1>// When</span>
+    <span class=kd>val</span> <span class=py>document</span> <span class=p>=</span> <span class=n>therapist</span><span class=p>.</span><span class=n>clients</span><span class=p>.</span><span class=nf>getClientsListPage</span><span class=p>()</span>
+
+    <span class=c1>// Then</span>
+    <span class=n>document</span> <span class=n>shouldBe</span> <span class=nc>ClientsListPage</span>
+    <span class=nc>ClientsListPage</span><span class=p>.</span><span class=nf>clientRows</span><span class=p>(</span><span class=n>document</span><span class=p>)</span> <span class=n>shouldHaveSize</span> <span class=n>pageSize</span>
+    <span class=n>firstPage</span><span class=p>.</span><span class=nf>forAll</span> <span class=p>{</span>
+        <span class=n>document</span> <span class=n>shouldHave</span> <span class=nc>ClientsListPage</span><span class=p>.</span><span class=nf>clientRow</span><span class=p>(</span><span class=nc>Client</span><span class=p>(</span><span class=nc>THE_THERAPIST_ID</span><span class=p>,</span> <span class=n>it</span><span class=p>))</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></div></section><section class="doc-section level-2"><h3 id=_генерация_сложных_агрегатов><a class=link href=#_генерация_сложных_агрегатов>Генерация сложных агрегатов</a></h3><p>Сейчас самым сложным агрегатом в TA является упражнение.
+У упражнения есть от 0 до нескольких шагов, у каждого шага есть необязательное изображение, а само изображение, из соображений производительности, вынесено в отдельный <a href=https://azhidkov.pro/posts/23/11/immutable-relation-data-model-v2/#_неизменяемая_er_модель>физический агрегат</a>.</p><p>И, из соображений скорости выполнения тестов, хочется генерировать изображения только в тех тестах, где они нужны.
+Для решения этой задачи я завёл фабрику изображений:</p><figure class=listing-block><figcaption>ImagesGenerationMode. <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapy/exercises/ImagesGenerationMode.kt#L7>Смотреть на GitHub</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=c1>// Сейчас смотрю на этот код и не особо понимаю, зачем я сделал sealed интерфейс, а не fun</span>
+<span class=k>sealed</span> <span class=kd>interface</span> <span class=nc>ImagesGenerationMode</span> <span class=p>{</span>
+
+    <span class=k>fun</span> <span class=nf>generateImages</span><span class=p>(</span><span class=n>steps</span><span class=p>:</span> <span class=nc>Int</span><span class=p>):</span> <span class=nc>Map</span><span class=p>&lt;</span><span class=nc>Int</span><span class=p>,</span> <span class=nc>StoredFile</span><span class=p>&gt;</span>
+
+<span class=p>}</span>
+
+<span class=c1>// тут data тоже выглядит подозрительно, но на этом настаивает IDEA</span>
+<span class=n>data</span> <span class=kd>object</span> <span class=nc>AllSteps</span> <span class=p>:</span> <span class=nc>ImagesGenerationMode</span> <span class=p>{</span>
+
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>generateImages</span><span class=p>(</span><span class=n>steps</span><span class=p>:</span> <span class=nc>Int</span><span class=p>):</span> <span class=nc>Map</span><span class=p>&lt;</span><span class=nc>Int</span><span class=p>,</span> <span class=nc>StoredFile</span><span class=p>&gt;</span> <span class=p>=</span>
+        <span class=p>(</span><span class=mi>1</span><span class=o>..</span><span class=n>steps</span><span class=p>).</span><span class=nf>associateWith</span> <span class=p>{</span> <span class=nc>FilesObjectMother</span><span class=p>.</span><span class=nf>randomImage</span><span class=p>()</span> <span class=p>}</span>
+
+<span class=p>}</span>
+
+<span class=n>data</span> <span class=kd>object</span> <span class=nc>None</span> <span class=p>:</span> <span class=nc>ImagesGenerationMode</span> <span class=p>{</span>
+
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>generateImages</span><span class=p>(</span><span class=n>steps</span><span class=p>:</span> <span class=nc>Int</span><span class=p>):</span> <span class=nc>Map</span><span class=p>&lt;</span><span class=nc>Int</span><span class=p>,</span> <span class=nc>StoredFile</span><span class=p>&gt;</span> <span class=p>=</span> <span class=nf>emptyMap</span><span class=p>()</span>
+
+<span class=p>}</span></code></pre></figure><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Сейчас я, пожалуй, переписал бы этот код так:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=k>fun</span> <span class=nf>interface</span> <span class=nc>ImagesGenerationMode</span> <span class=p>{</span>
+    <span class=k>fun</span> <span class=nf>generateImages</span><span class=p>(</span><span class=n>steps</span><span class=p>:</span> <span class=nc>Int</span><span class=p>):</span> <span class=nc>Map</span><span class=p>&lt;</span><span class=nc>Int</span><span class=p>,</span> <span class=nc>StoredFile</span><span class=p>&gt;</span>
+<span class=p>}</span>
+
+<span class=kd>val</span> <span class=py>allSteps</span> <span class=p>=</span> <span class=nc>ImagesGenerationMode</span> <span class=p>{</span>
+    <span class=n>steps</span> <span class=p>-&gt;</span> <span class=p>(</span><span class=mi>1</span><span class=o>..</span><span class=n>steps</span><span class=p>).</span><span class=nf>associateWith</span> <span class=p>{</span> <span class=nc>FilesObjectMother</span><span class=p>.</span><span class=nf>randomImage</span><span class=p>()</span> <span class=p>}</span>
+<span class=p>}</span></code></pre></div></aside><p>Затем экземпляр этой фабрики передаётся в функцию генерации упражнения с None в качестве дефолта:</p><p>Генерация упражнения. <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapy/exercises/ExercisesObjectMother.kt#L62>Смотреть на GitHub</a></p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=k>fun</span> <span class=nf>randomExercise</span><span class=p>(</span>
+    <span class=n>stepsCount</span><span class=p>:</span> <span class=nc>Int</span> <span class=p>=</span> <span class=mi>0</span><span class=p>,</span>
+    <span class=n>imagesGenerationMode</span><span class=p>:</span> <span class=nc>ImagesGenerationMode</span> <span class=p>=</span> <span class=nc>None</span><span class=p>,</span>
+    <span class=n>therapistId</span><span class=p>:</span> <span class=nc>Long</span> <span class=p>=</span> <span class=nc>THE_THERAPIST_ID</span><span class=p>,</span>
+    <span class=n>id</span><span class=p>:</span> <span class=nc>Long</span> <span class=p>=</span> <span class=mi>0</span>
+<span class=p>):</span> <span class=nc>Pair</span><span class=p>&lt;</span><span class=nc>Exercise</span><span class=p>,</span> <span class=nc>Map</span><span class=p>&lt;</span><span class=nc>Int</span><span class=p>,</span> <span class=nc>StoredFile</span><span class=p>&gt;&gt;</span> <span class=p>{</span>
+    <span class=kd>val</span> <span class=py>exercise</span> <span class=p>=</span> <span class=nc>Exercise</span><span class=p>(</span>
+        <span class=nf>randomCyrillicWord</span><span class=p>(),</span>
+        <span class=nf>randomSentence</span><span class=p>(),</span>
+        <span class=nf>randomExerciseDuration</span><span class=p>(),</span>
+        <span class=nc>ExerciseType</span><span class=p>.</span><span class=n>entries</span><span class=p>.</span><span class=nf>random</span><span class=p>(),</span>
+        <span class=n>therapistId</span><span class=p>,</span>
+        <span class=n>steps</span> <span class=p>=</span> <span class=nf>exerciseSteps</span><span class=p>(</span><span class=n>stepsCount</span><span class=p>),</span>
+        <span class=n>id</span> <span class=p>=</span> <span class=n>id</span>
+    <span class=p>)</span>
+    <span class=kd>val</span> <span class=py>images</span> <span class=p>=</span> <span class=n>imagesGenerationMode</span><span class=p>.</span><span class=nf>generateImages</span><span class=p>(</span><span class=n>stepsCount</span><span class=p>)</span>
+    <span class=k>return</span> <span class=n>exercise</span> <span class=n>to</span> <span class=n>images</span>
+<span class=p>}</span></code></pre></div></section><section class="doc-section level-2"><h3 id=_дедупликация_фикстуры_одной_логики_доступной_через_разные_эндпоинты><a class=link href=#_дедупликация_фикстуры_одной_логики_доступной_через_разные_эндпоинты>Дедупликация фикстуры одной логики, доступной через разные эндпоинты</a></h3><p>Иногда бывает так, что одна и та же операция ядра "выставляется" наружу в нескольких операциях системы.
+И в этом случае в тестах этих операций можно использовать одну и ту же фикстуру.
+В TA такой операцией является <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/main/kotlin/pro/qyoga/core/therapy/therapeutic_tasks/TherapeuticTasksRepo.kt#L69>поиск терапевтической задачи по имени</a>, который используется на странице списка терапевтических задач и в компоненте выбора терапевтической задачи на странице карточки записи в журнале.</p><p>Эти две штуки покрыты тестами <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/test/kotlin/pro/qyoga/tests/cases/app/therapist/therapy/therapeutic_tasks/TherapeuticTasksPageTest.kt>TherapeuticTasksPageTest</a> и <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/test/kotlin/pro/qyoga/tests/cases/app/therapist/clients/journal/SearchTherapeuticTaskTest.kt>SearchTherapeuticTaskTest</a>.</p><p>И оба эти теста используют одну и ту же фикстуру и ожидаемый результат и я их вытащил в отдельный объект:</p><figure class=listing-block><figcaption>SearchTherapeuticTasksFixture. <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapy/therapeutic_tasks/SearchTherapeuticTasksFixture.kt>Смотреть на GitHub</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>object</span> <span class=nc>SearchTherapeuticTasksFixture</span> <span class=p>{</span>
+
+    <span class=k>const</span> <span class=kd>val</span> <span class=py>searchKey</span> <span class=p>=</span> <span class=s>&#34;лор&#34;</span>
+
+    <span class=kd>val</span> <span class=py>matchingTaskNames</span> <span class=p>=</span> <span class=nf>listOf</span><span class=p>(</span>
+        <span class=s>&#34;лорМобилизация ПОП&#34;</span><span class=p>,</span>
+        <span class=s>&#34;Лор Снятие компрессии с ПОП&#34;</span><span class=p>,</span>
+        <span class=s>&#34;лор Коррекция кифолордотической осанки&#34;</span><span class=p>,</span>
+        <span class=s>&#34;ЙТЛоргастрита&#34;</span><span class=p>,</span>
+        <span class=s>&#34;ЙТ травмы лор медиального мениска&#34;</span><span class=p>,</span>
+        <span class=s>&#34;Коррекция С-образного сколеозаЛор&#34;</span><span class=p>,</span>
+        <span class=s>&#34;Коррекция жёсткости ГОП лор&#34;</span>
+    <span class=p>)</span>
+
+    <span class=kd>val</span> <span class=py>notMatchingTaskNames</span> <span class=p>=</span> <span class=nf>listOf</span><span class=p>(</span>
+        <span class=s>&#34;Коррекция протракции головы&#34;</span><span class=p>,</span>
+        <span class=s>&#34;Деротация ГОП&#34;</span><span class=p>,</span>
+        <span class=s>&#34;Терапия ГЭРБ&#34;</span>
+    <span class=p>)</span>
+
+    <span class=k>fun</span> <span class=nf>getExpectedSearchResult</span><span class=p>(</span>
+        <span class=n>allTasks</span><span class=p>:</span> <span class=nc>List</span><span class=p>&lt;</span><span class=nc>TherapeuticTask</span><span class=p>&gt;,</span>
+        <span class=n>searchKey</span><span class=p>:</span> <span class=nc>String</span><span class=p>,</span>
+        <span class=n>pageSize</span><span class=p>:</span> <span class=nc>Int</span>
+    <span class=p>)</span> <span class=p>=</span>
+        <span class=n>allTasks</span>
+            <span class=p>.</span><span class=nf>filter</span> <span class=p>{</span> <span class=n>it</span><span class=p>.</span><span class=n>name</span><span class=p>.</span><span class=nf>lowercase</span><span class=p>().</span><span class=nf>contains</span><span class=p>(</span><span class=n>searchKey</span><span class=p>.</span><span class=nf>lowercase</span><span class=p>())</span> <span class=p>}</span>
+            <span class=p>.</span><span class=nf>sortedWith</span> <span class=p>{</span> <span class=n>o1</span><span class=p>,</span> <span class=n>o2</span> <span class=p>-&gt;</span> <span class=n>systemCollator</span><span class=p>.</span><span class=nf>compare</span><span class=p>(</span><span class=n>o1</span><span class=p>.</span><span class=n>name</span><span class=p>,</span> <span class=n>o2</span><span class=p>.</span><span class=n>name</span><span class=p>)</span> <span class=p>}</span>
+            <span class=p>.</span><span class=nf>take</span><span class=p>(</span><span class=n>pageSize</span><span class=p>)</span>
+<span class=p>}</span></code></pre></figure></section></section><section class="doc-section level-1"><h2 id=_вставка_фикстуры_теста><a class=link href=#_вставка_фикстуры_теста>Вставка фикстуры теста</a></h2><p>После генерации фикстурных объектов, для интеграционных тестов их необходимо вставить в БД.
+Для этого я использую бэкграунды.</p><section class="doc-section level-2"><h3 id=_единичный_объект><a class=link href=#_единичный_объект>Единичный объект</a></h3><p>Проще всего выполняется вставка единичного объекта:</p><figure class=listing-block><figcaption>Генерация и вставка произвольного объекта (референсные данные). <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapy/therapeutic_tasks/SearchTherapeuticTasksFixture.kt#L6>Смотреть на GitHub</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin> <span class=k>fun</span> <span class=nf>`Edit</span> <span class=n>of</span> <span class=n>minimal</span> <span class=n>appointment</span> <span class=n>to</span> <span class=n>full</span> <span class=n>should</span> <span class=n>be</span> <span class=nf>persistent`</span><span class=p>()</span> <span class=p>{</span>
+    <span class=c1>// Given</span>
+    <span class=c1>// ...</span>
+<span class=hll>    <span class=kd>val</span> <span class=py>newAppointmentType</span> <span class=p>=</span> <span class=n>backgrounds</span><span class=p>.</span><span class=n>appointmentTypes</span><span class=p>.</span><span class=nf>createAppointmentType</span><span class=p>()</span> <b class=conum>1</b>
+</span>    <span class=c1>// ...</span>
+    <span class=kd>val</span> <span class=py>editedAppointment</span> <span class=p>=</span>
+        <span class=nc>AppointmentsObjectMother</span><span class=p>.</span><span class=nf>appointmentPatchRequest</span><span class=p>(</span>
+            <span class=c1>// ...</span>
+<span class=hll>            <span class=n>newAppointmentType</span><span class=p>.</span><span class=nf>ref</span><span class=p>(),</span> <b class=conum>2</b>
+</span><span class=hll>            <span class=n>newAppointmentType</span><span class=p>.</span><span class=n>name</span><span class=p>,</span>
+</span>            <span class=c1>// ...</span>
+        <span class=p>)</span>
+
+    <span class=c1>// Then</span>
+    <span class=c1>// ...</span>
+    <span class=kd>val</span> <span class=py>persistedAppointment</span> <span class=p>=</span>
+            <span class=n>backgrounds</span><span class=p>.</span><span class=n>appointments</span><span class=p>.</span><span class=nf>getDaySchedule</span><span class=p>(</span><span class=n>editedAppointment</span><span class=p>.</span><span class=n>dateTime</span><span class=p>.</span><span class=nf>toLocalDate</span><span class=p>()).</span><span class=nf>single</span><span class=p>()</span>
+<span class=hll>    <span class=n>persistedAppointment</span> <span class=n>shouldMatch</span> <span class=n>editedAppointment</span> <b class=conum>3</b>
+</span><span class=p>}</span></code></pre></figure><p>Это тест на то, что редактирование приёма обновляет все данные приёма, включая ссылку на тип приёма.
+В данном случае для теста не важно как именно назван тип приёма, важно, что после редактирования приёма он ссылается на верный тип.</p><p>Поэтому здесь в методе <code>createAppointmentType</code> выполняется генерация и вставка в БД произвольного типа приёма (<strong>1</strong>), затем он используется в объекте запроса на редактирования приёма (<strong>2</strong>), после чего в блоке верификации в методе <code>shouldMatch</code> выполняется проверка, что <code>persistedAppointment</code> ссылается на <code>newAppointmentType</code> (<strong>3</strong>).</p><p>Следующий же тест проверяет функциональность поиска типа приёма по имени и в нём нам уже важно значение поля имени:</p><figure class=listing-block><figcaption>Генерация и вставка специфичного объекта. <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapy/therapeutic_tasks/SearchTherapeuticTasksFixture.kt#L6>Смотреть на GitHub</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=k>fun</span> <span class=nf>`AppointmentTypesComboBox</span> <span class=n>should</span> <span class=k>return</span> <span class=n>items</span> <span class=n>that</span> <span class=n>contain</span> <span class=n>keyword</span> <span class=k>in</span> <span class=nf>title`</span><span class=p>()</span> <span class=p>{</span>
+    <span class=c1>// Given</span>
+    <span class=kd>val</span> <span class=py>searchKey</span> <span class=p>=</span> <span class=s>&#34;Трен&#34;</span>
+    <span class=kd>val</span> <span class=py>appointmentType</span> <span class=p>=</span>
+<span class=hll>        <span class=n>backgrounds</span><span class=p>.</span><span class=n>appointmentTypes</span><span class=p>.</span><span class=nf>createAppointmentType</span><span class=p>(</span>
+</span><span class=hll>            <span class=nc>AppointmentTypesObjectMother</span><span class=p>.</span><span class=nf>randomAppointmentType</span><span class=p>(</span><span class=n>name</span> <span class=p>=</span> <span class=n>searchKey</span> <span class=p>+</span> <span class=nf>randomCyrillicWord</span><span class=p>())</span>
+</span><span class=hll>        <span class=p>)</span>
+</span></code></pre></figure><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Теоретически, тут можно было пойти обратным путём - сгенерировать произвольный тип, программно вытащить из него середину имени и выполнить поиск по этой подстроке.
+Не могу решить какой из этих вариантов лучше.</p></aside><p>Реализация же метода <code>createAppointmentType</code> очевидная и тривиальная:</p><figure class=listing-block><figcaption>AppointmentTypesBackgrounds.createAppointmentType. <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapy/therapeutic_tasks/SearchTherapeuticTasksFixture.kt#L6>Смотреть на GitHub</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=k>fun</span> <span class=nf>createAppointmentType</span><span class=p>(</span>
+    <span class=n>appointmentType</span><span class=p>:</span> <span class=nc>AppointmentType</span> <span class=p>=</span> <span class=nc>AppointmentTypesObjectMother</span><span class=p>.</span><span class=nf>randomAppointmentType</span><span class=p>()</span>
+<span class=p>):</span> <span class=nc>AppointmentType</span> <span class=p>{</span>
+    <span class=k>return</span> <span class=n>appointmentTypesRepo</span><span class=p>.</span><span class=nf>save</span><span class=p>(</span><span class=n>appointmentType</span><span class=p>)</span>
+<span class=p>}</span></code></pre></figure><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Сейчас я придерживаюсь позиции, что бэкграунды должны взаимодействовать с системой через контроллеры.
+Это согласуется с правилом "тестировать систему через публичное API" и снижает вероятность необходимости изменений в тестовом коде после рефакторинга продового кода и повышает вероятность выявления регрессии, если в результате рефакторинга сервиса сломается контроллер.</p></aside></section><section class="doc-section level-2"><h3 id=_дерево_произвольных_объектов><a class=link href=#_дерево_произвольных_объектов>Дерево произвольных объектов</a></h3><p>В разделе <a href=#_внедрённые_идентификаторы>"Внедрённые идентификаторы"</a> я уже приводил пример использования генерации произвольного дерева объектов (приёма в данном случае), теперь посмотрим как это реализованно.</p><p>У приёма есть три различных по характеру ссылки:</p><div class="olist arabic"><ol class=arabic><li>на клиента - обязательная, целевой клиент должен существовать на момент создания приёма;</li><li>на тип - обязательная, целевой тип можно создать одновременно с приёмом;</li><li>на задачу - необязательная, но если указана, то должна существовать, на момент создания приёма.</li></ol></div><p>И двигаясь по пути наименьшего сопротивления, при создании произвольного приёма я:</p><div class="olist arabic"><ol class=arabic><li>использую бэкграунд для генерации клиента;</li><li>использую генератор случайных данных для генерации имени типа приёма, который будет создан одновременно с приёмом;</li><li>не указываю задачу.</li></ol></div><p>В коде это выглядит так:</p><figure class=listing-block><figcaption>Генерация приёма. <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapy/therapeutic_tasks/SearchTherapeuticTasksFixture.kt#L6>Смотреть на GitHub</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=k>fun</span> <span class=nf>create</span><span class=p>(</span>
+    <span class=n>dateTime</span><span class=p>:</span> <span class=nc>LocalDateTime</span> <span class=p>=</span> <span class=nf>randomAppointmentDate</span><span class=p>(),</span>
+    <span class=n>timeZone</span><span class=p>:</span> <span class=nc>ZoneId</span> <span class=p>=</span> <span class=nf>randomTimeZone</span><span class=p>(),</span>
+    <span class=n>duration</span><span class=p>:</span> <span class=nc>Duration</span> <span class=p>=</span> <span class=nf>randomAppointmentDuration</span><span class=p>(),</span>
+    <span class=n>place</span><span class=p>:</span> <span class=nc>String</span><span class=p>?</span> <span class=p>=</span> <span class=k>null</span><span class=p>,</span>
+    <span class=n>cost</span><span class=p>:</span> <span class=nc>Int</span><span class=p>?</span> <span class=p>=</span> <span class=k>null</span><span class=p>,</span>
+    <span class=n>payed</span><span class=p>:</span> <span class=nc>Boolean</span><span class=p>?</span> <span class=p>=</span> <span class=k>null</span><span class=p>,</span>
+    <span class=n>comment</span><span class=p>:</span> <span class=nc>String</span><span class=p>?</span> <span class=p>=</span> <span class=k>null</span><span class=p>,</span>
+    <span class=n>therapist</span><span class=p>:</span> <span class=nc>TherapistRef</span> <span class=p>=</span> <span class=nc>THE_THERAPIST_REF</span><span class=p>,</span>
+    <span class=n>therapeuticTaskRef</span><span class=p>:</span> <span class=nc>TherapeuticTaskRef</span><span class=p>?</span> <span class=p>=</span> <span class=k>null</span>
+<span class=p>):</span> <span class=nc>Appointment</span> <span class=p>{</span>
+    <span class=kd>val</span> <span class=py>clientRef</span> <span class=p>=</span> <span class=n>clientsBackgrounds</span><span class=p>.</span><span class=nf>createClients</span><span class=p>(</span><span class=mi>1</span><span class=p>,</span> <span class=n>therapist</span><span class=p>.</span><span class=n>id</span><span class=o>!!</span><span class=p>).</span><span class=nf>single</span><span class=p>().</span><span class=nf>ref</span><span class=p>()</span>
+    <span class=kd>val</span> <span class=py>appointment</span> <span class=p>=</span> <span class=nf>createAppointment</span><span class=p>(</span>
+        <span class=n>therapist</span><span class=p>,</span>
+        <span class=nc>AppointmentsObjectMother</span><span class=p>.</span><span class=nf>randomEditAppointmentRequest</span><span class=p>(</span>
+            <span class=n>client</span> <span class=p>=</span> <span class=n>clientRef</span><span class=p>,</span>
+            <span class=n>therapeuticTask</span> <span class=p>=</span> <span class=n>therapeuticTaskRef</span><span class=p>,</span>
+            <span class=n>dateTime</span> <span class=p>=</span> <span class=n>dateTime</span><span class=p>,</span>
+            <span class=n>timeZone</span> <span class=p>=</span> <span class=n>timeZone</span><span class=p>,</span>
+            <span class=n>duration</span> <span class=p>=</span> <span class=n>duration</span><span class=p>,</span>
+            <span class=n>place</span> <span class=p>=</span> <span class=n>place</span><span class=p>,</span>
+            <span class=n>cost</span> <span class=p>=</span> <span class=n>cost</span><span class=p>,</span>
+            <span class=n>payed</span> <span class=p>=</span> <span class=n>payed</span><span class=p>,</span>
+            <span class=n>comment</span> <span class=p>=</span> <span class=n>comment</span>
+        <span class=p>)</span>
+    <span class=p>)</span>
+    <span class=k>return</span> <span class=n>appointmentsRepo</span><span class=p>.</span><span class=nf>findById</span><span class=p>(</span><span class=n>appointment</span><span class=p>.</span><span class=n>id</span><span class=p>,</span> <span class=nc>Appointment</span><span class=p>.</span><span class=nc>Fetch</span><span class=p>.</span><span class=n>editableRefs</span><span class=p>)</span><span class=o>!!</span>
+<span class=p>}</span></code></pre></figure></section><section class="doc-section level-2"><h3 id=_коллекции_объектов><a class=link href=#_коллекции_объектов>Коллекции объектов</a></h3><p>Периодически тестам требуется вставка нескольких объектов одного типа.
+Притом бывает так, что тесту важно, контролировать значения свойств этих объектов, а бывает, что нет — нужна просто безликая массовка.</p><p>Решаются эти задачи тривиально - коллекция специфичных объектов вставляется простой делегацией в метод создания в продовый код, а массовка генерируется посредством генерации N случайных объектов и делегацией её вставки в метод вставки коллекции специфичных объектов:</p><figure class=listing-block><figcaption>Вставка коллекций клиентов. <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapy/therapeutic_tasks/SearchTherapeuticTasksFixture.kt#L6>Смотреть на GitHub</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=k>fun</span> <span class=nf>createClients</span><span class=p>(</span><span class=n>clients</span><span class=p>:</span> <span class=nc>List</span><span class=p>&lt;</span><span class=nc>ClientCardDto</span><span class=p>&gt;,</span> <span class=n>therapistId</span><span class=p>:</span> <span class=nc>Long</span> <span class=p>=</span> <span class=nc>THE_THERAPIST_ID</span><span class=p>):</span> <span class=nc>Iterable</span><span class=p>&lt;</span><span class=nc>Client</span><span class=p>&gt;</span> <span class=p>{</span>
+    <span class=k>return</span> <span class=n>clientsRepo</span><span class=p>.</span><span class=nf>saveAll</span><span class=p>(</span><span class=n>clients</span><span class=p>.</span><span class=nf>map</span> <span class=p>{</span> <span class=nc>ClientsObjectMother</span><span class=p>.</span><span class=nf>createClient</span><span class=p>(</span><span class=n>therapistId</span><span class=p>,</span> <span class=n>it</span><span class=p>)</span> <span class=p>})</span>
+<span class=p>}</span>
+
+<span class=k>fun</span> <span class=nf>createClients</span><span class=p>(</span><span class=n>count</span><span class=p>:</span> <span class=nc>Int</span><span class=p>,</span> <span class=n>therapistId</span><span class=p>:</span> <span class=nc>Long</span> <span class=p>=</span> <span class=nc>THE_THERAPIST_ID</span><span class=p>):</span> <span class=nc>Iterable</span><span class=p>&lt;</span><span class=nc>Client</span><span class=p>&gt;</span> <span class=p>{</span>
+    <span class=k>return</span> <span class=nf>createClients</span><span class=p>(</span><span class=nc>ClientsObjectMother</span><span class=p>.</span><span class=nf>createClientCardDtos</span><span class=p>(</span><span class=n>count</span><span class=p>),</span> <span class=n>therapistId</span><span class=p>)</span>
+<span class=p>}</span></code></pre></figure><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Тут у вас может возникнуть вопрос "А если у меня нет продового кода для вставки?".
+Если его <strong>ещё</strong> нет (например, вы начинаете реализацию новой фичи с теста метода чтения) - напишите его.
+Если его <strong>в принципе нет</strong> - тогда у меня встречный вопрос - "А как эти объекты появляются в системе на проде?".
+Единственный приходящий мне в голову ответ "админы/внешняя система INSERT-ами вставляют" - в этом случае сделайте так же в бэкграунде.</p></aside></section><section class="doc-section level-2"><h3 id=_коллекция_уникальных_объектов><a class=link href=#_коллекция_уникальных_объектов>Коллекция уникальных объектов</a></h3><p>Иногда "массовка" должна быть не совсем безликой - вам всё ещё не важны конкретные значения полей объектов, но важны свойства распределения значений этих полей в коллекции.
+Самым частым примером является уникальность какого-то поля в БД и, как следствие, уникальность его значений в выборке.</p><p>Очень часто (например, в случае телефона клиента) это свойство достаточно надёжно обеспечивается просто случайной генерацией значений - в TA (за несколько тысяч запусков тестов, я думаю) я ещё ни разу не сталкивался с тем, чтобы тест упал из-за генерации клиентов с одинаковыми телефонами.</p><p>Однако, область (разумных) значений поля бывает не такой широкой и коллизии уникальных полей могут стать проблемой.
+В ТА таким полем стала дата записи журнала, которая, по требованиям, должна быть уникальной в рамках одного клиента.</p><p>Решил я эту проблему так:</p><figure class=listing-block><figcaption>Генерация коллекции записей журнала с уникальными датами. <a href=https://github.com/d-r-q/QYoga/blob/ta-testing-post-base/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/object_mothers/therapy/therapeutic_tasks/SearchTherapeuticTasksFixture.kt#L6>Смотреть на GitHub</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=k>fun</span> <span class=nf>createEntries</span><span class=p>(</span><span class=n>clientId</span><span class=p>:</span> <span class=nc>Long</span><span class=p>,</span> <span class=n>therapist</span><span class=p>:</span> <span class=nc>QyogaUserDetails</span><span class=p>,</span> <span class=n>count</span><span class=p>:</span> <span class=nc>Int</span><span class=p>):</span> <span class=nc>List</span><span class=p>&lt;</span><span class=nc>JournalEntry</span><span class=p>&gt;</span> <span class=p>{</span>
+    <span class=kd>val</span> <span class=py>uniqueDates</span> <span class=p>=</span> <span class=nf>generateSequence</span> <span class=p>{</span> <span class=nf>randomRecentLocalDate</span><span class=p>()</span> <span class=p>}</span>
+        <span class=p>.</span><span class=nf>distinct</span><span class=p>()</span>
+        <span class=p>.</span><span class=nf>asIterable</span><span class=p>()</span>
+    <span class=k>return</span> <span class=p>(</span><span class=mi>1</span><span class=o>..</span><span class=n>count</span><span class=p>).</span><span class=nf>zip</span><span class=p>(</span><span class=n>uniqueDates</span><span class=p>).</span><span class=nf>map</span> <span class=p>{</span> <span class=p>(</span><span class=n>_</span><span class=p>,</span> <span class=n>date</span><span class=p>)</span> <span class=p>-&gt;</span>
+        <span class=nf>createJournalEntry</span><span class=p>(</span><span class=n>clientId</span><span class=p>,</span> <span class=nc>JournalEntriesObjectMother</span><span class=p>.</span><span class=nf>journalEntry</span><span class=p>(</span><span class=n>date</span> <span class=p>=</span> <span class=n>date</span><span class=p>),</span> <span class=n>therapist</span><span class=p>)</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></figure><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>У этой реализации есть пара проблем.</p><p>Во-первых, если <code>count</code> окажется больше длины периода <code>recent</code> (365, в данном случае), то этот метод зациклится навечно.</p><p>Во-вторых, реализация сама по себе у меня каким-то образом получилась замороченнее чем могла бы быть, и сейчас я её переписал так:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=k>return</span> <span class=nf>generateSequence</span> <span class=p>{</span> <span class=nf>randomRecentLocalDate</span><span class=p>()</span> <span class=p>}</span>
+    <span class=p>.</span><span class=nf>distinct</span><span class=p>()</span>
+    <span class=p>.</span><span class=nf>take</span><span class=p>(</span><span class=n>count</span><span class=p>)</span>
+    <span class=p>.</span><span class=nf>map</span> <span class=p>{</span> <span class=n>date</span> <span class=p>-&gt;</span> <span class=nf>createJournalEntry</span><span class=p>(</span><span class=n>clientId</span><span class=p>,</span> <span class=nf>journalEntry</span><span class=p>(</span><span class=n>date</span> <span class=p>=</span> <span class=n>date</span><span class=p>),</span> <span class=n>therapist</span><span class=p>)</span> <span class=p>}</span>
+    <span class=p>.</span><span class=nf>toList</span><span class=p>()</span></code></pre></div></aside></section></section><section class="doc-section level-1"><h2 id=_заключение><a class=link href=#_заключение>Заключение</a></h2><p>Фух, это было долго.
+Спасибо, что вы ещё со мной.</p><p>Суммируя всё вышесказанное:</p><div class="olist arabic"><ol class=arabic><li>Подготовка БД для тестов состоит из двух больших частей - формирование объектов и их вставка в БД;</li><li>За формирование объектов отвечают Object Mother-ы, за их вставку в БД - Background-ы;</li><li>Объекты я формирую преимущественно случайные, задавая определённые значения только тем атрибутам, которые важны для данного теста;</li><li>Формирование ссылочных данных — объектов, у которых нам важны не значения атрибутов, а их идентификаторов — выполняется совместной работой Object Mother-а (генерация произвольного объекта) и Background-а (его вставка в БД);</li><li>Помимо этого для формирования ссылочных данных я использую ещё две стратегии:<ol class=loweralpha type=a><li>Разделяемая фикстура - вставляется в БД SQL-скриптом перед каждым тестом;</li><li>Фейковые объекты - используется только в том случае, если ссылающийся объект не дойдёт до БД - в юнит-тестах чистой логики или в интеграционных тестах негативных сценариев.</li></ol></li></ol></div><p>В следующем посте мы ещё разберём подготовку нескольких видов тестовых дублей и наконец можно будет перейти к испытаниям.</p></section></article><br></section></div></main><script src=/js/app.js></script></body></html>
