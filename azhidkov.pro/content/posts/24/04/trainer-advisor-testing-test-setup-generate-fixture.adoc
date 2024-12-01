@@ -6,14 +6,14 @@ tags:
 - trainer-advisor
 - db-fixture
 aliases:
-- /microposts/24/04/images/trainer-advisor-testing-test-setup-generate-fixture
+- /microposts/24/04/trainer-advisor-testing-test-setup-generate-fixture
 ---
 
 :source-highlighter: rouge
 :rouge-theme: github
 :icons: font
 :sectlinks:
-:imagesdir: /microposts/24/04/images/
+:imagesdir: /posts/24/04/images/
 :toc:
 :toclevels: 4
 :toc-title: Содержание

@@ -8,12 +8,14 @@ tags:
 - design
 - ergo-approach
 - project-structure
+aliases:
+- /microposts/22/08/decomposition-history/
 ---
 :source-highlighter: rouge
 :rouge-theme: github
 :icons: font
 :sectlinks:
-:imagesdir: /microposts/22/08/images
+:imagesdir: /posts/22/08/images
 
 [NOTE]
 --

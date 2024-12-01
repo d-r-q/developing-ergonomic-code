@@ -5,7 +5,7 @@ draft: false
 tags:
 - kotlin
 aliases:
-- /microposts/24/03/images/kotlin-data-processing
+- /microposts/24/03/kotlin-data-processing
 
 ---
 :source-highlighter: rouge

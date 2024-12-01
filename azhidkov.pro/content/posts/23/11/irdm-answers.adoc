@@ -5,7 +5,7 @@ draft: false
 tags:
 - immutable-domain-model
 aliases:
-- /microposts/23/11/idrm-answers
+- /microposts/23/11/irdm-answers
 ---
 :source-highlighter: rouge
 :rouge-theme: github
