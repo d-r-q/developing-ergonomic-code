@@ -137,7 +137,7 @@ li p {
 }
 
 section.container.list ul li {
-    margin: 1.05em 0.5px;
+    margin: 1.05em 0.5em;
 }
 
 ul.pagination li {
