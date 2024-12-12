@@ -9,8 +9,8 @@ tags:
 - ergo-approach
 - why-ergo-approach
 aliases:
-- /micorposts/23/07/project-e-retro-v2
-- /micorposts/23/07/project-e-retro-v3
+- /microposts/23/07/project-e-retro-v2
+- /microposts/23/07/project-e-retro-v3
 ---
 :icons: font
 :sectlinks:
