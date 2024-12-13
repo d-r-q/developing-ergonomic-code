@@ -78,4 +78,63 @@
 &lt;section class="doc-section level-1">&lt;h2 id="_структурный_дизайн">&lt;a class="link" href="#_структурный_дизайн">Структурный дизайн&lt;/a>&lt;/h2>&lt;p>В 60-ых годах прошлого века учёный &lt;a href="https://en.wikipedia.org/wiki/Larry_Constantine">Ларри Константин&lt;/a> написал книгу Structured Design.
 В этой книге он впервые ввёл понятия сцепленности (coupling) и функциональной связанности (cohesion), которые до сих пор лежат в основе большинства подходов к проектированию и кодированию программ.&lt;/p>
 &lt;p>Помимо этого, в главе &lt;a href="https://archive.org/details/structureddesign00edwa/page/128/mode/2up">&amp;#34;THE MORPHOLOGY OF SIMPLE SYSTEMS&amp;#34; &lt;/a> (для просмотра необходимо пройти бесплатную регистрацию и &amp;#34;занять&amp;#34; книгу), Константин приводит иллюстрацию того, что он называет моделью, ориентированной на трансформацию (выделение цветами моё):&lt;/p>
-&lt;div class="image-block">&lt;img src="https://azhidkov.pro/posts/23/10/images/why-fp-286c9.png" alt="why fp 286c9"/>&lt;/div></description></item></channel></rss>
+&lt;div class="image-block">&lt;img src="https://azhidkov.pro/posts/23/10/images/why-fp-286c9.png" alt="why fp 286c9"/>&lt;/div></description></item><item><title>Ленивые вычисления для реализации функциональной архитектуры</title><link>https://azhidkov.pro/posts/22/05/lazy-eval-for-func-arch/</link><pubDate>Sat, 07 May 2022 08:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/22/05/lazy-eval-for-func-arch/</guid><description>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является &amp;#34;микропостом&amp;#34; - текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+&lt;p>Следить за обновлениями блога можно в Telegram-канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>.&lt;/p>&lt;/aside>
+&lt;p>Микропост в догонку к &lt;a href="https://t.me/c/1394241379/582">посту о книге&lt;/a>.&lt;/p>
+&lt;p>Вкратце напомню суть функциональной архитектуры - ввод-вывод надо утаскивать на границы системы.
+В идеале это значит, что у вас код метода сервиса приложения состоит из трёх строго разделённых частей: чтение данных, бизнес-логика, запись данных.
+При том эти части идут линейно - в идеале метод не должен содержать условий.&lt;/p>
+&lt;p>Это делает бизнес-логику максимально простой для понимания, применимой в многопоточной среде и чрезвычайно просто тестируемой.&lt;/p>
+&lt;p>Однако не всегда такое разделение даётся легко и/или без ущерба производительности. Например, если есть две операции чтения и одна зависит от другой.&lt;/p>
+&lt;p>Например, у вас есть хранилище изображений с метаинформацией, и операция их сжатия.
+Но для некоторых изображений сжатие запрещено.
+&amp;#34;Беспринципно&amp;#34; этот код можно реализовать так:&lt;/p>
+&lt;figure class="listing-block">&lt;figcaption>&amp;#34;Безпринципная&amp;#34; реализация&lt;/figcaption>
+&lt;pre class="rouge highlight">&lt;code data-lang="kotlin">&lt;span class="k">fun&lt;/span> &lt;span class="nf">compressFile&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">fileId&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Long&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+ &lt;span class="kd">val&lt;/span> &lt;span class="py">fileMeta&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">findFileMeta&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">fileId&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="c1">// &amp;lt;- ввод&lt;/span>
+ &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">fileMeta&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">isCompressible&lt;/span>&lt;span class="p">())&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="c1">// &amp;lt;- бинзнес-логика&lt;/span>
+ &lt;span class="k">throw&lt;/span> &lt;span class="nc">FileNotCompressible&lt;/span>&lt;span class="p">()&lt;/span>
+ &lt;span class="p">}&lt;/span>
+ &lt;span class="kd">val&lt;/span> &lt;span class="py">content&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">fetchFile&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">fileId&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="c1">// &amp;lt;- снова ввод&lt;/span>
+ &lt;span class="kd">val&lt;/span> &lt;span class="py">compressed&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">compress&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">content&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="c1">// &amp;lt;- снова бизнес-логика&lt;/span>
+ &lt;span class="n">filesStorage&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">putFile&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">fileMeta&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">buildFileRelativeUri&lt;/span>&lt;span class="p">(),&lt;/span> &lt;span class="n">compressed&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="c1">// &amp;lt;- вывод&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/figure>
+&lt;p>Чтобы сделать эту реализацию функциональной, надо сначала определить весь ввод, потом бизнес-логику, потом вывод.
+Почему это важно - отлично расписано в книге.&lt;/p>
+&lt;p>Но если мы сделаем загрузку файла, до проверки на возможность его компрессии - это ударит по производительности.
+И тут нам приходит на помощь ленивая загрузка:&lt;/p>
+&lt;figure class="listing-block">&lt;figcaption>Функциональная реализация&lt;/figcaption>
+&lt;pre class="rouge highlight">&lt;code data-lang="kotlin">&lt;span class="k">fun&lt;/span> &lt;span class="nf">compressFileById&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">fileId&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Long&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+ &lt;span class="c1">// ввод&lt;/span>
+ &lt;span class="kd">val&lt;/span> &lt;span class="py">fileMeta&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">findFileMeta&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">fileId&lt;/span>&lt;span class="p">)&lt;/span>
+ &lt;span class="kd">val&lt;/span> &lt;span class="py">content&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">lazy&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="nf">fetchFile&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">fileId&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">}&lt;/span>
+
+
+ &lt;span class="c1">// бизнес-логика&lt;/span>
+ &lt;span class="kd">val&lt;/span> &lt;span class="py">compressed&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">compressFile&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">fileMeta&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">content&lt;/span>&lt;span class="p">)&lt;/span>
+
+ &lt;span class="c1">// вывод&lt;/span>
+ &lt;span class="n">filesStorage&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">putFile&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">fileMeta&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">buildFileRelativeUri&lt;/span>&lt;span class="p">(),&lt;/span> &lt;span class="n">compressed&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">}&lt;/span>
+
+&lt;span class="k">fun&lt;/span> &lt;span class="nf">compressFile&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">fileMeta&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">FileMeta&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">file&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="nc">Lazy&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nc">InputStream&lt;/span>&lt;span class="p">&amp;gt;):&lt;/span> &lt;span class="nc">InputStream&lt;/span> &lt;span class="p">{&lt;/span>
+ &lt;span class="k">if&lt;/span> &lt;span class="p">(!&lt;/span>&lt;span class="n">fileMeta&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">isCompressible&lt;/span>&lt;span class="p">())&lt;/span> &lt;span class="p">{&lt;/span>
+ &lt;span class="k">throw&lt;/span> &lt;span class="nc">FileNotCompressible&lt;/span>&lt;span class="p">()&lt;/span>
+ &lt;span class="p">}&lt;/span>
+
+ &lt;span class="k">return&lt;/span> &lt;span class="nc">ByteArrayInputStream&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nf">byteArrayOf&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">42&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">43&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/figure>
+&lt;p>Теперь для того чтобы протестировать бизнес-требование &amp;#34;Система не должна позволять сжимать изображения, для которых запрещено сжатие&amp;#34; мы можем написать чистый юнит тест, не заморачиваясь на сетап хранилища файла, Spring-а и моков:&lt;/p>
+&lt;figure class="listing-block">&lt;figcaption>Чистый тест бизнес-логики&lt;/figcaption>
+&lt;pre class="rouge highlight">&lt;code data-lang="kotlin">&lt;span class="k">fun&lt;/span> &lt;span class="nf">`Compressor&lt;/span> &lt;span class="n">не&lt;/span> &lt;span class="n">должен&lt;/span> &lt;span class="n">сжимать&lt;/span> &lt;span class="n">файлы&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">сжатие&lt;/span> &lt;span class="n">которых&lt;/span> &lt;span class="nf">запрещено`&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+ &lt;span class="c1">// Сетап&lt;/span>
+ &lt;span class="kd">val&lt;/span> &lt;span class="py">incompressibleFileMeta&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nc">FileMeta&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="cm">/* фикстура */&lt;/span>&lt;span class="p">)&lt;/span>
+ &lt;span class="kd">val&lt;/span> &lt;span class="py">fakeFile&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">lazy&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="nc">ByteArrayInputStream&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nf">byteArrayOf&lt;/span>&lt;span class="p">())}&lt;/span>
+
+ &lt;span class="c1">// Действие&lt;/span>
+ &lt;span class="kd">val&lt;/span> &lt;span class="py">result&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nf">runCatching&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="nf">compressFile&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">incompressibleFileMeta&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">fakeFile&lt;/span>&lt;span class="p">)}&lt;/span>
+
+ &lt;span class="c1">// Проверка&lt;/span>
+ &lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">shouldBeFailure&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nc">FileNotCompressible&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/figure>
+&lt;p>Вот так легко и просто можно реализовать функциональную архитектуру, которая открывает путь к простому разработческому счастью - набору тестов, которые легко писать, не препятствуют рефакторингу и отлавливают баги.&lt;/p></description></item></channel></rss>
