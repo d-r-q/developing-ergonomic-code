@@ -1,0 +1,94 @@
+---
+title: "Kotlin и локальность рассуждений"
+date: 2022-05-12T08:25:37+07:00
+draft: false
+tags: 
+- kotlin
+- fp
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:sectlinks:
+:imagesdir: /posts/22/05/images
+
+[NOTE]
+--
+Этот материал является "микропостом" - текстом, написанным в режиме потока сознания без особой редактуры.
+
+Следить за обновлениями блога можно в Telegram-канале: https://t.me/ergonomic_code[Эргономичный код].
+--
+
+Этот пост написан по мотивам другого https://fsharpforfunandprofit.com/posts/is-your-language-unreasonable/[поста] о том, как F# способствует локальности рассуждений (reasoning locality).
+
+Код обладает свойством локальности рассуждений тогда, когда его можно понять только глядя на целевой код.
+И код написанный в императивном стиле это свойство теряет, что ведёт к большим усилиям при его изучении и/или большому количеству багов и регрессий.
+
+100%-ой локальностью рассуждений обладает код только на чисто функциональных языках, вроде Haskell.
+Но не все "нечистые" языки одинаково "нерезонны".
+F# безусловно является более "резонным" языком, чем Kotlin (_после написания поста оказалось, что не так уж и безусловно О_О_), но и Kotlin относительно мейнстримных языков сделал много шагов, в сторону того, чтобы быть "резонным".
+
+В посте автор приводит такой список фич языка, которые делают код на нём предсказуемым:
+
+. Variables should not be allowed to change their type.
+. Objects containing the same values should be equal by default.
+. Comparing objects of different types is a compile-time error.
+. Objects must always be initialized to a valid state. Not doing so is a compile-time error.
+. Once created, objects and collections must be immutable.
+. No nulls allowed.
+. Missing data or errors must be made explicit in the function signature.
+
+Давайте кратко рассмотрим что есть у Котлина по этим пунктам.
+
+== Variables should not be allowed to change their type.
+
+Это свойство есть у всех языков со статической типизацией и Котлин в их числе
+
+== Objects containing the same values should be equal by default.
+
+Тут автор немного лукавит, F# совместим с объектно-ориентированным C# и умеет в объекты с идентичностью.
+А для данных в F# используются рекорды.
+
+У Котлина примерно та же история - есть обычные объекты, а для данных используются data classes, которые сравниваются по значению.
+При том при запросе "idiomatic kotlin" в первых двух ссылках (https://kotlinlang.org/docs/idioms.html[1], https://blog.jetbrains.com/kotlin/2021/07/useful-kotlin-idioms-you-should-know/[2]) data-классы приводятся первыми.
+
+== Comparing objects of different types is a compile-time error.
+
+Опять же если говорить про data-классы, то Котлин не позволяет их сравнивать.
+
+По чеснаку, я удивлён, что это так работает, не могу понять почему это так работает, и за разумное для микропоста время не успел с этим разобраться
+
+== Objects must always be initialized to a valid state. Not doing so is a compile-time error.
+
+И тут у нас плюсик.
+
+Во-первых, это гарантируют первичные конструкторы которые идиоматичны для всех классов и обязательны для data-классов.
+
+Во-вторых, это требуется для неизменяемости, которая является первым пунктом в уже третьем https://kotlinlang.org/docs/coding-conventions.html#idiomatic-use-of-language-features[официальном списке идиом Котлина].
+
+== Once created, objects and collections must be immutable.
+
+См. выше, неизменяемость - важная идиома Котлина.
+
+Но справедливости ради, тут Котлин всё-таки уступает F# - по дефолту в Котлине используется только readonly-интерфейс, а сами объекты коллекций изменяемые.
+
+Более того, в стандартной библиотеки Котлина нет неизменяемых коллекций.
+Но есть https://github.com/Kotlin/kotlinx.collections.immutable/blob/master/proposal.md[шанс], что рано или поздно они появятся.
+
+== No nulls allowed.
+
+В Котлине null-ы разрешены, но ведут себя предсказуемо (преимущественно).
+По крайней мере пример из поста, либо не скомпилируется, либо сработает.
+
+== Missing data or errors must be made explicit in the function signature.
+
+Тут автор опять лукавит.
+Он сам пишет, что https://fsharpforfunandprofit.com/posts/against-railway-oriented-programming/[это не панацея].
+С другой стороны отсутствие данных в Котлине идиоматично и предсказуемо отражается null-ами, а для доменных ошибок есть стандартный https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-result/[Result].
+
+== Not Bad
+
+image::{imagesdir}/2024-12-02-09-41-31.png[]
+
+Если честно, я сам удивлён, что с точки зрения фич языка и идиом Котлин вообще ни в чём не уступает F#-у, об аналоге которого под JVM я до сего момента мечтал.
+А теперь выяснил, что у меня уже всё есть и я это просто не ценил:)

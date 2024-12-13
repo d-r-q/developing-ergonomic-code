@@ -1,0 +1,102 @@
+---
+title: "Ленивые вычисления для реализации функциональной архитектуры"
+date: 2022-05-07T08:25:37+07:00
+draft: false
+tags: 
+- functional-architecture
+- case
+- kotlin
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:sectlinks:
+:toc:
+:toc-levels: 6
+:toc-title: Содержание
+
+[NOTE]
+--
+Этот материал является "микропостом" - текстом, написанным в режиме потока сознания без особой редактуры.
+
+Следить за обновлениями блога можно в Telegram-канале: https://t.me/ergonomic_code[Эргономичный код].
+--
+
+Микропост в догонку к https://t.me/c/1394241379/582[посту о книге].
+
+Вкратце напомню суть функциональной архитектуры - ввод-вывод надо утаскивать на границы системы.
+В идеале это значит, что у вас код метода сервиса приложения состоит из трёх строго разделённых частей: чтение данных, бизнес-логика, запись данных.
+При том эти части идут линейно - в идеале метод не должен содержать условий.
+
+Это делает бизнес-логику максимально простой для понимания, применимой в многопоточной среде и чрезвычайно просто тестируемой.
+
+Однако не всегда такое разделение даётся легко и/или без ущерба производительности. Например, если есть две операции чтения и одна зависит от другой.
+
+Например, у вас есть хранилище изображений с метаинформацией, и операция их сжатия.
+Но для некоторых изображений сжатие запрещено.
+"Беспринципно" этот код можно реализовать так:
+
+."Безпринципная" реализация
+[source,kotlin]
+----
+fun compressFile(fileId: Long) {
+    val fileMeta = findFileMeta(fileId) // <- ввод
+    if (fileMeta.isCompressible()) { // <- бинзнес-логика
+        throw FileNotCompressible()
+    }
+    val content = fetchFile(fileId) // <- снова ввод
+    val compressed = compress(content) // <- снова бизнес-логика
+    filesStorage.putFile(fileMeta.buildFileRelativeUri(), compressed) // <- вывод
+}
+----
+
+Чтобы сделать эту реализацию функциональной, надо сначала определить весь ввод, потом бизнес-логику, потом вывод.
+Почему это важно - отлично расписано в книге.
+
+Но если мы сделаем загрузку файла, до проверки на возможность его компрессии - это ударит по производительности.
+И тут нам приходит на помощь ленивая загрузка:
+
+.Функциональная реализация
+[source,kotlin]
+----
+fun compressFileById(fileId: Long) {
+    // ввод
+    val fileMeta = findFileMeta(fileId)
+    val content = lazy { fetchFile(fileId) }
+    
+
+    // бизнес-логика
+    val compressed = compressFile(fileMeta, content)
+
+    // вывод
+    filesStorage.putFile(fileMeta.buildFileRelativeUri(), compressed)
+}
+
+fun compressFile(fileMeta: FileMeta, file: Lazy<InputStream>): InputStream {
+    if (!fileMeta.isCompressible()) {
+        throw FileNotCompressible()
+    }
+
+    return ByteArrayInputStream(byteArrayOf(42, 43))
+}
+----
+
+Теперь для того чтобы протестировать бизнес-требование "Система не должна позволять сжимать изображения, для которых запрещено сжатие" мы можем написать чистый юнит тест, не заморачиваясь на сетап хранилища файла, Spring-а и моков:
+
+.Чистый тест бизнес-логики
+[source,kotlin]
+----
+fun `Compressor не должен сжимать файлы, сжатие которых запрещено`() {
+    // Сетап
+    val incompressibleFileMeta = FileMeta(/* фикстура */)
+    val fakeFile = lazy { ByteArrayInputStream(byteArrayOf())}
+
+    // Действие
+    val result = runCatching { compressFile(incompressibleFileMeta, fakeFile)}
+
+    // Проверка
+    res.shouldBeFailure<FileNotCompressible>()
+}
+----
+
+Вот так легко и просто можно реализовать функциональную архитектуру, которая открывает путь к простому разработческому счастью - набору тестов, которые легко писать, не препятствуют рефакторингу и отлавливают баги.
