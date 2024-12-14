@@ -12,7 +12,8 @@
     </div>
     <br/>
     Email: <a class="email" href="mailto:{{ .Site.Params.email }}">{{ .Site.Params.email }}</a><br/>
-    {{ i18n "tg-channel" }}: <a class="telegram-channel" href="{{ .Site.Params.telegram_channel_link }}">{{ .Site.Params.telegram_channel_name }}</a>
+    {{ i18n "tg-channel" }}: <a class="telegram-channel" href="{{ .Site.Params.telegram_channel_link }}">{{ .Site.Params.telegram_channel_name }}</a><br/>
+    <a href="https://ergonomic-code.github.io/ergo-wiki/">Эргономичный подход</a>
     {{ with .Site.Params.social }}
     <ul class="social-list">
       {{ range sort . "weight"}}
@@ -26,6 +27,16 @@
           </a>
         </li>
       {{ end }}
+      <li class="social-item">
+          <a style="font-size: 30px; vertical-align: bottom" href="https://habr.com/ru/users/jdev/" aria-label="Habr">
+              <img height="30px" src="/images/habr_logo_icon.svg"/>
+          </a>
+      </li>
+      <li class="social-item">
+          <a style="font-size: 30px; vertical-align: bottom" href="https://rutube.ru/channel/46917639/" aria-label="Habr">
+              <img height="30px" src="/images/rutube_logo_icon.svg"/>
+          </a>
+      </li>
     </ul>
     {{ end }}
   </div>

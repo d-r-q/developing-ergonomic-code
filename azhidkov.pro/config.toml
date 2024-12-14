@@ -23,11 +23,6 @@ ignoreFiles = ['-pdf.adoc$']
         icon = "fab fa-vk"
         weight = 3
         url = "https://vk.com/d_r_q"
-    [[params.social]]
-        name = "Twitter"
-        icon = "fab fa-twitter"
-        weight = 4
-        url = "https://twitter.com/d__r_q/"
 
     [languages.ru]
         languagecode = "ru"
@@ -38,7 +33,7 @@ ignoreFiles = ['-pdf.adoc$']
             author = "Алексей Жидков"
             info = "Независимый консультант"
             info1 = "Разработка и реинжиниринг ПО"
-            email = "me@azhidkov.pro"
+            email = "biz@azhidkov.pro"
             telegram_channel_link = "https://t.me/ergonomic_code"
             telegram_channel_name = "Эргономичный код"
             avatarurl = "images/190811-2-square-1mb.jpg"
@@ -50,12 +45,12 @@ ignoreFiles = ['-pdf.adoc$']
         [[languages.ru.menu.main]]
             name = "Эргономичный подход"
             weight = 1
-            url = "ergo-approach/landing"
+            url = "https://ergonomic-code.github.io/ergo-wiki/"
 
         [[languages.ru.menu.main]]
-            name = "Диаграмма Эффектов"
+            name = "Выступления"
             weight = 2
-            url ="effects-diagram/landing"
+            url ="talks"
 
         [[languages.ru.menu.main]]
             name = "Блог"
