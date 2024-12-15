@@ -10,8 +10,8 @@ draft: false
 
 a|
 +++
-<div style="background-position: center; background-repeat: no-repeat; background-image: url('https://javaswag.github.io/img/header-img.png'); ">
-    <audio style="width: 490px; height: 245px;" src="https://storage.yandexcloud.net/javaswag/71-javaswag-alexey-zhidkov-1.mp3" controls="" preload="auto"></audio>
+<div style="width: 400px; background-position: center; background-repeat: no-repeat; background-image: url('https://javaswag.github.io/img/header-img.png'); ">
+    <audio style=" width: 400px; height: 200px;" src="https://storage.yandexcloud.net/javaswag/71-javaswag-alexey-zhidkov-1.mp3" controls="" preload="auto"></audio>
 </div>
 +++
 a|
@@ -33,8 +33,8 @@ a|
 <div class="videoblock">
 <div class="content">
       <iframe
-        width="490"
-        height="245"
+        width="400"
+        height="200"
         src="https://rutube.ru/play/embed/90f14fa2ffd0cc99215ac123351c7488"
         frameBorder="0"
         allow="clipboard-write; autoplay"
@@ -64,8 +64,8 @@ a|
 <div class="videoblock">
 <div class="content">
       <iframe
-        width="490"
-        height="245"
+        width="400"
+        height="200"
         src="https://rutube.ru/play/embed/549bd9606eeaf60b8c631a9e2cb277da"
         frameBorder="0"
         allow="clipboard-write; autoplay"
@@ -90,7 +90,7 @@ a|
 |===
 ||
 
-a|video::7u7LGhXlpcE[youtube,width=490,height=245]
+a|video::7u7LGhXlpcE[youtube,width=400,height=200]
 a|
 == https://jpoint.ru/archive/2023/talks/329f3cb2b72e4ec6a0e931207191546b/?referer=%2Farchive%2F2023%2Fpersons%2Fbb6431956f3f41c396d7e2b0fdc93654%2F[Рациональный подход к декомпозиции систем на модули или микросервисы]
 [.small]#17 апреля 2023 @ JPoint#
