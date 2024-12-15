@@ -3,7 +3,7 @@
   <ul>
     {{ range .Paginator.Pages }}
     <li style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-        <span>{{ time.Format "2 January 2006" .Date }}</span><a  src="{{ .Permalink }}">{{ .Title }}</a>
+        <span>{{ time.Format "2 January 2006" .Date }}</span><a href="{{ .Permalink }}">{{ .Title }}</a>
     </li>
     {{ end }}
   </ul>
