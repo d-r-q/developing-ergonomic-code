@@ -298,7 +298,7 @@ table.layout th, table.layout td, div.layout table tbody tr td {
     font-size: small;
 }
 
-.talks-table div.content a {
+.talks-table div.content h2 a {
     font-weight: 700 !important;
 }
 
