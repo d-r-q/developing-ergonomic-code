@@ -45,7 +45,7 @@ ignoreFiles = ['-pdf.adoc$']
         [[languages.ru.menu.main]]
             name = "Эргономичный подход"
             weight = 1
-            url = "https://ergonomic-code.github.io/ergo-wiki/"
+            url = "https://ergowiki.azhidkov.pro"
 
         [[languages.ru.menu.main]]
             name = "Выступления"
