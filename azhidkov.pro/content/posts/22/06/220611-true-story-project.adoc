@@ -3,6 +3,10 @@ title: "Диаграмма эффектов: пример построения"
 description: "Этот пост ялвяется второй частью из серии постов о диаграмме эффектов, в котором я рассмотрю пример построения диаграммы эффектов реального проекта"
 date: 2022-06-11T08:25:37+07:00
 draft: false
+tags:
+- case
+- effects-diagram
+- project-geoservices
 ---
 :source-highlighter: roug
 :rouge-theme: github
