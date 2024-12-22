@@ -6,6 +6,7 @@ tags:
 - structured-design 
 - functional-architecture
 - case
+- ergo-persistance
 ---
 :source-highlighter: rouge
 :rouge-theme: github

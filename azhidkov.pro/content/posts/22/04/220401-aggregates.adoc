@@ -8,6 +8,7 @@ tags:
 - ergo-approach
 - immutable-domain-model
 - design
+- ergo-persistance
 ---
 :source-highlighter: rouge
 :rouge-theme: github

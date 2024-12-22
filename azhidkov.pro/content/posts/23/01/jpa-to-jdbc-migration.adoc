@@ -5,6 +5,7 @@ draft: false
 tags:
 - talks
 - spring-data-jdbc
+- ergo-persistance
 aliases:
 - /microposts/23/01/jpa-to-jdbc-migration
 ---

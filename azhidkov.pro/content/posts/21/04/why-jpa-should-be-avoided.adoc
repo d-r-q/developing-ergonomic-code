@@ -6,6 +6,7 @@ date: 2021-04-03T13:25:37+07:00
 draft: false
 tags:
 - whynojpa
+- ergo-persistance
 ---
 :source-highlighter: rouge
 :rouge-theme: github

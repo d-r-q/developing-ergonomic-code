@@ -4,6 +4,7 @@ date: 2023-11-23T08:25:37+07:00
 draft: false
 tags:
 - immutable-domain-model
+- ergo-persistance
 aliases:
 - /microposts/23/11/immutable-relation-data-model-v2
 
