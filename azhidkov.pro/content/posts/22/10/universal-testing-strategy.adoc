@@ -15,9 +15,6 @@ tags:
 :toc-levels: 6
 :toc-title: Содержание
 
-(#todo: del#)
-https://telegra.ph/Strategiya-testirovaniya-kotoraya-srabotaet-dlya-bolshnistva-proektov-10-13
-
 [NOTE]
 --
 Этот материал является "микропостом" - текстом, написанным в режиме потока сознания без особой редактуры.
@@ -27,76 +24,90 @@ https://telegra.ph/Strategiya-testirovaniya-kotoraya-srabotaet-dlya-bolshnistva-
 
 Дочитав SICP, я пошёл делать второй подход к xUnit Test Patterns, т.к. мне надо расписать стратегию тестирования проекта, который я переписываю на Котлин, а она в полной мере ещё не улеглась у меня в голове. Прочитал первый раздел (A Brief Tour) и офигел - там мужики за меня практически полностью расписали эргономичный подход к тестированию.
 
-
 Вот ключевые моменты:
 
-    There is a simple test automation strategy that will work for many, many projects.
+____
+There is a simple test automation strategy that will work for many, many projects.
 
-    Существует простая стратегия (прим. пер. - описанная в этом разделе) автоматизации тестирования, которая подойдёт многим и многим проектам
+When doing new software development, we strive to do storytest-driven development by ﬁrst automating a suite of customer tests that verify the functionality provided by the application. To ensure that all of our software is tested, we augment these tests with a suite of unit tests that verify all code paths or, at a minimum, all the code paths that are not covered by the customer tests.
 
+---
 
-    When doing new software development, we strive to do storytest-driven development by ﬁrst automating a suite of customer tests that verify the functionality provided by the application. To ensure that all of our software is tested, we augment these tests with a suite of unit tests that verify all code paths or, at a minimum, all the code paths that are not covered by the customer tests.
+Существует простая стратегия (прим. пер. - описанная в этом разделе) автоматизации тестирования, которая подойдёт многим и многим проектам
 
-    При разработке нового софта мы стремимся делать storytest-driven development - сначала автоматизируем набор пользовательских тестов, которые верифицируют функциональность приложения. Для того чтобы убедиться, что весь софт покрыт тестами, мы дополняем эти тесты набором юнит тестов, которые верифицирую все пути в коде или, как минимум все пути, не покрытые пользовательскими тестами.
-
+При разработке нового софта мы стремимся делать storytest-driven development - сначала автоматизируем набор пользовательских тестов, которые верифицируют функциональность приложения. Для того чтобы убедиться, что весь софт покрыт тестами, мы дополняем эти тесты набором юнит тестов, которые верифицирую все пути в коде или, как минимум все пути, не покрытые пользовательскими тестами.
+____
 
 То есть сначала пишутся тесты, которые проверяют ПО на соответствие требованиям и взаимодействуют с системой через публичный интерфейс. И только потом покрытие добивается более мелкими тестами. Тут бы я поправил, дублировать покрытие нет смысла, как правило, и юнит тестами лучше не злоупотреблять, чтобы они не препятствовали рефакторину
 
+____
+This strategy helps concentrate all the business logic that needs veriﬁcation in well-deﬁned objects that can be tested independently of the database.
 
-    This strategy helps concentrate all the business logic that needs veriﬁcation in well-deﬁned objects that can be tested independently of the database.
+---
 
-    Эта стратегия помогает сконцентрировать всю бизнес-логику, которая требует верификации в чётко определённых объектах, которые могут быть протестированы независимо от БД
+Эта стратегия помогает сконцентрировать всю бизнес-логику, которая требует верификации в чётко определённых объектах, которые могут быть протестированы независимо от БД
+____
 
 
 Эта часть допускает различные интерпретации и я её интерпретирую как агитацию за функциональную архитектуру. Кроме того, я не сторонник ТДД на уровне юнит-тестов и считаю, что ФА хорошо заменяет ТДД в достижении цели выделения бизнес-логики в тестируемые объекты
 
-    During their development, we strive to make our customer tests representative of how the system is really used.
+____
+During their development, we strive to make our customer tests representative of how the system is really used.
 
-    В процессе разработки пользовательских тестов мы стремимся к тому, чтобы они показывали как на самом деле используется система (прим. пер. - реальными пользователями)
+To keep the tests simple and easy to understand, we can bypass the user interface by performing Subcutaneous Testing (see Layer Test on page 337) against one or more Service Facades [CJ2EEP]
 
+If our application normally interacts with other applications, we may need to isolate it from any applications that we do not have in our development environment by using some form of Test Double (page 522) for the objects that act as interfaces to the other applications.
 
-    To keep the tests simple and easy to understand, we can bypass the user interface by performing Subcutaneous Testing (see Layer Test on page 337) against one or more Service Facades [CJ2EEP]
+---
 
-    Для того чтобы держать пользовательские тесты простыми и лёгкими в понимании, мы можем обойти пользовательский (прим. пер. - или публичный) интерфейс с помощью "подкожного тестирования" сервисов приложения
+В процессе разработки пользовательских тестов мы стремимся к тому, чтобы они показывали как на самом деле используется система (прим. пер. - реальными пользователями)
 
+Для того чтобы держать пользовательские тесты простыми и лёгкими в понимании, мы можем обойти пользовательский (прим. пер. - или публичный) интерфейс с помощью "подкожного тестирования" сервисов приложения
 
-    If our application normally interacts with other applications, we may need to isolate it from any applications that we do not have in our development environment by using some form of Test Double (page 522) for the objects that act as interfaces to the other applications.
-
-    Если наше приложение в ходе штатной работы взаимодействует с другими приложениями, мы нам может потребоваться изолировать наше приложение от любых других приложений, к которым у нас нет доступа в рабочем окружении с помощью Тест Дублей объектов, которые выступают в роли интерфейсов к этим приложениям
-
+Если наше приложение в ходе штатной работы взаимодействует с другими приложениями, мы нам может потребоваться изолировать наше приложение от любых других приложений, к которым у нас нет доступа в рабочем окружении с помощью Тест Дублей объектов, которые выступают в роли интерфейсов к этим приложениям
+____
 
 Сейчас к базам данных, очередям и прочей инфраструктуре у нас есть доступ в рабочем окружении, поэтому заменять их дублями (моками БД, ин-мемори БД и т.п.) нет необходимости
 
+____
+If we have Untested Code (see Production Bugs on page 268) because we cannot ﬁnd a way to execute the path through the code, we can use a Test Stub (page 529) to gain control of the indirect inputs of the SUT
 
-    If we have Untested Code (see Production Bugs on page 268) because we cannot ﬁnd a way to execute the path through the code, we can use a Test Stub (page 529) to gain control of the indirect inputs of the SUT
+---
 
-    Если у нас есть непротестированный код, потому что мы не можем найти способа выполнить определённый путь, мы можем использовать стаб для получения контроля над неявными входами системы
-
+Если у нас есть непротестированный код, потому что мы не можем найти способа выполнить определённый путь, мы можем использовать стаб для получения контроля над неявными входами системы
+____
 
 Стабы (ака моки, в небрежной терминологии) можно использовать только если по другому не получается протестировать какой-то код по другому. Но если разделить бизнес-логику и ввод-вывод (неявные входы), то у бизнес-логики не будет неявных входов и её целиком можно будет протестировать тестами без стабов
 
+____
+If there are Untested Requirements (see Production Bugs) because not all of the system’s behavior is observable via its public interface, we can use a Mock Object (page 544) to intercept and verify the indirect outputs of the SUT.
 
-    If there are Untested Requirements (see Production Bugs) because not all of the system’s behavior is observable via its public interface, we can use a Mock Object (page 544) to intercept and verify the indirect outputs of the SUT.
+---
 
-    Если существуют не протестированные требования, потому что не всё поведение системы наблюдаемо через его публичный интерфейс, мы можем воспользоваться моком для перехвата и верификции не явных выходов системы.
-
+Если существуют не протестированные требования, потому что не всё поведение системы наблюдаемо через его публичный интерфейс, мы можем воспользоваться моком для перехвата и верификции не явных выходов системы.
+____
 
 Для двух последних предложений добавлю, что лучше использовать стабы и моки внешних процессов (WireMock, GreenMail и т.п.), чем объектов их представляющих в системе. Во-первых, нтерфейс внешний системы более стабилен, чем вашего объекта-обёртки -меньше вероятность, что тесты придётся менять. Во-вторых, так вы ещё и покроете тестами код взаимодействия вашей обёртки с низкоуровневыми подсистемами ввода-вывода
 
+____
+Automated testing is much simpler if we adopt a Layered Architecture [DDD, PEAA, WWW]. At a minimum, we should separate our business logic from the database and the user interface, thereby enabling us to test it easily using either Subcutaneous Tests or Service Layer Tests (see Layer Test)
 
-    Automated testing is much simpler if we adopt a Layered Architecture [DDD, PEAA, WWW]. At a minimum, we should separate our business logic from the database and the user interface, thereby enabling us to test it easily using either Subcutaneous Tests or Service Layer Tests (see Layer Test)
+---
 
-    Автоматизированное тестирование сильно проще, если мы применяем Слоёную Архитектуру. Как минимум, нам следует отделить бизнес-логику от базы данных и пользовательского интерфейса, таким образом позволяя нам легко тестировать её с помощью "подкожных" тестов или тестов слоя сервисов
-
+Автоматизированное тестирование сильно проще, если мы применяем Слоёную Архитектуру. Как минимум, нам следует отделить бизнес-логику от базы данных и пользовательского интерфейса, таким образом позволяя нам легко тестировать её с помощью "подкожных" тестов или тестов слоя сервисов
+____
 
 От себя добавлю, что ФА ещё доводит разделение бизнес-логики и кода работы с БД до абсолюта и тем самым делает тестирование безнес логики максимально простым
 
-    If the application is complex enough or if we are expected to build components that will be reused by other projects, we can augment the unit tests with component tests that verify the behavior of each component in isolation
+____
+If the application is complex enough or if we are expected to build components that will be reused by other projects, we can augment the unit tests with component tests that verify the behavior of each component in isolation
 
-    Если приложение достаточно сложное или мы делаем компоненты, которые буду переиспользованы в других проекта, мы можем дополнить юнит тесты компонентными тестами, которые верифицируют поведение каждого комонента в изоляции
+---
+
+Если приложение достаточно сложное или мы делаем компоненты, которые буду переиспользованы в других проекта, мы можем дополнить юнит тесты компонентными тестами, которые верифицируют поведение каждого комонента в изоляции
+____
 
 
 Тут у меня другая рекомендация. Лучше всего писать пользовательские тесты, работающие через публичный интерфейс. Если это слишком дорого - "подкожные" пользовательские тесты. Если и это дорого - компонентные тесты. И только в крайнем случае писать юнит тесты и не стеснятся удалять их, если они мешают рефакторингу.
 
 Такая стратегия поможет максимизировать и покрытие кода тестами на единицу усилий и устойчивость тестов к рефакторингу.
-Report content on this page
