@@ -315,7 +315,7 @@ void Copy(KeyboardReader& r, PrinterWriter& w) {
 * Книга https://www.oreilly.com/library/view/framework-design-guidelines/9780135896457/[Framework Design Guidelines: Conventions, Idioms, and Patterns for Reusable .NET Libraries]
 * Книга https://twirl.github.io/The-API-Book/index.ru.html[API]
 * Книга https://www.piter.com/collection/seriya-grokaem/product/grokaem-funktsionalnoe-myshlenie[Грокаем функциональное мышление] (Grokking simplicity) (Главы 8 и 9 про "многоуровневое проектирование" - Stratified design).
-* Доклад https://www.youtube.com/watch?v=-NgJhkc6PAY[Stratified design and functional architecture] от автора Grokking Simplicity
+* Доклад https://www.youtube.com/watch?v=BoGb56k2txk[Stratified Design: A Lisp Tradition ] от автора Grokking Simplicity
 * Доклад https://www.youtube.com/watch?v=c5QF2HjHLSE[Design in Practice] от автора Clojure (тут прям хардкор, вряд ли у вас получится повторить это в прикладной разработке, где, обычно, надо прыгать, а не думать)
 * Доклад-продолжение предыдущего https://www.youtube.com/watch?v=VBnGhQOyTM4&list=PLZdCLR02grLr4TWUP6qeLxIn4OJLNwKNZ&index=9[Design in Practice in Practice] от коллеги Хикки и одного из основных маинтейнеров Clojure
 ====
