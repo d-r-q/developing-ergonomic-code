@@ -1,0 +1,185 @@
+---
+title: "Эксперты об интеграционном тестировании и моках"
+date: 2025-03-09T08:25:37+07:00
+draft: false
+tags: 
+- ergo-approach
+- ergo-testing
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:sectlinks:
+:toc:
+:toclevels: 4
+:toc-title: Содержание
+:imagesdir: /posts/25/02/images
+
+[NOTE]
+--
+Следить за обновлениями блога можно в Telegram-канале: https://t.me/ergonomic_code[Эргономичный код].
+--
+
+Подборка цитат экспертов о моках.
+
+TLDR: классики TDD (Бек, Фаулер, Мартин) и другие эксперты с мировым именем (Коплейн, Хориков, Купер) используют моки по минимуму, потому что они делают тесты хрупкими.
+
+== Кент Бек
+
+[quote, 'Кент Бек, основатель движения TDD, автор JUnit', 'https://youtu.be/z9quxZsLcfo?t=1270[TW Hangouts | Is TDD dead?]']
+____
+My personal practices... 
+ *I'm mock almost nothing.*
+If I can't figure out how to test efficiently with the real stuff I find another way of creating a feedback loop for myself...
+I just don't go very far down the mock path.
+I look at a code where you have mocks returning mocks returning mocks and...
+my experience is if I have...
+If I use TDD I can refactor stuff and then I heard these stories people say well I use TDD and now I can't refactor anything and I feel like I couldn't understand that and then I started looking at their tests...
+*Well if you have mocks returning mocks returning mocks your test is completely coupled to the implementation...*
+*not on the interface but the exact implementation of some object ...*
+three streets away ...
+of course you can't change anything without breaking a test.
+So that for me is too high a price to pay that's not not a trade-off I'm willing to make. 
+
+---
+
+Мои личные практики... 
+ *Я почти ничего не мокаю.*
+Если я не могу понять, как эффективно тестировать c реальными зависимостями, я нахожу другой способ создать для себя цикл обратной связи...
+Я просто не хожу далеко по пути мокирования.
+Я смотрю на код, в котором у вас есть моки, возвращающие моки, возвращающие моки, и...
+мой опыт показывает, что если у меня есть...
+Если я использую TDD, я могу рефакторить кода, а потом я слышу эти истории, когда люди говорили, что я использую TDD, а теперь я ничего не могу отрефакторить, и я не мог этого понять, пока не начал начал смотреть на их тесты...
+*Ну, если у вас моки возвращают моки возвращающие моки, то ваш тест полностью связан с реализацией...*
+*не с интерфейсом, а с точной реализацией какого-либо объекта...*
+в трех кварталах отсюда...
+конечно, вы ничего не сможете изменить, не сломав тест.
+Так что для меня это слишком высокая цена, на которую я не готов пойти ни в коем случае.
+____
+
+
+== Мартин Фаулер, автор таких книг как "Рефакторинг" и "Шаблоны корпоративных приложений"
+
+[quote, 'Мартин Фаулер, автор таких книг как "Рефакторинг" и "Шаблоны корпоративных приложений"','https://martinfowler.com/articles/mocksArentStubs.html[Mocks Aren\'t Stubs]']
+____
+Personally I've always been a old fashioned classic TDDer and thus far I don't see any reason to change.
+*I don't see any compelling benefits for mockist TDD, and am concerned about the consequences of coupling tests to implementation*.
+
+This has particularly struck me when I've observed a mockist programmer.
+I really like the fact that while writing the test you focus on the result of the behavior, not how it's done.
+A mockist is constantly thinking about how the SUT is going to be implemented in order to write the expectations.
+This feels really unnatural to me.
+
+---
+
+Лично я всегда был сторонником старомодного классического подхода и до сих пор не вижу причин меняться.
+*Я не вижу никаких убедительных преимуществ для mockist TDD и обеспокоен последствиями привязки тестов к реализации.*
+
+Это особенно поразило меня, когда я наблюдал за программистом-мокистом.
+Мне очень нравится, что при написании теста вы сосредотачиваетесь на результате поведения, а не на том, как оно достигается. 
+Мокист постоянно думает о том, как будет реализован SUT, чтобы описать ожидания. 
+не это кажется действительно неестественным.
+____
+
+ 
+== Роберт Мартин
+
+[quote, 'Роберт Мартин, автор SOLID и Чистой архитектуры', 'https://blog.cleancoder.com/uncle-bob/2014/05/10/WhenToMock.html[When To Mock]']
+____
+In short, however, I recommend that you mock sparingly. Find a way to test – design a way to test – your code so that it doesn’t require a mock. Reserve mocking for architecturally significant boundaries; and then be ruthless about it. Those are the important boundaries of your system and they need to be managed, not just for tests, but for everything.
+
+And write your own mocks. Try to depend on mocking tools as little as possible. Or, if you decide to use a mocking tool, use it with a very light touch.
+
+If you follow these heuristics you’ll find that your test suites run faster, are less fragile, have higher coverage, and that the designs of your applications are better.
+
+---
+
+Вкратце, я рекомендую вам использовать моки с осторожностью. Найдите способ тестирования – спроектируйте способ тестирования вашего кода, чтобы он не требовал моков. Оставьте моки для архитектурно значимых границ, и там безжалостно мокайте всё (дословный перевод: "и затем будьте безжалостны к нему"). Это важные границы вашей системы, и ими нужно управлять не только для тестов, но и для всего остального.
+
+И пишите свои собственные моки. Старайтесь как можно меньше зависеть от инструментов мокирования. Или, если вы решите использовать инструмент для создания макета, используйте его минимально (дословный перевод: "очень лёгкими касаниями").
+
+Если вы будете следовать этим эвристическим рекомендациям, то обнаружите, что ваши наборы тестов выполняются быстрее, они менее хрупкие, имеют более широкое покрытие и что дизайн ваших приложений лучше.
+____
+
+[quote, Роберт Мартин, 'https://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.html[First-Class Tests]']
+____
+Also, too many programmers have read the books on mocking, and have bought in to the notion that mocking tools are an intrinsic, and necessary, part of unit testing. 
+Nothing could be further from the truth.
+
+I, for example, seldom use a mocking tool.
+When I need a mock (or, rather, a Test Double) I write it myself.
+It’s not very hard to write test doubles.
+My IDE helps me a lot with that.
+What’s more, writing the Test Double myself encourages me not to write tests with Test Doubles, unless it is really necessary.
+Instead of using Test Doubles, I back away a bit from micro-testing, and write tests that are a bit closer to functional tests.
+This too helps me to decouple the tests from the internals of the production code.
+
+---
+
+Кроме того, слишком многие программисты прочитали книги по мокирования и придерживаются мнения, что инструменты мокирования являются неотъемлемой и необходимой частью модульного тестирования. 
+Ничто не может быть дальше от истины.
+
+*Я, например, редко использую инструменты мокирования.*
+Когда мне нужен мок (или, скорее, тестовый дубль), сам его пишу.
+Написать тестовые дубли не так уж сложно.
+Моя IDE очень помогает мне в этом.
+Более того, самостоятельное написание двойного теста побуждает меня не писать тесты с тестовыми дублями, если только это действительно не необходимо.
+Вместо использования тестовых дублей, я немного отступаю от микротестирования и пишу тесты, которые немного ближе к функциональным.
+Это также помогает мне *отделить тесты от внутренней части продкашн-кода*.
+____
+
+ 
+== Джим Коплейн, один из основателей движения шаблонов в качестве члена Hillside Group
+
+[quote, 'Джим Коплейн, один из основателей движения шаблонов в качестве члена Hillside Group', 'https://rbcs-us.com/documents/Why-Most-Unit-Testing-is-Waste.pdf[Why Most Unit Testing is Waste], https://wikileaks.org/ciav7p1/cms/files/Why-Most-Unit-Testing-is-Waste.pdf[(ссылка с действующим сертификатом)]']
+____
+You’ll probably get better return on your investment by automating integration tests, bug regression tests, and system tests than by automating unit tests.
+
+ [...]
+
+I advocate doing this at the system level where the testing focus should lie;
+
+---
+
+Вероятно, вы получите большую отдачу от своих инвестиций, автоматизируя интеграционные тесты, регрессионные тесты и системные тесты, чем автоматизируя модульные тесты.
+
+ [...]
+
+Я выступаю за то, чтобы делать это на системном уровне, на котором должен находиться фокус тестирования;
+____
+
+== Владимир Хориков, Microsoft MVP, автор книги "Принципы юнит тестирования"
+
+[quote, 'Владимир Хориков, Microsoft MVP, автор книги "Принципы юнит тестирования"', 'https://enterprisecraftsmanship.com/posts/when-to-mock/[When to Mock]']
+____
+
+*The use of mocks for out-of-process dependencies that you have a full control over also leads to brittle tests.*
+
+ [...]
+
+Only unmanaged dependencies should be replaced with mocks.
+*Use real instances of managed dependencies in tests.*
+---
+
+*Использование моков для внешних зависимостей, которые вы полностью контролируете, также приводит к хрупким тестам.*
+
+ [...]
+
+Моками следует заменять только неуправляемые внешние зависимости.
+*Используйте реальные экземпляры управляемых зависимостей в тестах.*
+____
+
+== Ян Купер
+
+[quote, 'Ян Купер, Microsoft MVP, популярный спикер', 'https://www.youtube.com/watch?v=EZ05e7EMOLM[TDD, Where Did It All Go Wrong]']
+____
+Mocks are useful when a resource is *expensive to create and represents shared fixture problem*.
+But the problem with mock objects essentially is people have used them to isolate classes.
+Don't do that.
+
+---
+
+Моки полезны, когда создание ресурса обходится дорого и создаёт проблемы с разделяемой фикстурой.
+Но проблема с мок-объектами, по сути, в том, что люди используют их для изоляции классов.
+Не делайте этого.
+____
