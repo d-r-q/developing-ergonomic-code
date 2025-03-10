@@ -58,7 +58,7 @@ So that for me is too high a price to pay that's not not a trade-off I'm willing
 ____
 
 
-== Мартин Фаулер, автор таких книг как "Рефакторинг" и "Шаблоны корпоративных приложений"
+== Мартин Фаулер
 
 [quote, 'Мартин Фаулер, автор таких книг как "Рефакторинг" и "Шаблоны корпоративных приложений"','https://martinfowler.com/articles/mocksArentStubs.html[Mocks Aren\'t Stubs]']
 ____
@@ -129,7 +129,7 @@ This too helps me to decouple the tests from the internals of the production cod
 ____
 
  
-== Джим Коплейн, один из основателей движения шаблонов в качестве члена Hillside Group
+== Джим Коплейн
 
 [quote, 'Джим Коплейн, один из основателей движения шаблонов в качестве члена Hillside Group', 'https://rbcs-us.com/documents/Why-Most-Unit-Testing-is-Waste.pdf[Why Most Unit Testing is Waste], https://wikileaks.org/ciav7p1/cms/files/Why-Most-Unit-Testing-is-Waste.pdf[(ссылка с действующим сертификатом)]']
 ____
@@ -148,7 +148,7 @@ I advocate doing this at the system level where the testing focus should lie;
 Я выступаю за то, чтобы делать это на системном уровне, на котором должен находиться фокус тестирования;
 ____
 
-== Владимир Хориков, Microsoft MVP, автор книги "Принципы юнит тестирования"
+== Владимир Хориков
 
 [quote, 'Владимир Хориков, Microsoft MVP, автор книги "Принципы юнит тестирования"', 'https://enterprisecraftsmanship.com/posts/when-to-mock/[When to Mock]']
 ____
