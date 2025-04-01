@@ -6,6 +6,7 @@ tags:
 - ergo-approach
 - whyfp
 - why-no-side-effects
+- code
 ---
 :source-highlighter: rouge
 :rouge-theme: github

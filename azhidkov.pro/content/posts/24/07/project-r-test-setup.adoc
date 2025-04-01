@@ -8,6 +8,7 @@ tags:
 - testcontainers
 - db-fixture
 - project-r
+- code
 aliases:
 - /posts/24/09/what-is-fp
 ---

@@ -5,6 +5,7 @@ draft: false
 tags:
 - talks
 - ergo-approach
+- code
 aliases:
 - /posts/22/11/ea-at-jpoint
 ---
@@ -12,7 +13,7 @@ aliases:
 :rouge-theme: github
 :icons: font
 :sectlinks:
-:imagesdir: /microposts/22/11/images
+:imagesdir: /posts/22/11/images
 
 [NOTE]
 --

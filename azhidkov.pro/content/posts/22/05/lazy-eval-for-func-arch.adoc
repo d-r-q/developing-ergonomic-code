@@ -6,6 +6,7 @@ tags:
 - functional-architecture
 - case
 - kotlin
+- code
 ---
 :source-highlighter: rouge
 :rouge-theme: github

@@ -1,5 +1,5 @@
 ---
-title: "Что я имею ввиду под ФП "
+title: "Что я имею ввиду под ФП"
 date: 2024-08-10T08:25:37+07:00
 draft: false
 tags: 
@@ -8,6 +8,7 @@ tags:
 - oop
 - functional-architecture
 - ergo-approach
+- code
 aliases:
 - /microposts/24/09/what-is-fp
 ---

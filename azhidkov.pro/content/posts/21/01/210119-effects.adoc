@@ -6,6 +6,7 @@ tags:
 - fp
 - effects
 - ergo-approach
+- code
 ---
 :source-highlighter: rouge
 :rouge-theme: github

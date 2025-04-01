@@ -5,6 +5,7 @@ draft: false
 tags:
 - trainer-advisor
 - db-fixture
+- code
 aliases:
 - /microposts/24/04/trainer-advisor-testing-test-setup-generate-fixture
 ---

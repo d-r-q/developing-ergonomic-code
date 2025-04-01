@@ -5,6 +5,7 @@ draft: false
 tags:
 - trainer-advisor
 - ergo-testing
+- code
 aliases:
 - /microposts/24/03/trainer-advisor-testing-theory
 ---

@@ -5,6 +5,7 @@ draft: false
 tags:
 - fp
 - whyfp
+- code
 aliases:
 - /microposts/22/12/why-fp-simpler
 ---

@@ -7,6 +7,7 @@ tags:
 - clean-arch
 - ergo-approach
 - dip
+- code
 ---
 :source-highlighter: rouge
 :rouge-theme: github

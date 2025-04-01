@@ -4,6 +4,7 @@ date: 2024-03-30T08:25:37+07:00
 draft: false
 tags:
 - kotlin
+- code
 aliases:
 - /microposts/24/03/kotlin-data-processing
 

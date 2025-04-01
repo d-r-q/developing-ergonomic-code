@@ -5,6 +5,7 @@ draft: false
 tags:
 - project-e
 - ergo-approach
+- code
 aliases:
 - /microposts/23/12/project-e-dev-guidline
 ---

@@ -8,6 +8,7 @@ tags:
 - functional-architecture
 - type-driven-design
 - make-invalid-states-unrepresentable
+- code
 aliases:
 - /posts/24/06
 ---

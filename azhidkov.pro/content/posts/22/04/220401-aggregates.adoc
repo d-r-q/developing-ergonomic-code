@@ -9,6 +9,7 @@ tags:
 - immutable-domain-model
 - design
 - ergo-persistance
+- code
 ---
 :source-highlighter: rouge
 :rouge-theme: github
