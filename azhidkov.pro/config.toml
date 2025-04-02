@@ -31,7 +31,7 @@ ignoreFiles = ['-pdf.adoc$']
         title = "Алексей Жидков"
         [languages.ru.params]
             author = "Алексей Жидков"
-            info = "Независимый консультант"
+            info = "Kotlin/Backend техлид"
             info1 = "Разработка и реинжиниринг ПО"
             email = "biz@azhidkov.pro"
             telegram_channel_link = "https://t.me/ergonomic_code"
@@ -58,9 +58,9 @@ ignoreFiles = ['-pdf.adoc$']
             url ="posts"
 
         [[languages.ru.menu.main]]
-            name = "Портфолио"
+            name = "Диаграмма эффектов"
             weight = 4
-            url ="portfolio"
+            url ="effects-diagram/landing"
 
         [[languages.ru.menu.main]]
             name = "Контакты"
