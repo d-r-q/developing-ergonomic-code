@@ -27,10 +27,10 @@
 7
 8
 9
-</pre></td><td class=code><pre><span class=kd>public</span> <span class=n>record</span> <span class=nf>MultiLangValue</span><span class=o>(</span><span class=nc>String</span> <span class=n>ru</span><span class=o>,</span> <span class=nc>String</span> <span class=n>en</span><span class=o>)</span> <span class=o>{</span>
+</pre></td><td class=code><pre><span class=kd>public</span> <span class=kd>record</span> <span class=nf>MultiLangValue</span><span class=o>(</span><span class=nc>String</span> <span class=n>ru</span><span class=o>,</span> <span class=nc>String</span> <span class=n>en</span><span class=o>)</span> <span class=o>{</span>
 <span class=o>}</span>
 
-<span class=kd>public</span> <span class=n>record</span> <span class=nf>ValueHolder</span><span class=o>(</span><span class=nd>@Nullable</span> <span class=nc>MultiLangValue</span> <span class=n>value</span><span class=o>)</span> <span class=o>{</span>
+<span class=kd>public</span> <span class=kd>record</span> <span class=nf>ValueHolder</span><span class=o>(</span><span class=nd>@Nullable</span> <span class=nc>MultiLangValue</span> <span class=n>value</span><span class=o>)</span> <span class=o>{</span>
 <span class=o>}</span>
 
 <span class=kd>public</span> <span class=nd>@NotNull</span> <span class=nc>String</span> <span class=nf>getRuValue</span><span class=o>(</span><span class=nd>@Nullable</span> <span class=nc>ValueHolder</span> <span class=n>valueHolder</span><span class=o>)</span> <span class=o>{</span>
@@ -49,10 +49,10 @@
 11
 12
 13
-</pre></td><td class=code><pre><span class=kd>public</span> <span class=n>record</span> <span class=nf>MultiLangValue</span><span class=o>(</span><span class=nc>String</span> <span class=n>ru</span><span class=o>,</span> <span class=nc>String</span> <span class=n>en</span><span class=o>)</span> <span class=o>{</span>
+</pre></td><td class=code><pre><span class=kd>public</span> <span class=kd>record</span> <span class=nf>MultiLangValue</span><span class=o>(</span><span class=nc>String</span> <span class=n>ru</span><span class=o>,</span> <span class=nc>String</span> <span class=n>en</span><span class=o>)</span> <span class=o>{</span>
 <span class=o>}</span>
 
-<span class=kd>public</span> <span class=n>record</span> <span class=nf>ValueHolder</span><span class=o>(</span><span class=nd>@Nullable</span> <span class=nc>MultiLangValue</span> <span class=n>value</span><span class=o>)</span> <span class=o>{</span>
+<span class=kd>public</span> <span class=kd>record</span> <span class=nf>ValueHolder</span><span class=o>(</span><span class=nd>@Nullable</span> <span class=nc>MultiLangValue</span> <span class=n>value</span><span class=o>)</span> <span class=o>{</span>
 <span class=o>}</span>
 
 <span class=kd>public</span> <span class=nd>@NotNull</span> <span class=nc>String</span> <span class=nf>getRuValue</span><span class=o>(</span><span class=nd>@Nullable</span> <span class=nc>ValueHolder</span> <span class=n>valueHolder</span><span class=o>)</span> <span class=o>{</span>
@@ -127,14 +127,14 @@
     <span class=nc>String</span> <span class=nf>getValue</span><span class=o>();</span>
 <span class=o>}</span>
 
-<span class=n>record</span> <span class=nf>SingleValue</span><span class=o>(</span><span class=nc>String</span> <span class=n>value</span><span class=o>)</span> <span class=kd>implements</span> <span class=nc>Value</span> <span class=o>{</span>
+<span class=kd>record</span> <span class=nf>SingleValue</span><span class=o>(</span><span class=nc>String</span> <span class=n>value</span><span class=o>)</span> <span class=kd>implements</span> <span class=nc>Value</span> <span class=o>{</span>
     <span class=nd>@Override</span>
     <span class=kd>public</span> <span class=nc>String</span> <span class=nf>getValue</span><span class=o>()</span> <span class=o>{</span>
         <span class=k>return</span> <span class=kc>null</span><span class=o>;</span>
     <span class=o>}</span>
 <span class=o>}</span>
 
-<span class=kd>public</span> <span class=n>record</span> <span class=nf>MultiLangValue3</span><span class=o>(</span><span class=nc>String</span> <span class=n>ru</span><span class=o>,</span> <span class=nc>String</span> <span class=n>en</span><span class=o>)</span> <span class=kd>implements</span> <span class=nc>Value</span><span class=o>{</span>
+<span class=kd>public</span> <span class=kd>record</span> <span class=nf>MultiLangValue3</span><span class=o>(</span><span class=nc>String</span> <span class=n>ru</span><span class=o>,</span> <span class=nc>String</span> <span class=n>en</span><span class=o>)</span> <span class=kd>implements</span> <span class=nc>Value</span><span class=o>{</span>
     <span class=nd>@Override</span>
     <span class=kd>public</span> <span class=nc>String</span> <span class=nf>getValue</span><span class=o>()</span> <span class=o>{</span>
         <span class=k>return</span> <span class=n>ru</span><span class=o>;</span>
@@ -175,14 +175,14 @@
     <span class=nc>String</span> <span class=nf>getValue</span><span class=o>();</span>
 <span class=o>}</span>
 
-<span class=n>record</span> <span class=nf>SingleValue</span><span class=o>(</span><span class=nc>String</span> <span class=n>value</span><span class=o>)</span> <span class=kd>implements</span> <span class=nc>Value</span> <span class=o>{</span>
+<span class=kd>record</span> <span class=nf>SingleValue</span><span class=o>(</span><span class=nc>String</span> <span class=n>value</span><span class=o>)</span> <span class=kd>implements</span> <span class=nc>Value</span> <span class=o>{</span>
     <span class=nd>@Override</span>
     <span class=kd>public</span> <span class=nc>String</span> <span class=nf>getValue</span><span class=o>()</span> <span class=o>{</span>
         <span class=k>return</span> <span class=kc>null</span><span class=o>;</span>
     <span class=o>}</span>
 <span class=o>}</span>
 
-<span class=kd>public</span> <span class=n>record</span> <span class=nf>MultiLangValue3</span><span class=o>(</span><span class=nc>String</span> <span class=n>ru</span><span class=o>,</span> <span class=nc>String</span> <span class=n>en</span><span class=o>)</span> <span class=kd>implements</span> <span class=nc>Value</span> <span class=o>{</span>
+<span class=kd>public</span> <span class=kd>record</span> <span class=nf>MultiLangValue3</span><span class=o>(</span><span class=nc>String</span> <span class=n>ru</span><span class=o>,</span> <span class=nc>String</span> <span class=n>en</span><span class=o>)</span> <span class=kd>implements</span> <span class=nc>Value</span> <span class=o>{</span>
     <span class=nd>@Override</span>
     <span class=kd>public</span> <span class=nc>String</span> <span class=nf>getValue</span><span class=o>()</span> <span class=o>{</span>
         <span class=k>return</span> <span class=n>ru</span><span class=o>;</span>
