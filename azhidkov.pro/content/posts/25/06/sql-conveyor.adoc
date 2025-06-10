@@ -173,7 +173,8 @@ image::conveyor-where.drawio.svg[]
 === Оператор GROUP BY
 
 А вот GROUP BY — один из самых сложных операторов для понимания.
-Возможно, это связано с тем, что GROUP BY — оператор-жулик, порождающий штуки, которые, строго говоря, недопустимы в реляционной модели.
+Возможно, это связано с тем, что GROUP BY порождает отношения не удовлетворяющие даже первой нормальной форме.
+А Кодд — автор реляционной модели — ввёл нормальные формы как раз для того, чтобы сделать отношения более простыми для понимания и работы с ними (_"with the objective of making the collection of relations easier to understand and control, simpler to operate upon, and more informative to the casual user"_ — https://forum.thethirdmanifesto.com/wp-content/uploads/asgarosforum/987737/00-efc-further-normalization.pdf[FURTHER NORMALIZATION OF THE DATA BASE RELATIONAL MODEL]).
 
 GROUP BY принимает на вход одну таблицу и на выход порождает тоже одну таблицу, с тем же количеством атрибутов, но эти атрибуты уже разделены на два набора.
 А строк GROUP BY возвращает не больше, чем во входной таблице — по одной на каждое уникальное значение https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D1%80%D1%82%D0%B5%D0%B6_(%D0%B8%D0%BD%D1%84%D0%BE%D1%80%D0%BC%D0%B0%D1%82%D0%B8%D0%BA%D0%B0)[кортежа] группировочных атрибутов.
