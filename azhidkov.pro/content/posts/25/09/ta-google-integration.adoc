@@ -1,0 +1,532 @@
+---
+title: "Trainer Advisor — интеграция с Google Calendar"
+date: 2025-09-30T08:25:37+07:00
+draft: false
+tags: 
+- ergo-approach
+- ergo-arch
+- case
+- trainer-advisor
+- ergo-testing
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:sectlinks:
+:toc:
+:toclevels: 4
+:toc-title: Содержание
+:imagesdir: /posts/25/09/images
+
+[NOTE]
+--
+Этот материал является "микропостом" — текстом, написанным в режиме потока сознания без особой редактуры.
+
+Следить за обновлениями блога можно в Telegram-канале: https://t.me/ergonomic_code[Эргономичный код].
+--
+
+== Введение
+
+Я закончил https://github.com/ergonomic-code/Trainer-Advisor/pull/288[большой 5-месячный долгострой на 43 коммита] по интеграции Google Calendar в Trainer Advisor.
+
+В реализации этой фичи довольно много интересных, на мой взгляд, аспектов, каждый из которых заслуживает отдельного поста.
+Но сейчас их писать настроения нет, поэтому ограничусь микропостом с обзором реализации.
+
+Кратко суть фичи:
+
+. Теперь пользователи могут авторизовать TA в Google и выдать ему доступ к своим календарям;
+. Выбрать, какие календари отображать в расписании;
+. Создать приём на основе данных события календаря (дата, время, длительность, комментарий).
+
+Далее на базе этой информации я планирую отправлять пользователям напоминания о заполнении журнала клиентов.
+
+Фича оказалась достаточно жирной — она увеличила размер кодовой базы на 1941 (~10%) строку, доведя её до 18807 строк кода.
+
+Похожий юзкейс уже реализован для ical-календарей.
+
+== Абстрактный ресурс
+
+Для меня самым интересным в этой фиче было то, что для её реализации пришлось ввести некие штуки с рабочим названием «Абстрактный ресурс».
+
+У меня в core появился пакет https://github.com/ergonomic-code/Trainer-Advisor/tree/master/app/src/main/kotlin/pro/qyoga/core/calendar[calendars] с подпакетами api и gateways.
+
+В api определены абстрактные типы и интерфейсы, описывающие календари — Calendar, CalendarItem и CalendarsService.
+
+[NOTE]
+====
+CalendarItem, а не Event — это https://ru.wikipedia.org/wiki/%D0%9F%D0%BE%D1%81%D1%82%D1%82%D1%80%D0%B0%D0%B2%D0%BC%D0%B0%D1%82%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B5\_%D1%81%D1%82%D1%80%D0%B5%D1%81%D1%81%D0%BE%D0%B2%D0%BE%D0%B5_%D1%80%D0%B0%D1%81%D1%81%D1%82%D1%80%D0%BE%D0%B9%D1%81%D1%82%D0%B2%D0%BE[ПТСР] от Проекта Э, где запись дневника — ключевая доменная сущность — называется Event.
+И при обсуждении функциональности, которая работает с эвентами (_дневинка_) и при этом использует доменные эвенты или аппликейшн эвенты — возникает нестерпимая боль от необходимости постоянно уточнять, о каких именно эвентах идёт речь.
+Поэтому тут я решил не использовать Event, так как я в целом предвижу фичу отправки напоминания после публикации доменного эвента о появлении эвента [_календаря_].
+====
+
+В gateways, по сути, живёт один метод — https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/main/kotlin/pro/qyoga/core/calendar/gateways/CalendarItemsResolver.kt[CalendarItemsResolver], который не вписывается в https://ergowiki.azhidkov.pro/docs/models/ergo-arch/#\_%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%86%D0%B8%D1%8F_%D1%81%D1%82%D1%80%D1%83%D0%BA%D1%82%D1%83%D1%80%D1%8B_%D0%BA%D0%BE%D0%BC%D0%BF%D0%BE%D0%BD%D0%B5%D0%BD%D1%82%D0%BE%D0%B2[эргономичную архитектуру структуры компонентов].
+
+Этот метод на вход получает URI CalendarItem, в котором зашит тип календаря.
+Далее он по типу определяет в каком компоненте надо искать событие календаря и ищет его.
+
+И сейчас этот метод реализован как компонент в слое домена, который зависит от других компонентов в слое домена, что запрещено правилами эргономичной структуры компонентов.
+
+Но вот буквально в процессе написания этого текста я понял, что на самом деле всё ок.
+Надо сделать этот класс доменной операцией, а не компонентом, и инжектить список компонентов календарей в операцию системы, которая использует CalendarItemsResolver.
+Это позволит ещё и CalendarsConf выкинуть.
+
+И технически это вполне укладывается в эргономичную архитектуру структуры компонентов:
+
+image::2025-09-30-10-25-35.png[]
+
+Но сейчас меня смущает пара моментов:
+
+. Интерфейс CalendarsService не отражён на диаграмме;
+. Как следствие, из диаграммы не очевидно, что ICalCalendarsService и GoogleCalendarsService реализуют одинаковую функциональность.
+
+Не знаю пока что с этим делать и надо ли что-то делать.
+
+== MockServers
+
+Раньше логика определения стабов в WireMock-е у меня была разбросана хаотично по всей кодовой базе тестов.
+См., например, https://github.com/ergonomic-code/Trainer-Advisor/blob/81b8197386b902c9a8e783945054c48971594cfe/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/backgrounds/ICalCalendarsBackgrounds.kt#L21C9-L21C27[ICalCalendarsBackgrounds.createICalCalendar].
+
+В этой же фиче я всю работу с WireMock инкапсулировал в https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/wiremocks/MockGoogleOAuthServer.kt[MockGoogleOAuthServer] и https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/wiremocks/MockGoogleCalendar.kt[MockGoogleCalendar].
+А инкапсуляция, как известно — это безусловное добро.
+
+Кроме того, я придумал прикольный паттерн, который позволяет «красиво» описывать стабы в местах вызова:
+
+[source,kotlin]
+----
+mockGoogleOAuthServer
+    .OnGetUserInfo(accessToken)
+    .returnsUserInfo(googleEmail)
+----
+
+== Fixtures
+
+В https://t.me/ergonomic_code/443[Проекте Р] у меня была больная боль — там практически для всех тест-кейсов необходимо было собирать сложную фикстуру из десятков объектов разных типов, хитро между собой связанных.
+
+И так как в том проекте ИДы генерировались в БД, заранее подготовить весь граф нужных объектов с нужными связями было невозможно.
+Надо было сначала генерировать первый слой объектов, вставлять их в БД, получать их ИДы, на основе этого генерировать второй слой объектов, снова вставлять их в БД и так далее.
+В результате в сетап фикстуры в Проекте Р у меня превратился дикое месиво, которое было очень сложно поддерживать.
+
+Но по мотивам этого опыта у меня появилась идея структурированного подхода к сетапу фикстур.
+Эта идея требует, чтобы в качестве идентификаторов сущностей использовались UUID-ы.
+Благодаря этому можно сразу декларативно создать весь нужный граф объектов, а потом его в ставить в БД.
+
+И далее для каждого сложно ресурса (задействованного в тест-кейсе) заводится пара классов XxxFixture и XxxFixturePreset.
+И для каждой операции также заводятся эти классы.
+При том фикстура операции включается в себя фикстуры ресурсов этой операции.
+
+Классы XxxFixture — это просто объекты (точнее — записи) со списками объектов по типам и вспомогательными методами доступа.
+
+У XxxFixturePreset есть один основной метод insertFixture(XxxFixture), который пробегается по объектам фикстуры и раскладывает их в нужном порядке по ресурсам через тестовые API.
+Делегируя, при необходимости, в ставку вложенных XxxFixture в соответствующие XxxFixturePreset
+
+Также на XxxFixturePreset есть фабричные методы для сборки типовых графов объектов.
+
+Классы фикстур получились довольно объёмными, поэтому не стану код приводить прямо в посте, а оставлю только ссылки:
+
+. https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/presets/GoogleCalendarsFixturePresets.kt[GoogleCalendarsFixturePresets];
+. https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/testFixtures/kotlin/pro/qyoga/tests/fixture/presets/ScheduleFixturePreset.kt[ScheduleFixturePreset]
+
+И ещё покажу, как выглядит сетап фикстуры, которая включает:
+
+. создание клиента;
+. создание приёма;
+. создание Google-акканута;
+. создание календаря;
+. сетап WireMock на возврат ошибки.
+
+В код это выглядит так:
+
+[source,kotlin]
+----
+@DisplayName("Страница календаря")
+class SchedulePageTest : QYogaAppIntegrationBaseTest() {
+
+    private val scheduleFixturePresets = getBean<ScheduleFixturePreset>()
+    private val googleCalendarsFixturePresets = getBean<GoogleCalendarsFixturePresets>()
+
+    @Test
+    fun `должна рендериться корректно, даже если у терапевта есть подключенный Google-календарь и запрос событий из него приводит к ошибке`() {
+        // Arrange
+        val fixture = ScheduleFixturePreset.withSingleAppointmentAndEnabledGoogleCalendar() // Здесь мы создаём все нужные сущности
+        val appointment = fixture.theAppointment()
+        val day = appointment.dateTime.toLocalDate()
+        scheduleFixturePresets.insertFixture(fixture) // А здесь всё вставляем и настраиваем WireMock
+        googleCalendarsFixturePresets.setFailureOnRequestForEvents(fixture.googleCalendarsFixture)
+
+        // Act
+        val document = theTherapist.appointments.getScheduleForDay(day)
+
+        // Assert
+        document shouldBePage CalendarPage
+        document.appointmentCards() shouldHaveSize 1
+        document.appointmentCards().single() shouldMatch appointment
+        document shouldHaveComponent SelectorOnlyComponent(CalendarPage.SYNC_ERROR_ICON_SELECTOR)
+    }
+}
+----
+
+== Пример «простого» CRUD-приложения
+
+Я в последнее время в канале несколько раз писал о «простых» CRUD-приложения — приложениях без сложной бизнес-логики или нефункциональных требований, но, тем не менее, которые назвать простыми не поворачивается язык.
+
+И вот у меня, наконец появился, хороший open source-ый пример — операция отображения страницы расписания терапевта.
+
+По сути, она предельно простая — надо взять из трёх мест данные о проёмах и событиях и свести их в сетку календаря.
+Ну ещё если где-то что-то отвалилось — надо показать что есть, плюс метку, что была ошибка загрузки данных.
+Ну ещё из гугла надо тянуть данные по разным аккаунтам параллельно, потому что это долго.
+
+А вот граф вызовов реализации этой «простой» операции выглядит так:
+
+image::2025-10-01-10-51-01.png[]
+
+Сложность этой операции обусловлена не сложностью предметной области, бизнес-логики или высокими нефункциональными требованиями, а сложностью маппинга внешних структур данных на внутренние, обеспечением эффективности IO и обработкой ошибок.
+То есть сложностью реализации простых требований.
+
+И хотя граф вызовов этой операции не выглядит простым, понять её, на мой взгляд, будет довольно просто благодаря тому, что:
+
+. весь потенциальный IO перечислен в GetCalendarAppointmentsRs;
+. 9 из 10 методов с IO имеют когнитивную сложность равную 0 или 1, а самая большая когнитивная сложность — 2;
+. все функции имеют максимальную функциональную связанность (functional cohesion) по оценке https://ergowiki.azhidkov.pro/docs/methodics/cohesion-estimation/[этим методом].
+
+Но накосячить в реализации этой операции можно довольно просто.
+Что я и сделал в первом реализации метода получения эвентов гугл календарей.
+
+== Рефакторинг findCalendarItemsInInterval (уровни абстракции/стратификация)
+
+Первый подход к реализации загрузки событий календарей гугла (с распараллеливанием и обработкой ошибок) у меня вышел откровенно стрёмный.
+Благо хорошие тесты развязывают руки свободно рефакторить любой код, поэтому при финализации фичи я его существенно причесал:
+
+[Attributes]
+|===
+|До |После 
+
+a|
+
+[source,kotlin]
+----
+override fun findCalendarItemsInInterval(
+    therapist: TherapistRef,
+    interval: Interval<ZonedDateTime>
+): SearchResult<GoogleCalendarItemId> {
+    val googleCalendarSettings = googleCalendarsDao.findCalendarsSettings(therapist)
+    if (googleCalendarSettings.isEmpty()) {
+        return SearchResult(emptyList())
+    }
+    val accountCalendars = googleCalendarSettings.values.groupBy { it.googleAccountRef.id }
+    val accountIds = googleCalendarSettings.values.map { it.googleAccountRef }
+        .distinct()
+    val accounts = googleAccountsDao.findGoogleAccounts(accountIds)
+
+    val fetchTasks = accounts
+        .flatMap { account ->
+
+            val settings = accountCalendars[account.ref().id]
+                ?: return@flatMap emptyList()
+
+            settings
+                .filter { it.shouldBeShown }
+                .map { calendarSettings ->
+                    CompletableFuture.supplyAsync(
+                        {
+                            googleCalendarsClient.getEvents(
+                                account = account, 
+                                calendarSettings = calendarSettings, 
+                                interval = interval
+                            )
+                        }, executor
+                    )
+                }
+        }
+    val calendarEventsResults = fetchTasks.map {
+        tryExecute { it.get() }
+    }
+
+    val events = calendarEventsResults
+        .mapNotNull {
+            if (it.isFailure) {
+                log.warn("Failed to fetch events for account", it.exceptionOrNull())
+            }
+            it.getOrNull()
+        }
+        .flatMap { it }
+        .map { it.toLocalizedCalendarItem(interval.zoneId) }
+
+    return SearchResult(events, hasErrors = calendarEventsResults.any { it.isFailure })
+}
+
+----
+a|
+
+[source,kotlin]
+----
+override fun findCalendarItemsInInterval(
+    therapist: TherapistRef,
+    interval: Interval<ZonedDateTime>
+): SearchResult<GoogleCalendarItemId> {
+    val enabledGoogleCalendars = googleCalendarsDao.findCalendarsSettings(
+        therapist = therapist,
+        shouldBeShown = true,
+        fetch = listOf(GoogleCalendarSettings::googleAccountRef)
+    )
+    if (enabledGoogleCalendars.isEmpty()) {
+        return SearchResult(emptyList())
+    }
+
+    val calendarEventsFetchResults: List<GoogleCalendarItemsFetchResult> =
+        enabledGoogleCalendars.map { cal ->
+            Supplier {
+                tryExecute {
+                    googleCalendarsClient.getEvents(
+                        googleAccount = cal.googleAccountRef.resolveOrThrow(), 
+                        interval = interval, 
+                        calendarId = cal.calendarId
+                    )
+                }.onFailure {
+                    log.warn("Failed to fetch events for account", it)
+                }
+            }
+        }
+            .submitAll(executor)
+            .awaitAll()
+
+    val items = calendarEventsFetchResults
+        .mapNotNull { it.getOrNull() }
+        .flatten()
+        .map { it.toLocalizedCalendarItem(interval.zoneId) }
+
+    return SearchResult(
+        items = items,
+        hasErrors = calendarEventsFetchResults.any { it.isFailure }
+    )
+}
+
+private fun List<Supplier<GoogleCalendarItemsFetchResult>>.submitAll(
+    executor: Executor
+): List<CompletableFuture<GoogleCalendarItemsFetchResult>> =
+    this.map { task ->
+        supplyAsync(task, executor)
+    }
+
+private fun List<CompletableFuture<GoogleCalendarItemsFetchResult>>.awaitAll()
+        : List<GoogleCalendarItemsFetchResult> =
+    this.map(CompletableFuture<GoogleCalendarItemsFetchResult>::get)
+----
+
+|===
+
+При том что размер «до» и «после» практически одинаковый, вариант «После» прочитать и понять существенно проще, на мой взгляд.
+
+Однозначных критериев, по которым второй вариант лучше я найти/осознать/понять не могу, но интуитивно кажется, что это благодаря пресловутым уровням абстракции.
+
+Во-первых, я инкапсулировал в слое доступа к данным логику выборки только включённых календарей и подгрузки для них данных аккаунтов.
+
+Главное, на мой взгляд, чего я этим достиг — это «вывернул» (денормализовал? «уплостил»?) структуру данных с `аккаунт -> список календарей` в `список календарей -> аккаунт`.
+Благодаря этому я превратил запуск (создание в итоге) задач из двух вложенных циклов (flatMap + map) в один проход (map) и убрал из него логику обработки пустых аккаунтов и выключенных календарей.
+
+Ну и удаление гимнастики с подгрузкой аккаунтов к календарям и их джоином в памяти — также существенно снизило когнитивную нагрузку при чтении метода.
+
+Во-вторых, я в целом убрал из метода (читай: «рабочей памяти» читателя) мотню про CompletableFuture, а всё, что касается распараллеливания обработки собрал в двух соседних строчка (submitAll+awaitAll).
+
+В-третьих, я локализовал обработку (логгирование) ошибки получения эвентов календаря.
+Фик знает чем это хорошо.
+Но, имхо, явно лучше, чем было
+
+Теоретически, из этого метода можно вообще убрать упоминание распараллеливания обработки как-то так:
+
+[source,kotlin]
+----
+val calendarEventsFetchResults: List<GoogleCalendarItemsFetchResult> = fetchItems(enabledGoogleCalendars) { cal ->
+        tryExecute {
+            googleCalendarsClient.getEvents(
+                googleAccount = cal.googleAccountRef.resolveOrThrow(), 
+                interval = interval, 
+                calendarId = cal.calendarId
+            )
+        }.onFailure {
+            log.warn("Failed to fetch events for account", it)
+        }
+    }
+
+// или вообще так
+val calendarEventsFetchResults = fetchItems(enabledGoogleCalendars)
+----
+
+Но мне кажется, что параллельность — это важный аспект кода, который должен быть очевиден читателю, поэтому его лучше оставить явным на уровне этого метода.
+
+Также, наверное, можно было бы ещё чутка повысить уровень абстракции в обработке результатов:
+
+[source,kotlin]
+----
+val items = calendarEventsFetchResults
+    .selectFetchedItems()
+    .map { it.toLocalizedCalendarItem(interval.zoneId) }
+
+return SearchResult(
+    items = items,
+    hasErrors = calendarEventsFetchResults.hasErrors()
+)
+
+fun List<GoogleCalendarItemsFetchResult>.selectFetchedItems() =
+    this.mapNotNull { it.getOrNull() }
+        .flatten()
+
+fun List<GoogleCalendarItemsFetchResult>.hasErrors() =
+    this.any { it.isFailure }
+----
+
+Но, кажется, оно того не стоит.
+
+== SourceItem -> URI​​​​
+
+Тут надо начать издалека.
+К своему стыду, должен признаться, что я только недавно до конца (чуть лучше?) осознал что такое URI.
+И помогли мне в этом пара задачек в Проекте Э.
+
+В первой задачке мне надо было вернуть Андроид-фронту вьюшку сущности с картинкой.
+И так как для Андроида надо обеспечивать обратную совместимость, я решил, что разумнее будет URL картинки формировать сразу на бэке — тогда я этот эндпоит смогу спокойно менять, не ломая обратную совместимость.
+
+И тут сто́ит напомнить, что для вьюшек я делаю маппинг на уровне персистанса — специализированным запросом выбираю нужные данные, а потом силами Spring Data JDBC или RowMapper превращаю строки в объекты ДТОшек, которые улетают прямиком клиенту.
+
+И с такой схемой не очень понятно, как формировать URL.
+Можно, конечно, его формирование засунуть прямо в SQL, но это даже для меня как-то дурно пахнет.
+
+Делать под это два класса, которые различаются только типом одного из параметров (UUID и URL) мне тоже не хотелось.
+
+В общем, я довольно долго втыкал на эту проблему.
+И не помню уже как, но в какой-то момент до меня дошло, что строка `"7a3f1b2c-4d5e-4f7a-9c1b-2d3e4f5a6b7c"` (как и `"242353"`) — это валидный URI.
+
+Тогда я сделал такой хитрый хак:
+
+. тип поля imageUri во вьюшке сделал сразу URI;
+. В SQL-е просто возвращал UUID и мапил его на URI;
+. В контроллере мапил это поле дописывая в URI базу и превращая его де-факто в URL.
+
+Решение неоднозначное, конечно, но на мой взгляд это наименьшее из зол.
+
+Затем разбираясь с https://t.me/ergonomic_code/637[диплинками в пушах], я осознал, что кастомные схемы — это не какая-то маргинальная дичь, а вполне себе способ задавать скоуп идентификатора.
+
+И вот вооружившись этими историями можно возвращаться к Trainer Advisor.
+
+Там у меня есть фича создания приёма на основе события календаря («черновика»).
+Соответственно, в метод получения предзаполненной формы создания приёма надо передать как-то ид эвента, данными которого надо предзаполнить форму.
+Который должен, во-первых, содержать в себе тип календаря (ical или google), и, во-вторых, специфичные для типа составные части ида.
+
+Изначально я это сделал через кастомный класс:
+
+[source,kotlin]
+----
+data class SourceItem(
+    val type: String,
+    val id: String
+) {
+
+    constructor(eventId: CalendarItemId) : this(eventId.type.name, eventId.toQueryParamStr())
+
+}
+----
+
+Но это:
+
+. лишний тип;
+. гимнастика с кастомным рендерингом идов в строки, которые можно передавать в параметрах запроса;
+. гимнастика с кастомных парсингом строк из параметра запроса в SourceItem;
+. по несчастливой случайности — разный формат строк для ical ("rid=$rid,uid=$uid")и google ("$cid,$eid")
+
+Посмотрев на это, я решил https://github.com/ergonomic-code/Trainer-Advisor/commit/85ee3b947f8480cacfffd85b987708f1375f5f67[заменить SourceItem на URI].
+
+И хотя по статистике коммита (+130/-82 строк) кода стало больше, решение на базе URI мне всё равно кажется более «production grade», чем на базе SourceItem.
+
+== Как добыть OAuth2AuthorizedClient без того, чтобы перетереть Authorization в SecurityContext
+
+Авторизация в гугле была задачей, которая превратила эту фичу в долгострой.
+
+Дело в том, что в мой примитивный белковый мозг Spring Security и OAuth даже по отдельности не помещаются.
+А когда я пробовал затолкать их одновременно, то примерно через два-три часа попыток у меня из левой ноздри начинала течь кровь, из правого уголка рта — течь слюнка, а взор устремлялся в стену и замирал там на два часа, то перезагрузки моего примитивного белкового мозга.
+
+В общем, я предпринял две или три отчаянные и безуспешные попытки авторизоваться в гугле самостоятельно.
+И этот провал заставил меня отложить фичу в долгий ящик.
+
+А потом я решил попробовать сделать это с гопатычем.
+И у него получилось!
+
+Поэтому ответ на вопрос из заголовка — я хз.
+Но у меня есть рабочий код, на который можно ориентироваться:
+
+. https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/build.gradle.kts#L25[зависимость];
+. https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/main/resources/application.yaml#L39[конфигурация клиента и провайдера];
+. https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/main/kotlin/pro/qyoga/app/infra/WebSecurityConfig.kt#L86[конфигурация SecurityFilterChain];
+. https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/main/kotlin/pro/qyoga/app/therapist/oauth2/GoogleCallbackController.kt[обработчик колбэка] (там же есть коммент с описания флоу авторизации).
+
+[NOTE]
+====
+Сейчас пока смотрел на GoogleCallbackController понял, что сделал там ай-яй-яй и оставил логику в контроллере.
+Это не по ЭП.
+Особенно с учётом того, что там засунут http-запрос и два обращения к ресурсу.
+
+Правильно всю эту логику утащить в GoogleCalendarsService.addAccount
+====
+
+И этот код мало того, что рабочий — он ещё и тестами покрыт.
+
+== Интеграционное тестирование Google OAuth и Google Calendars
+
+Тут я должен сделать каминг-аут — я не всегда пишу тесты первыми.
+
+И авторизацию в гугле я писал без тестов, потому что не понимал, как она должна работать и как её тестировать.
+
+Но после того как она задышала и у меня появилось хотя бы общее представление работы, стало очевидно, что вот как раз эту дуру ни в коем случае нельзя оставлять без тестов.
+Потому что если она сломается, чинить её будет ну прям очень больно.
+
+И тут я тоже буксанул.
+После того как у меня авторизация задышала в UI, логика её работы для меня всё равно оставалась чёрным ящиком.
+
+Аналогично с гугловым SDK — с ним снаружи в целом всё было понятно, но как он работает внутри — хз.
+И, как следствие, мне казалось, что писать под него wiremock-стабы будет сложно, и я даже в серьёз подумал замокать его.
+
+Из-за этой неопределённости подходить к этой задаче было банально страшно.
+
+Тем не менее усилием воли я начал писать тесты, и на деле всё оказалось достаточно просто.
+Опять же не без помощи гопатыча — wiremock-стабы гуглового АПИ он писал на ура.
+
+Более того, в процессе написания тестов на авторизацию, я даже на какое-то мгновение смог понять как она работает, и тут же записал это в комменте к GoogleCallbackController.
+
+Кода тестов, особенно со всеми хелперами, довольно дофига поэтому прям тут его приводить не буду и вместо этого оставлю ссылку на https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/test/kotlin/pro/qyoga/tests/cases/app/therapist/calendars/google/GoogleAuthorizationIntegrationTest.kt[тест].
+
+== Верификация приложения в Google
+
+Под самый конец разработки я выяснил очень неприятную вещь.
+
+Если приложение запрашивает «чувствительные» скоупы (а чтение календарей к ним относится), то оно должно пройти верификацию.
+
+Без верификации в целом тоже будет работать, но в этом случае рефреш токен будет протухать через 7 дней и обновить его программно никак нельзя — надо чтобы пользователь заново прошёл авторизацию в гугле.
+
+И так как у меня был план в фоне доставать эвенты и слать по ним напоминания, для меня это оказалось проблемой.
+
+Поэтому я решил попробовать пройти верификацию.
+
+И этот процесс оказался семью кругами ада, которые я не осилил.
+
+Что вам сто́ит знать про верификацию в гугле:
+
+. Сейчас не могу это найти, но точно помню, что они где-то писали, что процесс верификации занимает 4–6недель.
+  Недель, Карл!
+  Это месяц-полтора;
+. У вас должна быть политика конфиденциальности;
+. И ссылка на неё должна быть на главной странице;
+. А ещё вам надо написать обоснование зачем вам эти скоупы.
+. И не однострочник какой-то, а развёрнутое, на 1000 символов.
+  Ну и лучше на английском, конечно;
+. А ещё вам надо записать видос с демонстрацией процесса авторизации в вашем приложении и как вы используете полученные данные.
+. И видос должен быть с «озвучкой».
+  Лучше на английском, конечно же.
+
+Вот собственно на этом пункте я и сломался пока:
+
+image::2025-10-02-11-53-09.png[]
+
+Вернусь к этому аду, если фича окажется востребованной и пользователи начнут жаловаться, что их заманало авторизоваться в гугле.
+
+---
+
+Фух, «микропост» оказался на 25 минут чтения по оценке Фаерфокса.
+Страшно представить, сколько бы получилось текста, если бы я все пункты расписывал подробно.
