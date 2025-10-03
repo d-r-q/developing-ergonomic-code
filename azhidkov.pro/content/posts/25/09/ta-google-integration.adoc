@@ -468,7 +468,7 @@ data class SourceItem(
 
 И этот код мало того, что рабочий — он ещё и тестами покрыт.
 
-== Интеграционное тестирование Google OAuth и Google Calendars
+== Тестирование интеграции с Google OAuth и Google Calendars
 
 Тут я должен сделать каминг-аут — я не всегда пишу тесты первыми.
 
@@ -490,7 +490,15 @@ data class SourceItem(
 
 Более того, в процессе написания тестов на авторизацию, я даже на какое-то мгновение смог понять как она работает, и тут же записал это в комменте к GoogleCallbackController.
 
-Кода тестов, особенно со всеми хелперами, довольно дофига поэтому прям тут его приводить не буду и вместо этого оставлю ссылку на https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/test/kotlin/pro/qyoga/tests/cases/app/therapist/calendars/google/GoogleAuthorizationIntegrationTest.kt[тест].
+Кода тестов, особенно со всеми хелперами, довольно дофига поэтому прям тут его приводить не буду и вместо этого оставлю ссылки:
+
+* https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/test/kotlin/pro/qyoga/tests/cases/app/therapist/calendars/google/GoogleAuthorizationIntegrationTest.kt[GoogleAuthorizationIntegrationTest];
+* https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/test/kotlin/pro/qyoga/tests/cases/i9ns/calendars/google/GoogleCalendarsServiceTest.kt[GoogleCalendarsServiceTest];
+* https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/test/kotlin/pro/qyoga/tests/cases/app/therapist/calendars/google/GetGoogleCalendarsSettingsEndpointTest.kt[GetGoogleCalendarsSettingsEndpointTest];
+* https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/test/kotlin/pro/qyoga/tests/cases/app/therapist/calendars/google/SetCalendarShouldBeShownTest.kt[SetCalendarShouldBeShownTest]
+* https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/test/kotlin/pro/qyoga/tests/cases/app/therapist/appointments/core/SchedulePageTest.kt#L138[Тест "Страница календаря должна рендериться корректно, даже если у терапевта есть подключенный Google-календарь и запрос событий из него приводит к ошибке"]
+* https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/test/kotlin/pro/qyoga/tests/cases/app/therapist/appointments/core/CreateAppointmentPageTest.kt#L185[CreateAppointmentPageTest.createAppointmentWithGoogleEventId];
+* https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/test/kotlin/pro/qyoga/tests/cases/app/therapist/appointments/core/SchedulePageControllerTest.kt[SchedulePageControllerTest];
 
 == Верификация приложения в Google
 
