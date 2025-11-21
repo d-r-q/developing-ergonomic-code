@@ -2,6 +2,7 @@
 . case
 . clean-arch
 . clojure
+. code
 . cohesion
 . coupling
 . craftsmanship
@@ -16,6 +17,7 @@
 . effects-diagram
 . ergo-approach
 . ergo-arch
+. ergo-book
 . ergo-mocking
 . ergo-persistence
 . ergo-testing

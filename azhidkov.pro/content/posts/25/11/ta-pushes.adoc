@@ -1,0 +1,827 @@
+---
+title: "Trainer Advisor — WebPush-уведомления"
+date: 2025-11-16T05:25:37+07:00
+draft: false
+tags: 
+- ergo-approach
+- ergo-arch
+- case
+- trainer-advisor
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:sectlinks:
+:toc:
+:toclevels: 4
+:toc-title: Содержание
+:imagesdir: /posts/25/11/images
+
+[NOTE]
+--
+Этот материал является «микропостом» — текстом, написанным в режиме потока сознания без особой редактуры.
+
+Следить за обновлениями блога можно в Telegram-канале: https://t.me/ergonomic_code[Эргономичный код].
+--
+
+== Введение
+
+Я недавно https://github.com/ergonomic-code/Trainer-Advisor/pull/292[сделал] Web Push уведомления в Trainer Advisor и попутно снова узнал и придумал пачку прикольных штук, о которых хочу рассказать.
+
+== Фича
+
+Для начала пару слов о том, что и зачем я собственно сделал.
+
+А сделал я отправку браузерных уведомлений с напоминанием заполнить расписание в захардкоженные 10 утра по местному времени терапевта.
+
+Изначально план был отправлять уведомления о внесении записей в журнал на основе гугл календарей.
+Однако я link:++{{<ref "/posts/25/09/ta-google-integration#_верификация_приложения_в_google">}}++[не осилил] пройти верификацию в гугле, без которой доступ быстро протухает.
+Более того, я в целом не уверен, что терапевты будут реагировать на уведомления.
+Поэтому я решил начать с более простого (чем верификация в гугле) варианта.
+
+Также и в реализации я решил пойти по простому пути.
+Вместо умного шедулера в духе JobRunr или Quartz я прикрутил простой шедулер, который просыпается раз в N (=10) минут, смотрит у кого из терапевтов за последние N минут был момент напоминания и шлёт им пуши.
+
+== Отправка пушей
+
+Пожалуй, самым больши́м открытием этой фичи для меня стало то, что веб пуши (особенно на беке) — это просто.
+
+Для этого не то, что с кастомными и платными сторонними сервисами не надо возиться — даже с FCM и APNS не надо возиться.
+
+Подробные посты, как это сделать https://dev.to/marcushellberg/how-to-send-web-push-notifications-in-java-21lo[есть] в сети, поэтому я только лишь приведу основные шаги на беке:
+
+. Завести https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/main/kotlin/pro/qyoga/app/publc/pushes/web/PushesPublicKeyController.kt#L18[эндпоинт] для раздачи публичного ключа;
+. Завести https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/main/kotlin/pro/qyoga/app/pushes/web/WebPushesController.kt#L25[эндпоинт] для получения подписок на пуши от фронта;
+. Подключить либу https://github.com/web-push-libs/webpush-java[webpush-java];
+. https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/main/kotlin/pro/qyoga/i9ns/pushes/web/WebPushServiceClient.kt#L35[Прокинуть] данные из п.2 в либу из п.3.
++
+_NB: сейчас заметил, что у меня там от исследовательской стадии осталась ручная сборка строки с json-ом — лучше так не делать_;
+. Профит.
+
+== Архитектура
+
+Эта фича, на мой взгляд, хороша в качестве иллюстрации https://ergowiki.azhidkov.pro/docs/models/ergo-arch/[Эргономичной архитектуры] — она достаточно компактная и при этом не совсем тривиальная и содержит бо́льшую часть типов базовых блоков архитектуры (картинка кликабельна):
+
+image::TA-web-pushes-design.drawio.svg[link={imagesdir}/TA-web-pushes-design.drawio.svg]
+
+На этой иллюстрации представлено три проекции решения — проекция компонентов (верхняя левая), проекция поведения (верхняя правая, здесь изображена только одна нетривиальная операция фичи) и проекция модели данных (нижняя).
+
+Я не нашёл хорошего способа это визуализировать, но все эти проекции связаны.
+Если вы присмотритесь, то увидите, что для каждого прямоугольника с именем *Repo или *Dao в проекции компонентов, строго под ним в проекции модели данных есть одноимённый прямоугольник сущности.
+А для каждого прямоугольника, достижимого из прямоугольника SendFillScheduleNotifsScheduler в проекции компонентов, строго справа от него есть «одноимённый» (с точностью до имени метода) прямоугольник с поведением.
+
+Типы блоков архитектуры, представлены на этой диаграмме следующими элементами:
+
+* Элементы модели данных:
+** Сущность — Therapist.
+  Вообще, сама по себе сущность терапевта не является частью фичи пушей, но к ней привязываются сущности-аспекты, которые уже непосредственно относятся к фиче, поэтому я её включил для того, чтобы показать связь.
+** Сущность-аспект — TherapistWebPushSubscription, FillScheduleNotificationsSettings.
+   Эти сущности описывают данные, связанные с одним конкретным терапевтом, и не имеют без него смысла.
+** Компонент — WebPushSubscription, Keys.
+   Являются неотъемлемой частью сущности TherapistWebPushSubscription, но при этом образуют группы сильно связанных (cohesive) атрибутов.
+* Элементы модели компонентов:
+** Порт — PushesPublicKeyController, NotificationsSettingsController, SendFillScheduleNotificationsScheduler (на диаграмме во имя эстетики — SendFillScheduleNotifsScheduler)
+** Операция — RegisterSubscriptionOp, SendFillScheduleNotificationsOp
+** Простой ресурс — TherapistsRepo (добавлен на диаграмму для симметрии сущность-репозиторий), FillScheduleNotifsSettingsRepo (на диаграмме во имя эстетики — FillScheduleNotifsSettingsRepo), WebPushSubscriptionsDao, WebPushServiceClient.
+** Сложный ресурс — WebPushesService.
+* Элементы модели поведения:
+** Ввод — FillScheduleNotifsSettingsRepo.findTherapistsToNotify, WebPushSubscriptionsDao.findTherapistsSubscriptions
+** Вывод — WebPushService.sendPush
+** Оркестрация — SendFillScheduleNotificationsOp.invoke, WebPushesService.sendPush.
+
+Из базовых блоков не хватает только доменной операции в проекции компонентов и трансформации в проекции поведения.
+
+== Абстракция vs очевидность эффектов и разделение ввода и вывода
+
+Когда я только начинал работу над Эргономичным подходом в 2020 году, я придерживался мнения, что в подавляющем большинстве операций можно и нужно «вытягивать» все эффекты на уровень оркестрации (сервисов приложения, юз кейсов, интеракторов) и полностью разводить чтение и запись.
+И на самом деле я в этом мнении был не одинок — у Марка Симана, например, есть https://blog.ploeh.dk/2025/01/13/recawr-sandwich/[свежий пост] на эту же тему.
+
+Однако уже в начале 2021 года в https://azhidkov.pro/posts/21/03/210321-project-l-testing/[Проекте Л] я столкнулся с ситуацией, когда «вытянуть» все эффекты наверх и полностью разделить ввод и вывод было хоть и возможно, но код при этом становился неуклюжим и подверженным ошибкам.
+
+Там практически в каждой операции надо было ходить во внешнюю систему, которая в ответ на любой запрос могла вернуть обновлённый токен авторизации, который надо было закэшировать в БД.
+И поначалу в погоне за совершенным следованием принципу «В операции должен быть явно прописан весь ввод-вывод» я пихал код кеширования токена прямо в операции (сервисы приложения).
+Но довольно быстро стало очевидно, что это какая-то дичь — мы тут с билетами (доменный термин) работаем, а ещё какие-то токены кэшируем (технические термины).
+Более того, пока логика кэширования токена торчала наружу — её можно было забыть сделать и потерять свежий токен.
+
+Поэтому я завёл отдельный класс, который включал в себя HTTP-клиента внешней системы и репоз токенов и абстрагировал логику кэширования.
+В итоге этот класс привёл меня к идеям https://azhidkov.pro/posts/23/04/ergonomic-decomposition/#_агрегация_ресурсов["разумных групп ресурсов"] из рационального подхода к декомпозиции и https://ergowiki.azhidkov.pro/docs/models/ergo-arch/#_номенклатура_блоков_модели_компонентов["составных ресурсов"] из текущей версии Эргономичной архитектуры.
+
+После этого случая я несколько изменил своё мнение:
+
+. в подавляющем большинстве операций все верхнеуровневые эффекты можно и нужно вытягивать на уровень оркестрации.
+  Но один верхнеуровневый эффект может включать несколько эффектов более низкого уровня.
+  И более того, эти эффекты могут быть как чтения, так и записи, вне зависимости от типа верхнеуровневого эффекта.
+. в подавляющем большинстве операций чтение и запись можно и нужно разводить на своём уровне абстракции.
+  Но следствием предыдущего пункта является то, что это не полное разведение ввода и вывода, и операция ввода на текущем уровне абстракции может включать инкапсулированный вывод на более низком уровне.
+  И наоборот — операция вывода на текущем уровне абстракции может включать инкапсулированный ввод на более низком уровне.
+
+Эти идеи можно проиллюстрировать на примере операции отправки пушей терапевтам.
+
+Сейчас она работает так:
+
+. Загрузить терапевтов, которым надо отправить уведомления (ввод);
+. Отправить терапевтам пуши (вывод);
+.. Загрузить подписки терапевтов на пуши (ввод);
+.. Отправить в каждую из подписок пуш (вывод).
+
+image::TA-web-pushes-design-send-notifs-op.drawio.svg[]
+
+Очевидно, в текущей реализации есть скрытый эффект — считывание подписок внутри метода отправки пушей терапевтам.
+Как и смешение ввода и вывода в этой же операции.
+
+И при желании это можно исправить, переписав операцию примерно так:
+
+[source,kotlin]
+----
+override fun invoke(currentTime: Instant, windowSize: Duration) {
+    val dayOfWeek = currentTime.atOffset(ZoneOffset.UTC).dayOfWeek
+    val time = currentTime.atOffset(ZoneOffset.UTC).toLocalTime() - windowSize
+    val therapistsToNotify = fillScheduleNotificationsSettingsRepo.findTherapistsToNotify(
+        dayOfWeek = dayOfWeek,
+        notificationInterval = Interval.of(time, windowSize)
+    )
+    val webPushSubscriptions = webPushSubscriptionsRepo.findTherapistsSubscriptions(therapistsToNotify)
+
+    webPushServiceClient.sendPushes(webPushSubscriptions, fillScheduleWebPush)
+}
+----
+
+И тогда все эффекты будут перечислены прямо в операции, а весь ввод (чтение терапевтов и их подписок) будет выполняться до всего вывода (отправки пушей).
+
+Однако изначально у нас словарь операции был в целом «бизнесовый» — «текущее время", «настройки уведомлений", «терапевты", «веб-пуши» (вот тут можно поспорить уже, но по большому счёту в текущей реализации ничего не мешает переименовать WebPush* в Notifications*).
+А в этой реализации в словаре появляется уже сугубо технический термин — «подписка на веб-пуш".
+И это приколачивает операцию к веб-пушами и добавить нотификации по емейлам, например, уже так просто не получится.
+
+В оригинальной же версии, отправку по емейлам можно будет инкапсулировать в NotificationsService (бывшем WebPushesService) и не менять код самой операции.
+
+Отдельно сто́ит отметить, как я сам одновременно удачно и неудачно link:++{{<ref "/posts/25/01/you-dont-need-ca-and-dip-probably/#_проектирование_api_вместо_кодирования_интерфейсов">}}++["спроектировал АПИ вместо кодирования интерфейса"].
+
+Хорошо в этом API то, что на уровне сигнатур WebPushesService не фигурируют технические детали — он получает на вход список терапевтов и одну структуру данных с универсальными полями (title, body, deeplink, topic — я понимаю, как из этих данных собрать не только веб-пуш, но и емейл, например), определённую в моём коде.
+
+А вот с именованием я лажанул явно упомянув WebPushes.
+Пожалуй, с оказией надо будет это отрефакторить и переименовать в Notifications*.
+
+Абстракция и её уровни — для меня это какие-то скользкие штуки, которые достаточно сложно формализовать и превратить в простой для изучения и понятный для применения инструмент.
+Поэтому пока что у меня план собирать вот такие кейсы и попытаться найти в них какие-то общие паттерны.
+
+== И снова про уровни абстракции/стратификацию
+
+В прошлом посте про реализацию интеграции с Google Calendars я уже писал про link:++{{<ref "/posts/25/09/ta-google-integration#_рефакторинг_findcalendaritemsininterval_уровни_абстракциистратификация">}}++[уровни абстракции/стратификацию].
+
+И если в прошлый раз я сам нагенерял не самый удачный код, то в этот раз мне помог гопатыч, который является моим ведущим Frontend-разработчиком в TA:)
+И благодаря его продуктивности, он мне подарил аш два примера паршивого кода, которые я немного подправил.
+
+=== Пример №1: код открытия диплинка по клику
+
+В первом случае это была функция открытия окна с диплинком при клике не уведомление.
+
+Общая логика следующая:
+
+. Если уже есть окно (вкладка) в котором открыт требуемый URL — просто сфокусироваться на нём;
+. если уже есть окно с открытым Trainer Advisor — сфокусироваться на нём и открыть в нём требуемый URL;
+. иначе открыть новое окно с требуемым URL.
+
+И гопатыч закодил эту логику так:
+
+[source,js]
+----
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+
+    const deepLink = event.notification?.data?.deepLink;
+    if (deepLink == null) {
+        return
+    }
+
+    const targetUrl = new URL(deepLink, self.location.origin).href;
+
+    event.waitUntil((async () => {
+        const clientList = await clients.matchAll({
+            type: 'window',
+            includeUncontrolled: true
+        });
+
+        const exactMatch = clientList.find(c => c.url && c.url.endsWith(targetUrl));
+        if (exactMatch) {
+            try {
+                await exactMatch.focus();
+                return;
+            } catch (ignore) {
+            }
+        }
+
+        const anyWindow = clientList.find(c => c.type === 'window');
+        if (!anyWindow) {
+            await clients.openWindow(targetUrl);
+        }
+
+        try {
+            await anyWindow.focus();
+
+            if (typeof anyWindow.navigate === 'function') {
+                await anyWindow.navigate(targetUrl);
+            } else {
+                try {
+                    anyWindow.postMessage({action: 'navigate', targetUrl}, '*');
+                } catch (_) {
+                    /* noop */
+                }
+            }
+        } catch (e) {
+            await clients.openWindow(targetUrl);
+        }
+
+    })());
+});
+----
+
+На мой взгляд, она достаточно «волосатая» и глядя в код восстановить суть логики работы довольно сложно.
+Проблема этой функции в том, что в ней намешано всё подряд:
+
+. логика обработки клика (закрыть нотификацию, открыть диплинк);
+. логика открытия диплинка (сначала попытаться найти уже открытое окно с нужным урлом и сфокусировать его, потом попытаться найти существующее окно и открыть в нём, в конце концов открыть новое окно);
+. конкретные механизмы работы с окнами (openWindow, focus, navigate, postMessage и т. д.);
+. логика обработки ошибок (все ошибки игнорируем и в конце концов пытаемся открыть новое окно).
+
+Поэтому я причесал её и у меня получилось так:
+
+[source,js]
+----
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+
+    const deepLink = event.notification?.data?.deepLink;
+    if (deepLink == null) {
+        return
+    }
+
+    const targetUrl = new URL(deepLink, self.location.origin).href;
+
+    event.waitUntil((async () => {
+        await openOrFocusWindow(targetUrl);
+    })());
+});
+
+self.openOrFocusWindow = async function openOrFocusWindow(url) {
+    const clientList = await clients.matchAll({
+        type: 'window',
+        includeUncontrolled: true
+    });
+
+    let wasFocused = await tryFocusExactMatch(clientList, url);
+    if (wasFocused) {
+        return
+    }
+
+    let wasNavigated = await tryNavigateAnyWindow(clientList, url);
+    if (wasNavigated) {
+        return
+    }
+
+    await clients.openWindow(url);
+}
+
+async function tryFocusExactMatch(clientList, url) {
+    const exactMatch = clientList.find(c => c.url && c.url.endsWith(url));
+    if (!exactMatch) {
+        return false;
+    }
+    return await tryFocusWindow(exactMatch);
+}
+
+async function tryNavigateAnyWindow(clientList, url) {
+    const anyWindow = clientList.find(c => c.type === 'window');
+    if (!anyWindow) {
+        return false;
+    }
+
+    let focused = await tryFocusWindow(anyWindow);
+    if (!focused) {
+        return false
+    }
+
+    return await tryNavigateTo(anyWindow, url);
+}
+
+async function tryFocusWindow(window) {
+    try {
+        await window.focus();
+        return true;
+    } catch (e) {
+        console.error(`Failed to focus ${window}`, window, e);
+        return false
+    }
+}
+
+async function tryNavigateTo(window, url) {
+    try {
+        if (typeof window.navigate === 'function') {
+            await window.navigate(url);
+        } else {
+            window.postMessage({action: 'navigate', targetUrl: url}, '*');
+        }
+        return true
+    } catch (e) {
+        console.error(`Failed to navigate ${window} to ${url}`, e);
+        return false;
+    }
+}
+----
+
+Кода стало больше, но теперь, на мой взгляд, логика каждой из функций стала очевидной:
+
+. Логика обработки клика (закрыть нотификацию, открыть диплинк) осталась в `notificationclick`.
++
+Здесь, в идеале, стоило бы получение URL вытащить в `getDeepLink(event: Event): URL?`, но в целом и в текущем виде «good enough, imho";
+. логика открытия диплинка (сначала попытаться найти уже открытый и сфокусировать его, потом попытаться найти существующее окно и открыть в нём, в конце концов открыть новое окно) ушла в `openOrFocusWindow`.
++
+Здесь также, пожалуй, стоило бы завернуть механизмы `clients.matchAll` и `clients.openWindow` в собственные функции, но опять же — то, что есть уже «good enough, imho".
+. конкретные механизмы работы с окнами (openWindow, focus, navigate, postMessage и т. д.) ушли в функции `try*`;
+. логика обработки ошибок (все ошибки игнорируем и в конце концов пытаемся открыть новое окно) разошлась на два уровня.
+.. низкоуровневые ошибки обрабатываются в функциях механизмов путём превращения в boolean-результат успеха операции;
+.. верхнеуровневая логика обработки ошибок — пробуем по очереди сфокусировать, снавигировать и открыть — ушла в центральную функцию `openOrFocusWindow`.
+
+=== Пример №2: фетч ресурсов с фолбэком на кэш и кастомную страницу «Сервис недоступен"
+
+Вторым примером стала функция обработки запроса на фетч URL в ServiceWorker-е.
+Это https://en.wikipedia.org/wiki/Progressive_web_app[PWA]-мотня, которая должна обеспечить отрисовку кастомной страницы «Сервис недоступен", вместо страшной стандартной браузерной страницы, в случае если сервер полностью недоступен (пользователь оффлайн или сервер не отвечает).
+
+В этом примере, опять же, общая логика довольно простая:
+
+. Первым делом, все не-GET запросы отдаём браузеру на стандартную обработку;
+. Затем пытаемся загрузить ресурс с сервера;
+.. Если не получилось — пытаемся взять из кэша;
+. Если получилось
+.. и ресурс была ассетом (картинки, css, скрипты и т.п.) — сохраняем его в кэш;
+.. возвращаем результат;
+. Если не получилось
+.. и запрос был браузерный/синхронный — возвращаем страницу «Сервис недоступен» из кеша;
+.. иначе (это был xhr-запрос от htmx/alpine) — возвращаем ответ со статусом 503 и без тела.
+
+Но гопатыч опять же нагенерил мне что-то «волосатое":
+
+[source,js]
+----
+self.addEventListener('fetch', (event) => {
+    const req = event.request
+    if (req.method !== 'GET') {
+        return
+    }
+
+    if (req.mode === 'navigate' || (req.destination === 'document')) {
+        event.respondWith((async () => {
+            try {
+                const fresh = await fetch(req)
+                if (fresh && (fresh.ok || fresh.type === 'opaqueredirect' || (fresh.status >= 300 && fresh.status < 400))) {
+                    return fresh
+                }
+
+                const cached = await caches.match(req)
+                if (cached) {
+                    return cached
+                }
+                return await caches.match(OFFLINE_URL)
+            } catch (_) {
+                const cached = await caches.match(req)
+                if (cached) {
+                    return cached
+                }
+                return await caches.match(OFFLINE_URL)
+            }
+        })())
+        return
+    }
+
+    event.respondWith((async () => {
+        try {
+            const fresh = await fetch(req)
+            const cache = await caches.open(CACHE_NAME)
+            cache.put(req, fresh.clone())
+                .catch(() => {
+                })
+            return fresh
+        } catch (_) {
+            const cached = await caches.match(req)
+            if (cached) {
+                return cached
+            }
+            return new Response('Offline', {status: 503})
+        }
+    })())
+})
+----
+
+«И кони, и люди — всё смешалось в доме Облонских": в этой функции и разведение xhr и не-xhr запросов, и собственно выполнение запросов, и работа с кэшем, и обработка ошибок.
+
+И лечится это опять же выделением пачки функций-механизмов, которые вызываются из центральной функции-оркестратора:
+
+[source,js]
+----
+self.resolveRequest = async function resolveRequest(req) {
+    console.debug("Fetching " + req)
+
+    let resp = await fetchOrGetFromCache(req);
+    if (!resp) {
+        return offlineFor(req);
+    }
+
+    if (isAsset(req) && isOk(resp)) {
+        await cacheAsset(req, resp);
+    }
+
+    return resp;
+}
+
+async function fetchOrGetFromCache(req) {
+    try {
+        return await fetch(req);
+    } catch (e) {
+        console.debug("Fetching", req.url, "destination:", req.destination, "mode:", req.mode);
+        const cached = await caches.match(req);
+        return cached || null;
+    }
+}
+
+function offlineFor(req) {
+    if (isNavRequest(req)) {
+        return caches.match(OFFLINE_URL);
+    } else {
+        return new Response('Offline', {
+            status: 503,
+            headers: {'Content-Type': 'text/plain; charset=utf-8'}
+        });
+    }
+}
+
+function isNavRequest(req) {
+    return req.mode === 'navigate' || req.destination === 'document';
+}
+
+function isAsset(req) {
+    const dest = req.destination || '';
+    return ['script', 'style', 'image', 'font', 'manifest'].includes(dest);
+}
+
+function isOk(resp) {
+    return resp.ok && resp.type === 'basic';
+}
+
+async function cacheAsset(req, res) {
+    let cache = await caches.open(CACHE_NAME)
+    try {
+        await cache.put(req, res.clone());
+    } catch (reason) {
+        console.warn("Caching failed: " + reason)
+    }
+}
+----
+
+== Postgres GENERATED-колонки для ограничений целостности в JSONB
+
+JSONB.
+Как много в этом звуке для сердца SDJ-разработчика слилось!
+
+С одной стороны, JSONB делает тривиальным персистанс агрегатов практически произвольной структуры.
+
+С другой стороны, данные внутри JSONB-колонки не могут быть использованы в ограничениях целостности, а этого иногда хочется.
+
+В фиче пушей таким агрегатом является сущность TherapistWebPushSubscription, которая содержит в себе объект-значение подписки на пуши (WebPushSubscription), который содержит в себе пару ключей (Keys) для шифрования пушей.
+
+А желаемым, но запретным (из-за использования JSONB) плодом был апсёрт по иду устройства, для чего на него должно быть наложено ограничение уникальности.
+
+Однако в Postgres-е есть GENERATED-колонки, которые можно вычислять по данным из других колонок, в том числе — JSONB-колонок.
+И вот эти колонки уже можно использовать в ограничениях целостности — от первичного ключа, через внешний ключ, до юника:
+
+[source,sql]
+----
+DROP TABLE IF EXISTS test;
+CREATE TABLE test
+(
+    data JSONB,
+    id   UUID NOT NULL GENERATED ALWAYS AS ((data ->> 'id')::UUID) STORED PRIMARY KEY,
+    therapist_ref UUID NOT NULL GENERATED ALWAYS AS ((data ->> 'therapist_ref')::UUID) STORED REFERENCES therapists ON DELETE CASCADE,
+    key VARCHAR NOT NULL GENERATED ALWAYS AS ((data ->> 'key')) STORED UNIQUE
+);
+
+INSERT INTO test (data) VALUES ('{"id": "c42b4abe-dd96-4204-a24a-0b560a66b79a", "therapist_ref": "c42b4abe-dd96-4204-a24a-0b560a66b79a", "key": "789"}'::JSONB);
+----
+
+До Postgres 18 GENERATED-колонки могли быть только STORED (то есть физически храниться в таблице), но начиная с Postgres 18 появились VIRTUAL GENERATED-колонки, которые не хранятся физически, а вычисляются на лету.
+
+Трюк с GENERATED-колонкой я и применил для навешивания юника на id устройства в таблице подписок на пуши:
+
+.https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/main/resources/db/migration/common/current/V25100801\__add_web_pushes.sql#L9[V25100801__add_web_pushes.sql]
+[source,sql]
+----
+CREATE TABLE therapist_web_push_subscriptions
+(
+    id            UUID PRIMARY KEY,
+    therapist_ref UUID                     NOT NULL REFERENCES therapists ON DELETE CASCADE ON UPDATE CASCADE,
+    subscription  JSONB                    NOT NULL,
+    created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP WITH TIME ZONE          DEFAULT NULL,
+    version       BIGINT                   NOT NULL DEFAULT 1,
+    p256dh        VARCHAR(256)             NOT NULL GENERATED ALWAYS AS (subscription -> 'keys' ->> 'p256dh') STORED,
+    UNIQUE (therapist_ref, p256dh)
+);
+----
+
+Эти же колонки можно использовать и фильтрации с помощью Criteria API, а если вытащить их на уровень https://github.com/ergonomic-code/Trainer-Advisor/blob/d074d5b175ab099e5e0107a957ceeceb78762be0/app/src/main/kotlin/pro/qyoga/i9ns/pushes/web/model/TherapistWebPushSubscription.kt#L27[SDJ-сущности], то их можно и в моём DSL-использовать в духе:
+
+[source,kotlin]
+----
+val query = query {
+    TherapistWebPushSubscription::p256dh isEqual p256dh
+}
+val subscriptionByP256dh = webPushSubscriptionsDao.findOne(query)
+----
+
+== TrainerAdvisorApis
+
+Мой подход к кодированию клиентов HTTP API в тестах за последние 5 лет прошёл несколько этапов эволюции.
+
+Изначально я писал RestAssured-ные Given/When/Then прямо в тест-кейсах:
+
+[source,kotlin]
+----
+@Test
+fun `Test first pair activation`() {
+    Given {
+        contentType(ContentType.JSON)
+        header("X-Tcs-Token", client.botToken)
+        body(UpdateActivePairsDto(initialActivePairs))
+    } When {
+        post("/user/pairs")
+    } Then {
+        statusCode(200)
+        body("pairs", Matchers.empty<Any>())
+    }
+}
+----
+
+Однако по мере того как я начал фокусироваться всё больше на тестах поведения, в которых помимо собственно HTTP-вызова есть ещё и подготовка данных и проверка состояния системы, такой код начал выглядеть странно:
+
+[source,kotlin]
+----
+@Test
+fun `xxx can create device models`() {
+    var models: List<DeviceModelDto>? = null
+    Given {
+        token(adminToken)
+    } When {
+        get("device-models")
+    } Then {
+        statusCode(HttpStatus.OK.value())
+        models = extract().jsonPath().getList("$", DeviceModelDto::class.java)
+    }
+
+    val newModelName = "New model name"
+    val newModel = NewModel(newModelName)
+
+    Given {
+        token(adminToken)
+        body(UpdateDeviceModelsRequest(models!!, arrayListOf(newModel)))
+        filter(ResponseLoggingFilter())
+    } When {
+        post("device-models")
+    } Then {
+        statusCode(HttpStatus.OK.value())
+        models = this.extract().jsonPath().getList("$", DeviceModelDto::class.java)
+    }
+
+    val savedModel = models?.find { it.name == newModelName }
+    savedModel shouldNotBe null
+    savedModel?.id shouldNotBe null
+    models?.filter { it.name == newModelName }?.size shouldBe 1
+}
+----
+
+Тогда я начал инкапсулировать непосредственно вызовы в отдельные классы (нарезанные по ресурсам и ролям), которые собирались в классы клиентов (для каждой роли):
+
+.https://github.com/ergonomic-code/Trainer-Advisor/blob/d074d5b175ab099e5e0107a957ceeceb78762be0/app/src/test/kotlin/pro/qyoga/tests/clients/TherapistClient.kt[TherapistClient]
+[source,kotlin]
+----
+class TherapistClient(
+    val authCookie: Cookie,
+    webTestClient: WebTestClient = mainWebTestClient
+) {
+
+    // Work
+    val appointments = TherapistAppointmentsApi(authCookie)
+    val googleCalendarIntegration = TherapistGoogleCalendarIntegrationApi(authCookie, webTestClient)
+    // ...
+
+}
+----
+
+.https://github.com/ergonomic-code/Trainer-Advisor/blob/d074d5b175ab099e5e0107a957ceeceb78762be0/app/src/test/kotlin/pro/qyoga/tests/clients/api/TherapistGoogleCalendarIntegrationApi.kt[TherapistGoogleCalendarIntegrationApi]
+[source,kotlin]
+----
+class TherapistGoogleCalendarIntegrationApi(
+    override val authCookie: Cookie,
+    private val webTestClient: WebTestClient
+) : AuthorizedApi {
+
+    fun authorizeInGoogle(): URI {
+        val response = webTestClient.get()
+            .uri("/oauth2/authorization/google")
+            .authorized()
+            .exchange()
+            .expectStatus().isFound
+
+        return response.redirectLocation()
+    }
+
+    // ...
+
+}
+
+----
+
+Но с таким подходом есть ряд проблем:
+
+. Классы клиентов разрастаются неограниченно.
+  Особенно если необходимо обеспечивать обратную совместимость и для ресурсов надо держать по нескольку версий АПИ;
+. непонятно, куда пихать методы, доступные нескольким ролям;
+. невозможно протестировать контроль доступа — например, вызова админского метода с токеном пользователя.
+
+И вот в рамках реализации этой фичи я начал экспериментировать с новым подходом к организации кода клиентов HTTP API.
+
+Есть корневой пустой объект, с которого мы начинаем искать АПИ автокомплитом:
+
+.https://github.com/ergonomic-code/Trainer-Advisor/blob/d074d5b175ab099e5e0107a957ceeceb78762be0/app/src/test/kotlin/pro/qyoga/tests/clients/api/TrainerAdvisorApis.kt#L3[TrainerAdvisorApis]
+[source,kotlin]
+----
+object TrainerAdvisorApis
+----
+
+На него через экстеншн-свойства навешиваются фабрики АПИ для всех ресурсов:
+
+.https://github.com/ergonomic-code/Trainer-Advisor/blob/d074d5b175ab099e5e0107a957ceeceb78762be0/app/src/test/kotlin/pro/qyoga/tests/clients/api/WebPushesPublicApi.kt#L21[WebPushesApi]
+[source,kotlin]
+----
+val TrainerAdvisorApis.WebPushes
+    get() = WebPushesApiFactory
+----
+
+Каждая фабрика, позволяет получить АПИ под все возможные роли с любым токеном:
+
+[source,kotlin]
+----
+object WebPushesApiFactory {
+
+    val publicApi = WebPushesPublicApi(mainWebTestClient)
+
+    fun therapistApi(
+        principal: Cookie,
+    ) = WebPushesTherapistApi(principal, mainWebTestClient)
+
+}
+----
+
+[NOTE]
+====
+Вообще, хорошо бы как-то прокинуть WebTestClient через параметры, а не использовать глобальный mainWebTestClient.
+Но надо подумать как это лучше сделать.
+====
+
+Ну и далее сами АПИ уже реализованы так же как и в итерации с клиентами:
+
+.https://github.com/ergonomic-code/Trainer-Advisor/blob/d074d5b175ab099e5e0107a957ceeceb78762be0/app/src/test/kotlin/pro/qyoga/tests/clients/api/WebPushesTherapistApi.kt[WebPushesTherapistApi]
+[source,kotlin]
+----
+class WebPushesTherapistApi(
+    override val authCookie: Cookie,
+    private val webTestClient: WebTestClient
+) : AuthorizedApi {
+
+    fun createSubscription(subscription: WebPushSubscription) {
+        webTestClient.post()
+            .uri(WebPushesController.PATH)
+            .body(fromValue(subscription))
+            .authorized()
+            .exchange()
+            .expectStatus().isNoContent
+    }
+    // ...
+}
+----
+
+И в итоге использование в тестах выглядит так:
+
+[source,kotlin]
+----
+// Given
+val theTherapist = TherapistClient.loginAsTheTherapist()
+val webPushesApi = TrainerAdvisorApis.WebPushes.therapistApi(theTherapist.authCookie)
+
+// When
+webPushesApi.createSubscription(webPushSubscription)
+
+// Then
+...
+----
+
+И, кажется, этот подход решает все проблемы, хотя бы частично:
+
+. Больше нет единого места, где перечислены все возможные версии API всех возможных ресурсов для каждой роли.
+  Наверное, это наименьшая из проблем, но тем не менее меня классы с десятками полей пугают;
+. Общие методы, теперь можно складывать в ResourceSharedApi/ResourceCommonApi — тоже не идеально, но идеального решения, что делать с такими методами я в целом пока не придумал;
+. Чтобы протестировать авторизацию, теперь можно просто подсунуть левый токен в фабрику АПИ.
+  Правда, с такой реализацией появляется дыра: теперь можно случайно создать админское АПИ с пользовательским токеном.
+  Но я решил, что такие проблемы, скорее всего будут обнаруживаться и дебажиться моментально, и этот риск стоит того, чтобы избавиться от изобретения велосипеда каждый раз, когда мне надо протестировать авторизацию.
+
+Приносит ли этот подход новые проблемы?
+Как знать...
+Время покажет:)
+
+== В Gradle-плагин GitProperties завезли поддержку git worktrees
+
+Помните, я https://t.me/ergonomic_code/585[писал], как закостылять Gradle GitProperties, чтобы он работал с git worktrees?
+Так вот, больше этого делать не надо — поддержку git worktrees https://github.com/n0mer/gradle-git-properties/releases/tag/v.2.5.2[завезли] в сам плагин.
+
+Правда, в git.properties пишутся всё равно данные корневой директории, а не той, в которой идёт сборка, но всё равно стало чуть лучше:)
+
+== Отказ от Kotest Matchers в пользу shuold*-методов
+
+Я в верификации вёрстки пытался активно использовать https://kotest.io/docs/assertions/custom-matchers.html[кастомные] и https://kotest.io/docs/assertions/composed-matchers.html[составные] Kotest Matchers.
+
+И может я просто не познал их дзен, но для меня использование матчеров ведёт к потере контекста и мучительным сессиям дебага, когда что-то падает.
+
+Например, если скрестить passwordMatcher и personMatcher из их же доки:
+
+[source,kotlin]
+----
+data class Person(
+    val name: String,
+    val age: Int,
+    val address: Address,
+    val password: String
+)
+
+data class Address(
+    val city: String,
+    val street: String,
+    val buildingNumber: String,
+)
+
+fun nameMatcher(name: String) = Matcher<String> {
+    MatcherResult(
+        it == name,
+        { "Name $it should be $name" },
+        { "Name $it should not be $name" }
+    )
+}
+
+fun ageMatcher(age: Int) = Matcher<Int> {
+    MatcherResult(
+        it == age,
+        { "Age $it should be $age" },
+        { "Age $it should not be $age" }
+    )
+}
+
+val addressMatcher = Matcher<Address> {
+    MatcherResult(
+        it == Address("Warsaw", "Test", "1/1"),
+        { "Address $it should be Test 1/1 Warsaw" },
+        { "Address $it should not be Test 1/1 Warsaw" }
+    )
+}
+
+val passwordMatcher = Matcher.all(
+    containADigit(), contain(Regex("[a-z]")), contain(Regex("[A-Z]"))
+)
+
+fun personMatcher(name: String, age: Int) = Matcher.all(
+    havingProperty(nameMatcher(name) to Person::name),
+    havingProperty(ageMatcher(age) to Person::age),
+    havingProperty(addressMatcher to Person::address),
+    havingProperty(passwordMatcher to Person::password)
+)
+
+fun Person.shouldBePerson(name: String, age: Int) = this shouldBe personMatcher(name, age)
+
+fun main() {
+    Person("John", 21, Address("Warsaw", "Test", "1/1"), "test").shouldBePerson("John", 21)
+}
+----
+
+и запустить, то ошибка будет такая:
+
+```
+Exception in thread "main" java.lang.AssertionError: "test" should contain at least one digit
+"test" should contain regex [A-Z]
+	at MyTest.shouldBePerson(RegisterSubscriptionApiTest.kt:117)
+	at MyTest.main(RegisterSubscriptionApiTest.kt:121)
+	at MyTest.main(RegisterSubscriptionApiTest.kt)
+```
+
+Угадайте только по этим строкам — с каким полем проблема?
+Это прям не тривиально, на самом-то деле — стектрейс указывает на корневую строку `this shouldBe personMatcher(name, age)`.
+А в самом сообщении никакого указания на то, с каким полем проблема нет.
+
+В этом случае можно, конечно, по строке test увидеть, что она идёт в поле password, но у меня бо́льшая часть данных генеряется рандомно и в коде не фигурирует.
+А ещё в дереве матчеров один тип матчера ("should contain at least one digit") может встречаться несколько раз и тогда по типу матчера раскрутить проблему тоже не получится.
+
+В общем, пожрал я этот кактус год-полтора и при работе над пушами бросил.
