@@ -1,0 +1,461 @@
+<!doctype html><html lang=ru-ru><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="Алексей Жидков"><meta name=description content="https://azhidkov.pro/"><meta property="og:site_name" content="Алексей Жидков"><meta property="og:title" content="
+  Trainer Advisor — WebPush-уведомления - Алексей Жидков
+"><meta property="og:description" content><meta property="og:type" content="website"><meta property="og:url" content="https://azhidkov.pro/posts/25/11/ta-pushes/"><meta property="og:image" content="https://azhidkov.pro/"><meta name=twitter:card content="summary"><meta name=twitter:site content="https://azhidkov.pro/posts/25/11/ta-pushes/"><meta name=twitter:image content="https://azhidkov.pro/"><base href=https://azhidkov.pro/posts/25/11/ta-pushes/><title>Trainer Advisor — WebPush-уведомления - Алексей Жидков
+</title><link rel=canonical href=https://azhidkov.pro/posts/25/11/ta-pushes/><link rel=stylesheet href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700"><link rel=stylesheet href=/css/normalize.min.css><link rel=stylesheet href=/css/style.min.css><link rel=stylesheet href=https://use.fontawesome.com/releases/v5.2.0/css/all.css><link rel=stylesheet href=https://azhidkov.pro/css/custom.css><link rel=stylesheet href=https://azhidkov.pro/css/github.css><link rel=stylesheet href=https://azhidkov.pro/css/JetBrains-Mono.css><link rel=icon type=image/png href=/images/favicon-32x32.png sizes=32x32><link rel=icon type=image/png href=/images/favicon-16x16.png sizes=16x16><link rel=alternate href=https://azhidkov.pro/index.xml type=application/rss+xml title="Алексей Жидков"><link href=https://azhidkov.pro/index.xml rel=feed type=application/rss+xml title="Алексей Жидков"><meta name=generator content="Hugo 0.137.0"></head><body><main class=wrapper><link rel=apple-touch-icon sizes=180x180 href=https://azhidkov.pro/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://azhidkov.pro/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://azhidkov.pro/favicon-16x16.png><link rel=manifest href=site.webmanifest><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><link href='https://fonts.googleapis.com/css?family=Roboto' rel=stylesheet type=text/css><nav class=navigation><section class=container style=height:100%><img src=https://azhidkov.pro/images/logo.svg class=logo>
+<a class=navigation-title href=/>Алексей Жидков
+</a><input type=checkbox id=menu-control>
+<label class="menu-mobile float-right" for=menu-control><span class="btn-mobile float-right">&#9776;</span><ul class=navigation-list><li class="navigation-item align-left"><a class=navigation-link href=https://ergowiki.azhidkov.pro>Эргономичный подход</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/talks>Выступления</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/posts>Блог</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/effects-diagram/landing>Диаграмма эффектов</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/>Контакты</a></li></ul></label></section></nav><div class=content><section class="container post"><article><header><h1 class=title>Trainer Advisor — WebPush-уведомления</h1><h2 class=date>November 16, 2025</h2></header><nav id=toc class=toc role=doc-toc><h2 id=toc-title>Содержание</h2><ol class="toc-list level-1"><li><a href=#_введение>Введение</a></li><li><a href=#_фича>Фича</a></li><li><a href=#_отправка_пушей>Отправка пушей</a></li><li><a href=#_архитектура>Архитектура</a></li><li><a href=#_абстракция_vs_очевидность_эффектов_и_разделение_ввода_и_вывода>Абстракция vs очевидность эффектов и разделение ввода и вывода</a></li><li><a href=#_и_снова_про_уровни_абстракциистратификацию>И снова про уровни абстракции/стратификацию</a><ol class="toc-list level-2"><li><a href=#_пример_1_код_открытия_диплинка_по_клику>Пример №1: код открытия диплинка по клику</a></li><li><a href=#_пример_2_фетч_ресурсов_с_фолбэком_на_кэш_и_кастомную_страницу_сервис_недоступен>Пример №2: фетч ресурсов с фолбэком на кэш и кастомную страницу «Сервис недоступен"</a></li></ol></li><li><a href=#_postgres_generated_колонки_для_ограничений_целостности_в_jsonb>Postgres GENERATED-колонки для ограничений целостности в JSONB</a></li><li><a href=#_traineradvisorapis>TrainerAdvisorApis</a></li><li><a href=#_в_gradle_плагин_gitproperties_завезли_поддержку_git_worktrees>В Gradle-плагин GitProperties завезли поддержку git worktrees</a></li><li><a href=#_отказ_от_kotest_matchers_в_пользу_shuold_методов>Отказ от Kotest Matchers в пользу shuold*-методов</a></li></ol></nav><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Этот материал является «микропостом» — текстом, написанным в режиме потока сознания без особой редактуры.</p><p>Следить за обновлениями блога можно в Telegram-канале: <a href=https://t.me/ergonomic_code>Эргономичный код</a>.</p></aside><section class="doc-section level-1"><h2 id=_введение><a class=link href=#_введение>Введение</a></h2><p>Я недавно <a href=https://github.com/ergonomic-code/Trainer-Advisor/pull/292>сделал</a> Web Push уведомления в Trainer Advisor и попутно снова узнал и придумал пачку прикольных штук, о которых хочу рассказать.</p></section><section class="doc-section level-1"><h2 id=_фича><a class=link href=#_фича>Фича</a></h2><p>Для начала пару слов о том, что и зачем я собственно сделал.</p><p>А сделал я отправку браузерных уведомлений с напоминанием заполнить расписание в захардкоженные 10 утра по местному времени терапевта.</p><p>Изначально план был отправлять уведомления о внесении записей в журнал на основе гугл календарей.
+Однако я <a href=https://azhidkov.pro/posts/25/09/ta-google-integration/#_верификация_приложения_в_google>не осилил</a> пройти верификацию в гугле, без которой доступ быстро протухает.
+Более того, я в целом не уверен, что терапевты будут реагировать на уведомления.
+Поэтому я решил начать с более простого (чем верификация в гугле) варианта.</p><p>Также и в реализации я решил пойти по простому пути.
+Вместо умного шедулера в духе JobRunr или Quartz я прикрутил простой шедулер, который просыпается раз в N (=10) минут, смотрит у кого из терапевтов за последние N минут был момент напоминания и шлёт им пуши.</p></section><section class="doc-section level-1"><h2 id=_отправка_пушей><a class=link href=#_отправка_пушей>Отправка пушей</a></h2><p>Пожалуй, самым больши́м открытием этой фичи для меня стало то, что веб пуши (особенно на беке) — это просто.</p><p>Для этого не то, что с кастомными и платными сторонними сервисами не надо возиться — даже с FCM и APNS не надо возиться.</p><p>Подробные посты, как это сделать <a href=https://dev.to/marcushellberg/how-to-send-web-push-notifications-in-java-21lo>есть</a> в сети, поэтому я только лишь приведу основные шаги на беке:</p><div class="olist arabic"><ol class=arabic><li>Завести <a href=https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/main/kotlin/pro/qyoga/app/publc/pushes/web/PushesPublicKeyController.kt#L18>эндпоинт</a> для раздачи публичного ключа;</li><li>Завести <a href=https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/main/kotlin/pro/qyoga/app/pushes/web/WebPushesController.kt#L25>эндпоинт</a> для получения подписок на пуши от фронта;</li><li>Подключить либу <a href=https://github.com/web-push-libs/webpush-java>webpush-java</a>;</li><li><p><a href=https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/main/kotlin/pro/qyoga/i9ns/pushes/web/WebPushServiceClient.kt#L35>Прокинуть</a> данные из п.2 в либу из п.3.</p><p><em>NB: сейчас заметил, что у меня там от исследовательской стадии осталась ручная сборка строки с json-ом — лучше так не делать</em>;</p></li><li>Профит.</li></ol></div></section><section class="doc-section level-1"><h2 id=_архитектура><a class=link href=#_архитектура>Архитектура</a></h2><p>Эта фича, на мой взгляд, хороша в качестве иллюстрации <a href=https://ergowiki.azhidkov.pro/docs/models/ergo-arch/>Эргономичной архитектуры</a> — она достаточно компактная и при этом не совсем тривиальная и содержит бо́льшую часть типов базовых блоков архитектуры (картинка кликабельна):</p><div class=image-block><a class="image bare" href=/posts/25/11/images/TA-web-pushes-design.drawio.svg title="Open the image in full size" aria-label="Open the image in full size"><img src=/posts/25/11/images/TA-web-pushes-design.drawio.svg alt="TA web pushes design.drawio"></a></div><p>На этой иллюстрации представлено три проекции решения — проекция компонентов (верхняя левая), проекция поведения (верхняя правая, здесь изображена только одна нетривиальная операция фичи) и проекция модели данных (нижняя).</p><p>Я не нашёл хорошего способа это визуализировать, но все эти проекции связаны.
+Если вы присмотритесь, то увидите, что для каждого прямоугольника с именем *Repo или *Dao в проекции компонентов, строго под ним в проекции модели данных есть одноимённый прямоугольник сущности.
+А для каждого прямоугольника, достижимого из прямоугольника SendFillScheduleNotifsScheduler в проекции компонентов, строго справа от него есть «одноимённый» (с точностью до имени метода) прямоугольник с поведением.</p><p>Типы блоков архитектуры, представлены на этой диаграмме следующими элементами:</p><div class=ulist><ul><li>Элементы модели данных:<ul><li>Сущность — Therapist.
+Вообще, сама по себе сущность терапевта не является частью фичи пушей, но к ней привязываются сущности-аспекты, которые уже непосредственно относятся к фиче, поэтому я её включил для того, чтобы показать связь.</li><li>Сущность-аспект — TherapistWebPushSubscription, FillScheduleNotificationsSettings.
+Эти сущности описывают данные, связанные с одним конкретным терапевтом, и не имеют без него смысла.</li><li>Компонент — WebPushSubscription, Keys.
+Являются неотъемлемой частью сущности TherapistWebPushSubscription, но при этом образуют группы сильно связанных (cohesive) атрибутов.</li></ul></li><li>Элементы модели компонентов:<ul><li>Порт — PushesPublicKeyController, NotificationsSettingsController, SendFillScheduleNotificationsScheduler (на диаграмме во имя эстетики — SendFillScheduleNotifsScheduler)</li><li>Операция — RegisterSubscriptionOp, SendFillScheduleNotificationsOp</li><li>Простой ресурс — TherapistsRepo (добавлен на диаграмму для симметрии сущность-репозиторий), FillScheduleNotifsSettingsRepo (на диаграмме во имя эстетики — FillScheduleNotifsSettingsRepo), WebPushSubscriptionsDao, WebPushServiceClient.</li><li>Сложный ресурс — WebPushesService.</li></ul></li><li>Элементы модели поведения:<ul><li>Ввод — FillScheduleNotifsSettingsRepo.findTherapistsToNotify, WebPushSubscriptionsDao.findTherapistsSubscriptions</li><li>Вывод — WebPushService.sendPush</li><li>Оркестрация — SendFillScheduleNotificationsOp.invoke, WebPushesService.sendPush.</li></ul></li></ul></div><p>Из базовых блоков не хватает только доменной операции в проекции компонентов и трансформации в проекции поведения.</p></section><section class="doc-section level-1"><h2 id=_абстракция_vs_очевидность_эффектов_и_разделение_ввода_и_вывода><a class=link href=#_абстракция_vs_очевидность_эффектов_и_разделение_ввода_и_вывода>Абстракция vs очевидность эффектов и разделение ввода и вывода</a></h2><p>Когда я только начинал работу над Эргономичным подходом в 2020 году, я придерживался мнения, что в подавляющем большинстве операций можно и нужно «вытягивать» все эффекты на уровень оркестрации (сервисов приложения, юз кейсов, интеракторов) и полностью разводить чтение и запись.
+И на самом деле я в этом мнении был не одинок — у Марка Симана, например, есть <a href=https://blog.ploeh.dk/2025/01/13/recawr-sandwich/>свежий пост</a> на эту же тему.</p><p>Однако уже в начале 2021 года в <a href=https://azhidkov.pro/posts/21/03/210321-project-l-testing/>Проекте Л</a> я столкнулся с ситуацией, когда «вытянуть» все эффекты наверх и полностью разделить ввод и вывод было хоть и возможно, но код при этом становился неуклюжим и подверженным ошибкам.</p><p>Там практически в каждой операции надо было ходить во внешнюю систему, которая в ответ на любой запрос могла вернуть обновлённый токен авторизации, который надо было закэшировать в БД.
+И поначалу в погоне за совершенным следованием принципу «В операции должен быть явно прописан весь ввод-вывод» я пихал код кеширования токена прямо в операции (сервисы приложения).
+Но довольно быстро стало очевидно, что это какая-то дичь — мы тут с билетами (доменный термин) работаем, а ещё какие-то токены кэшируем (технические термины).
+Более того, пока логика кэширования токена торчала наружу — её можно было забыть сделать и потерять свежий токен.</p><p>Поэтому я завёл отдельный класс, который включал в себя HTTP-клиента внешней системы и репоз токенов и абстрагировал логику кэширования.
+В итоге этот класс привёл меня к идеям <a href=https://azhidkov.pro/posts/23/04/ergonomic-decomposition/#_агрегация_ресурсов>"разумных групп ресурсов"</a> из рационального подхода к декомпозиции и <a href=https://ergowiki.azhidkov.pro/docs/models/ergo-arch/#_номенклатура_блоков_модели_компонентов>"составных ресурсов"</a> из текущей версии Эргономичной архитектуры.</p><p>После этого случая я несколько изменил своё мнение:</p><div class="olist arabic"><ol class=arabic><li>в подавляющем большинстве операций все верхнеуровневые эффекты можно и нужно вытягивать на уровень оркестрации.
+Но один верхнеуровневый эффект может включать несколько эффектов более низкого уровня.
+И более того, эти эффекты могут быть как чтения, так и записи, вне зависимости от типа верхнеуровневого эффекта.</li><li>в подавляющем большинстве операций чтение и запись можно и нужно разводить на своём уровне абстракции.
+Но следствием предыдущего пункта является то, что это не полное разведение ввода и вывода, и операция ввода на текущем уровне абстракции может включать инкапсулированный вывод на более низком уровне.
+И наоборот — операция вывода на текущем уровне абстракции может включать инкапсулированный ввод на более низком уровне.</li></ol></div><p>Эти идеи можно проиллюстрировать на примере операции отправки пушей терапевтам.</p><p>Сейчас она работает так:</p><div class="olist arabic"><ol class=arabic><li>Загрузить терапевтов, которым надо отправить уведомления (ввод);</li><li>Отправить терапевтам пуши (вывод);<ol class=loweralpha type=a><li>Загрузить подписки терапевтов на пуши (ввод);</li><li>Отправить в каждую из подписок пуш (вывод).</li></ol></li></ol></div><div class=image-block><img src=/posts/25/11/images/TA-web-pushes-design-send-notifs-op.drawio.svg alt="TA web pushes design send notifs op.drawio"></div><p>Очевидно, в текущей реализации есть скрытый эффект — считывание подписок внутри метода отправки пушей терапевтам.
+Как и смешение ввода и вывода в этой же операции.</p><p>И при желании это можно исправить, переписав операцию примерно так:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=k>override</span> <span class=k>fun</span> <span class=nf>invoke</span><span class=p>(</span><span class=n>currentTime</span><span class=p>:</span> <span class=nc>Instant</span><span class=p>,</span> <span class=n>windowSize</span><span class=p>:</span> <span class=nc>Duration</span><span class=p>)</span> <span class=p>{</span>
+    <span class=kd>val</span> <span class=py>dayOfWeek</span> <span class=p>=</span> <span class=n>currentTime</span><span class=p>.</span><span class=nf>atOffset</span><span class=p>(</span><span class=nc>ZoneOffset</span><span class=p>.</span><span class=nc>UTC</span><span class=p>).</span><span class=n>dayOfWeek</span>
+    <span class=kd>val</span> <span class=py>time</span> <span class=p>=</span> <span class=n>currentTime</span><span class=p>.</span><span class=nf>atOffset</span><span class=p>(</span><span class=nc>ZoneOffset</span><span class=p>.</span><span class=nc>UTC</span><span class=p>).</span><span class=nf>toLocalTime</span><span class=p>()</span> <span class=p>-</span> <span class=n>windowSize</span>
+    <span class=kd>val</span> <span class=py>therapistsToNotify</span> <span class=p>=</span> <span class=n>fillScheduleNotificationsSettingsRepo</span><span class=p>.</span><span class=nf>findTherapistsToNotify</span><span class=p>(</span>
+        <span class=n>dayOfWeek</span> <span class=p>=</span> <span class=n>dayOfWeek</span><span class=p>,</span>
+        <span class=n>notificationInterval</span> <span class=p>=</span> <span class=nc>Interval</span><span class=p>.</span><span class=nf>of</span><span class=p>(</span><span class=n>time</span><span class=p>,</span> <span class=n>windowSize</span><span class=p>)</span>
+    <span class=p>)</span>
+    <span class=kd>val</span> <span class=py>webPushSubscriptions</span> <span class=p>=</span> <span class=n>webPushSubscriptionsRepo</span><span class=p>.</span><span class=nf>findTherapistsSubscriptions</span><span class=p>(</span><span class=n>therapistsToNotify</span><span class=p>)</span>
+
+    <span class=n>webPushServiceClient</span><span class=p>.</span><span class=nf>sendPushes</span><span class=p>(</span><span class=n>webPushSubscriptions</span><span class=p>,</span> <span class=n>fillScheduleWebPush</span><span class=p>)</span>
+<span class=p>}</span></code></pre></div><p>И тогда все эффекты будут перечислены прямо в операции, а весь ввод (чтение терапевтов и их подписок) будет выполняться до всего вывода (отправки пушей).</p><p>Однако изначально у нас словарь операции был в целом «бизнесовый» — «текущее время", «настройки уведомлений", «терапевты", «веб-пуши» (вот тут можно поспорить уже, но по большому счёту в текущей реализации ничего не мешает переименовать WebPush* в Notifications*).
+А в этой реализации в словаре появляется уже сугубо технический термин — «подписка на веб-пуш".
+И это приколачивает операцию к веб-пушами и добавить нотификации по емейлам, например, уже так просто не получится.</p><p>В оригинальной же версии, отправку по емейлам можно будет инкапсулировать в NotificationsService (бывшем WebPushesService) и не менять код самой операции.</p><p>Отдельно сто́ит отметить, как я сам одновременно удачно и неудачно <a href=https://azhidkov.pro/posts/25/01/you-dont-need-ca-and-dip-probably/#_проектирование_api_вместо_кодирования_интерфейсов>"спроектировал АПИ вместо кодирования интерфейса"</a>.</p><p>Хорошо в этом API то, что на уровне сигнатур WebPushesService не фигурируют технические детали — он получает на вход список терапевтов и одну структуру данных с универсальными полями (title, body, deeplink, topic — я понимаю, как из этих данных собрать не только веб-пуш, но и емейл, например), определённую в моём коде.</p><p>А вот с именованием я лажанул явно упомянув WebPushes.
+Пожалуй, с оказией надо будет это отрефакторить и переименовать в Notifications*.</p><p>Абстракция и её уровни — для меня это какие-то скользкие штуки, которые достаточно сложно формализовать и превратить в простой для изучения и понятный для применения инструмент.
+Поэтому пока что у меня план собирать вот такие кейсы и попытаться найти в них какие-то общие паттерны.</p></section><section class="doc-section level-1"><h2 id=_и_снова_про_уровни_абстракциистратификацию><a class=link href=#_и_снова_про_уровни_абстракциистратификацию>И снова про уровни абстракции/стратификацию</a></h2><p>В прошлом посте про реализацию интеграции с Google Calendars я уже писал про <a href=https://azhidkov.pro/posts/25/09/ta-google-integration/#_рефакторинг_findcalendaritemsininterval_уровни_абстракциистратификация>уровни абстракции/стратификацию</a>.</p><p>И если в прошлый раз я сам нагенерял не самый удачный код, то в этот раз мне помог гопатыч, который является моим ведущим Frontend-разработчиком в TA:)
+И благодаря его продуктивности, он мне подарил аш два примера паршивого кода, которые я немного подправил.</p><section class="doc-section level-2"><h3 id=_пример_1_код_открытия_диплинка_по_клику><a class=link href=#_пример_1_код_открытия_диплинка_по_клику>Пример №1: код открытия диплинка по клику</a></h3><p>В первом случае это была функция открытия окна с диплинком при клике не уведомление.</p><p>Общая логика следующая:</p><div class="olist arabic"><ol class=arabic><li>Если уже есть окно (вкладка) в котором открыт требуемый URL — просто сфокусироваться на нём;</li><li>если уже есть окно с открытым Trainer Advisor — сфокусироваться на нём и открыть в нём требуемый URL;</li><li>иначе открыть новое окно с требуемым URL.</li></ol></div><p>И гопатыч закодил эту логику так:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=js><span class=nb>self</span><span class=p>.</span><span class=nf>addEventListener</span><span class=p>(</span><span class=dl>&#39;</span><span class=s1>notificationclick</span><span class=dl>&#39;</span><span class=p>,</span> <span class=p>(</span><span class=nx>event</span><span class=p>)</span> <span class=o>=&gt;</span> <span class=p>{</span>
+    <span class=nx>event</span><span class=p>.</span><span class=nx>notification</span><span class=p>.</span><span class=nf>close</span><span class=p>();</span>
+
+    <span class=kd>const</span> <span class=nx>deepLink</span> <span class=o>=</span> <span class=nx>event</span><span class=p>.</span><span class=nx>notification</span><span class=p>?.</span><span class=nx>data</span><span class=p>?.</span><span class=nx>deepLink</span><span class=p>;</span>
+    <span class=k>if </span><span class=p>(</span><span class=nx>deepLink</span> <span class=o>==</span> <span class=kc>null</span><span class=p>)</span> <span class=p>{</span>
+        <span class=k>return</span>
+    <span class=p>}</span>
+
+    <span class=kd>const</span> <span class=nx>targetUrl</span> <span class=o>=</span> <span class=k>new</span> <span class=nc>URL</span><span class=p>(</span><span class=nx>deepLink</span><span class=p>,</span> <span class=nb>self</span><span class=p>.</span><span class=nx>location</span><span class=p>.</span><span class=nx>origin</span><span class=p>).</span><span class=nx>href</span><span class=p>;</span>
+
+    <span class=nx>event</span><span class=p>.</span><span class=nf>waitUntil</span><span class=p>((</span><span class=k>async </span><span class=p>()</span> <span class=o>=&gt;</span> <span class=p>{</span>
+        <span class=kd>const</span> <span class=nx>clientList</span> <span class=o>=</span> <span class=k>await</span> <span class=nx>clients</span><span class=p>.</span><span class=nf>matchAll</span><span class=p>({</span>
+            <span class=na>type</span><span class=p>:</span> <span class=dl>&#39;</span><span class=s1>window</span><span class=dl>&#39;</span><span class=p>,</span>
+            <span class=na>includeUncontrolled</span><span class=p>:</span> <span class=kc>true</span>
+        <span class=p>});</span>
+
+        <span class=kd>const</span> <span class=nx>exactMatch</span> <span class=o>=</span> <span class=nx>clientList</span><span class=p>.</span><span class=nf>find</span><span class=p>(</span><span class=nx>c</span> <span class=o>=&gt;</span> <span class=nx>c</span><span class=p>.</span><span class=nx>url</span> <span class=o>&amp;&amp;</span> <span class=nx>c</span><span class=p>.</span><span class=nx>url</span><span class=p>.</span><span class=nf>endsWith</span><span class=p>(</span><span class=nx>targetUrl</span><span class=p>));</span>
+        <span class=k>if </span><span class=p>(</span><span class=nx>exactMatch</span><span class=p>)</span> <span class=p>{</span>
+            <span class=k>try</span> <span class=p>{</span>
+                <span class=k>await</span> <span class=nx>exactMatch</span><span class=p>.</span><span class=nf>focus</span><span class=p>();</span>
+                <span class=k>return</span><span class=p>;</span>
+            <span class=p>}</span> <span class=k>catch </span><span class=p>(</span><span class=nx>ignore</span><span class=p>)</span> <span class=p>{</span>
+            <span class=p>}</span>
+        <span class=p>}</span>
+
+        <span class=kd>const</span> <span class=nx>anyWindow</span> <span class=o>=</span> <span class=nx>clientList</span><span class=p>.</span><span class=nf>find</span><span class=p>(</span><span class=nx>c</span> <span class=o>=&gt;</span> <span class=nx>c</span><span class=p>.</span><span class=nx>type</span> <span class=o>===</span> <span class=dl>&#39;</span><span class=s1>window</span><span class=dl>&#39;</span><span class=p>);</span>
+        <span class=k>if </span><span class=p>(</span><span class=o>!</span><span class=nx>anyWindow</span><span class=p>)</span> <span class=p>{</span>
+            <span class=k>await</span> <span class=nx>clients</span><span class=p>.</span><span class=nf>openWindow</span><span class=p>(</span><span class=nx>targetUrl</span><span class=p>);</span>
+        <span class=p>}</span>
+
+        <span class=k>try</span> <span class=p>{</span>
+            <span class=k>await</span> <span class=nx>anyWindow</span><span class=p>.</span><span class=nf>focus</span><span class=p>();</span>
+
+            <span class=k>if </span><span class=p>(</span><span class=k>typeof</span> <span class=nx>anyWindow</span><span class=p>.</span><span class=nx>navigate</span> <span class=o>===</span> <span class=dl>&#39;</span><span class=s1>function</span><span class=dl>&#39;</span><span class=p>)</span> <span class=p>{</span>
+                <span class=k>await</span> <span class=nx>anyWindow</span><span class=p>.</span><span class=nf>navigate</span><span class=p>(</span><span class=nx>targetUrl</span><span class=p>);</span>
+            <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+                <span class=k>try</span> <span class=p>{</span>
+                    <span class=nx>anyWindow</span><span class=p>.</span><span class=nf>postMessage</span><span class=p>({</span><span class=na>action</span><span class=p>:</span> <span class=dl>&#39;</span><span class=s1>navigate</span><span class=dl>&#39;</span><span class=p>,</span> <span class=nx>targetUrl</span><span class=p>},</span> <span class=dl>&#39;</span><span class=s1>*</span><span class=dl>&#39;</span><span class=p>);</span>
+                <span class=p>}</span> <span class=k>catch </span><span class=p>(</span><span class=nx>_</span><span class=p>)</span> <span class=p>{</span>
+                    <span class=cm>/* noop */</span>
+                <span class=p>}</span>
+            <span class=p>}</span>
+        <span class=p>}</span> <span class=k>catch </span><span class=p>(</span><span class=nx>e</span><span class=p>)</span> <span class=p>{</span>
+            <span class=k>await</span> <span class=nx>clients</span><span class=p>.</span><span class=nf>openWindow</span><span class=p>(</span><span class=nx>targetUrl</span><span class=p>);</span>
+        <span class=p>}</span>
+
+    <span class=p>})());</span>
+<span class=p>});</span></code></pre></div><p>На мой взгляд, она достаточно «волосатая» и глядя в код восстановить суть логики работы довольно сложно.
+Проблема этой функции в том, что в ней намешано всё подряд:</p><div class="olist arabic"><ol class=arabic><li>логика обработки клика (закрыть нотификацию, открыть диплинк);</li><li>логика открытия диплинка (сначала попытаться найти уже открытое окно с нужным урлом и сфокусировать его, потом попытаться найти существующее окно и открыть в нём, в конце концов открыть новое окно);</li><li>конкретные механизмы работы с окнами (openWindow, focus, navigate, postMessage и т. д.);</li><li>логика обработки ошибок (все ошибки игнорируем и в конце концов пытаемся открыть новое окно).</li></ol></div><p>Поэтому я причесал её и у меня получилось так:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=js><span class=nb>self</span><span class=p>.</span><span class=nf>addEventListener</span><span class=p>(</span><span class=dl>&#39;</span><span class=s1>notificationclick</span><span class=dl>&#39;</span><span class=p>,</span> <span class=p>(</span><span class=nx>event</span><span class=p>)</span> <span class=o>=&gt;</span> <span class=p>{</span>
+    <span class=nx>event</span><span class=p>.</span><span class=nx>notification</span><span class=p>.</span><span class=nf>close</span><span class=p>();</span>
+
+    <span class=kd>const</span> <span class=nx>deepLink</span> <span class=o>=</span> <span class=nx>event</span><span class=p>.</span><span class=nx>notification</span><span class=p>?.</span><span class=nx>data</span><span class=p>?.</span><span class=nx>deepLink</span><span class=p>;</span>
+    <span class=k>if </span><span class=p>(</span><span class=nx>deepLink</span> <span class=o>==</span> <span class=kc>null</span><span class=p>)</span> <span class=p>{</span>
+        <span class=k>return</span>
+    <span class=p>}</span>
+
+    <span class=kd>const</span> <span class=nx>targetUrl</span> <span class=o>=</span> <span class=k>new</span> <span class=nc>URL</span><span class=p>(</span><span class=nx>deepLink</span><span class=p>,</span> <span class=nb>self</span><span class=p>.</span><span class=nx>location</span><span class=p>.</span><span class=nx>origin</span><span class=p>).</span><span class=nx>href</span><span class=p>;</span>
+
+    <span class=nx>event</span><span class=p>.</span><span class=nf>waitUntil</span><span class=p>((</span><span class=k>async </span><span class=p>()</span> <span class=o>=&gt;</span> <span class=p>{</span>
+        <span class=k>await</span> <span class=nf>openOrFocusWindow</span><span class=p>(</span><span class=nx>targetUrl</span><span class=p>);</span>
+    <span class=p>})());</span>
+<span class=p>});</span>
+
+<span class=nb>self</span><span class=p>.</span><span class=nx>openOrFocusWindow</span> <span class=o>=</span> <span class=k>async</span> <span class=kd>function</span> <span class=nf>openOrFocusWindow</span><span class=p>(</span><span class=nx>url</span><span class=p>)</span> <span class=p>{</span>
+    <span class=kd>const</span> <span class=nx>clientList</span> <span class=o>=</span> <span class=k>await</span> <span class=nx>clients</span><span class=p>.</span><span class=nf>matchAll</span><span class=p>({</span>
+        <span class=na>type</span><span class=p>:</span> <span class=dl>&#39;</span><span class=s1>window</span><span class=dl>&#39;</span><span class=p>,</span>
+        <span class=na>includeUncontrolled</span><span class=p>:</span> <span class=kc>true</span>
+    <span class=p>});</span>
+
+    <span class=kd>let</span> <span class=nx>wasFocused</span> <span class=o>=</span> <span class=k>await</span> <span class=nf>tryFocusExactMatch</span><span class=p>(</span><span class=nx>clientList</span><span class=p>,</span> <span class=nx>url</span><span class=p>);</span>
+    <span class=k>if </span><span class=p>(</span><span class=nx>wasFocused</span><span class=p>)</span> <span class=p>{</span>
+        <span class=k>return</span>
+    <span class=p>}</span>
+
+    <span class=kd>let</span> <span class=nx>wasNavigated</span> <span class=o>=</span> <span class=k>await</span> <span class=nf>tryNavigateAnyWindow</span><span class=p>(</span><span class=nx>clientList</span><span class=p>,</span> <span class=nx>url</span><span class=p>);</span>
+    <span class=k>if </span><span class=p>(</span><span class=nx>wasNavigated</span><span class=p>)</span> <span class=p>{</span>
+        <span class=k>return</span>
+    <span class=p>}</span>
+
+    <span class=k>await</span> <span class=nx>clients</span><span class=p>.</span><span class=nf>openWindow</span><span class=p>(</span><span class=nx>url</span><span class=p>);</span>
+<span class=p>}</span>
+
+<span class=k>async</span> <span class=kd>function</span> <span class=nf>tryFocusExactMatch</span><span class=p>(</span><span class=nx>clientList</span><span class=p>,</span> <span class=nx>url</span><span class=p>)</span> <span class=p>{</span>
+    <span class=kd>const</span> <span class=nx>exactMatch</span> <span class=o>=</span> <span class=nx>clientList</span><span class=p>.</span><span class=nf>find</span><span class=p>(</span><span class=nx>c</span> <span class=o>=&gt;</span> <span class=nx>c</span><span class=p>.</span><span class=nx>url</span> <span class=o>&amp;&amp;</span> <span class=nx>c</span><span class=p>.</span><span class=nx>url</span><span class=p>.</span><span class=nf>endsWith</span><span class=p>(</span><span class=nx>url</span><span class=p>));</span>
+    <span class=k>if </span><span class=p>(</span><span class=o>!</span><span class=nx>exactMatch</span><span class=p>)</span> <span class=p>{</span>
+        <span class=k>return</span> <span class=kc>false</span><span class=p>;</span>
+    <span class=p>}</span>
+    <span class=k>return</span> <span class=k>await</span> <span class=nf>tryFocusWindow</span><span class=p>(</span><span class=nx>exactMatch</span><span class=p>);</span>
+<span class=p>}</span>
+
+<span class=k>async</span> <span class=kd>function</span> <span class=nf>tryNavigateAnyWindow</span><span class=p>(</span><span class=nx>clientList</span><span class=p>,</span> <span class=nx>url</span><span class=p>)</span> <span class=p>{</span>
+    <span class=kd>const</span> <span class=nx>anyWindow</span> <span class=o>=</span> <span class=nx>clientList</span><span class=p>.</span><span class=nf>find</span><span class=p>(</span><span class=nx>c</span> <span class=o>=&gt;</span> <span class=nx>c</span><span class=p>.</span><span class=nx>type</span> <span class=o>===</span> <span class=dl>&#39;</span><span class=s1>window</span><span class=dl>&#39;</span><span class=p>);</span>
+    <span class=k>if </span><span class=p>(</span><span class=o>!</span><span class=nx>anyWindow</span><span class=p>)</span> <span class=p>{</span>
+        <span class=k>return</span> <span class=kc>false</span><span class=p>;</span>
+    <span class=p>}</span>
+
+    <span class=kd>let</span> <span class=nx>focused</span> <span class=o>=</span> <span class=k>await</span> <span class=nf>tryFocusWindow</span><span class=p>(</span><span class=nx>anyWindow</span><span class=p>);</span>
+    <span class=k>if </span><span class=p>(</span><span class=o>!</span><span class=nx>focused</span><span class=p>)</span> <span class=p>{</span>
+        <span class=k>return</span> <span class=kc>false</span>
+    <span class=p>}</span>
+
+    <span class=k>return</span> <span class=k>await</span> <span class=nf>tryNavigateTo</span><span class=p>(</span><span class=nx>anyWindow</span><span class=p>,</span> <span class=nx>url</span><span class=p>);</span>
+<span class=p>}</span>
+
+<span class=k>async</span> <span class=kd>function</span> <span class=nf>tryFocusWindow</span><span class=p>(</span><span class=nb>window</span><span class=p>)</span> <span class=p>{</span>
+    <span class=k>try</span> <span class=p>{</span>
+        <span class=k>await</span> <span class=nb>window</span><span class=p>.</span><span class=nf>focus</span><span class=p>();</span>
+        <span class=k>return</span> <span class=kc>true</span><span class=p>;</span>
+    <span class=p>}</span> <span class=k>catch </span><span class=p>(</span><span class=nx>e</span><span class=p>)</span> <span class=p>{</span>
+        <span class=nx>console</span><span class=p>.</span><span class=nf>error</span><span class=p>(</span><span class=s2>`Failed to focus </span><span class=p>${</span><span class=nb>window</span><span class=p>}</span><span class=s2>`</span><span class=p>,</span> <span class=nb>window</span><span class=p>,</span> <span class=nx>e</span><span class=p>);</span>
+        <span class=k>return</span> <span class=kc>false</span>
+    <span class=p>}</span>
+<span class=p>}</span>
+
+<span class=k>async</span> <span class=kd>function</span> <span class=nf>tryNavigateTo</span><span class=p>(</span><span class=nb>window</span><span class=p>,</span> <span class=nx>url</span><span class=p>)</span> <span class=p>{</span>
+    <span class=k>try</span> <span class=p>{</span>
+        <span class=k>if </span><span class=p>(</span><span class=k>typeof</span> <span class=nb>window</span><span class=p>.</span><span class=nx>navigate</span> <span class=o>===</span> <span class=dl>&#39;</span><span class=s1>function</span><span class=dl>&#39;</span><span class=p>)</span> <span class=p>{</span>
+            <span class=k>await</span> <span class=nb>window</span><span class=p>.</span><span class=nf>navigate</span><span class=p>(</span><span class=nx>url</span><span class=p>);</span>
+        <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+            <span class=nb>window</span><span class=p>.</span><span class=nf>postMessage</span><span class=p>({</span><span class=na>action</span><span class=p>:</span> <span class=dl>&#39;</span><span class=s1>navigate</span><span class=dl>&#39;</span><span class=p>,</span> <span class=na>targetUrl</span><span class=p>:</span> <span class=nx>url</span><span class=p>},</span> <span class=dl>&#39;</span><span class=s1>*</span><span class=dl>&#39;</span><span class=p>);</span>
+        <span class=p>}</span>
+        <span class=k>return</span> <span class=kc>true</span>
+    <span class=p>}</span> <span class=k>catch </span><span class=p>(</span><span class=nx>e</span><span class=p>)</span> <span class=p>{</span>
+        <span class=nx>console</span><span class=p>.</span><span class=nf>error</span><span class=p>(</span><span class=s2>`Failed to navigate </span><span class=p>${</span><span class=nb>window</span><span class=p>}</span><span class=s2> to </span><span class=p>${</span><span class=nx>url</span><span class=p>}</span><span class=s2>`</span><span class=p>,</span> <span class=nx>e</span><span class=p>);</span>
+        <span class=k>return</span> <span class=kc>false</span><span class=p>;</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></div><p>Кода стало больше, но теперь, на мой взгляд, логика каждой из функций стала очевидной:</p><div class="olist arabic"><ol class=arabic><li><p>Логика обработки клика (закрыть нотификацию, открыть диплинк) осталась в <code>notificationclick</code>.</p><p>Здесь, в идеале, стоило бы получение URL вытащить в <code>getDeepLink(event: Event): URL?</code>, но в целом и в текущем виде «good enough, imho";</p></li><li><p>логика открытия диплинка (сначала попытаться найти уже открытый и сфокусировать его, потом попытаться найти существующее окно и открыть в нём, в конце концов открыть новое окно) ушла в <code>openOrFocusWindow</code>.</p><p>Здесь также, пожалуй, стоило бы завернуть механизмы <code>clients.matchAll</code> и <code>clients.openWindow</code> в собственные функции, но опять же — то, что есть уже «good enough, imho".</p></li><li>конкретные механизмы работы с окнами (openWindow, focus, navigate, postMessage и т. д.) ушли в функции <code>try*</code>;</li><li>логика обработки ошибок (все ошибки игнорируем и в конце концов пытаемся открыть новое окно) разошлась на два уровня.<ol class=loweralpha type=a><li>низкоуровневые ошибки обрабатываются в функциях механизмов путём превращения в boolean-результат успеха операции;</li><li>верхнеуровневая логика обработки ошибок — пробуем по очереди сфокусировать, снавигировать и открыть — ушла в центральную функцию <code>openOrFocusWindow</code>.</li></ol></li></ol></div></section><section class="doc-section level-2"><h3 id=_пример_2_фетч_ресурсов_с_фолбэком_на_кэш_и_кастомную_страницу_сервис_недоступен><a class=link href=#_пример_2_фетч_ресурсов_с_фолбэком_на_кэш_и_кастомную_страницу_сервис_недоступен>Пример №2: фетч ресурсов с фолбэком на кэш и кастомную страницу «Сервис недоступен"</a></h3><p>Вторым примером стала функция обработки запроса на фетч URL в ServiceWorker-е.
+Это <a href=https://en.wikipedia.org/wiki/Progressive_web_app>PWA</a>-мотня, которая должна обеспечить отрисовку кастомной страницы «Сервис недоступен", вместо страшной стандартной браузерной страницы, в случае если сервер полностью недоступен (пользователь оффлайн или сервер не отвечает).</p><p>В этом примере, опять же, общая логика довольно простая:</p><div class="olist arabic"><ol class=arabic><li>Первым делом, все не-GET запросы отдаём браузеру на стандартную обработку;</li><li>Затем пытаемся загрузить ресурс с сервера;<ol class=loweralpha type=a><li>Если не получилось — пытаемся взять из кэша;</li></ol></li><li>Если получилось<ol class=loweralpha type=a><li>и ресурс была ассетом (картинки, css, скрипты и т.п.) — сохраняем его в кэш;</li><li>возвращаем результат;</li></ol></li><li>Если не получилось<ol class=loweralpha type=a><li>и запрос был браузерный/синхронный — возвращаем страницу «Сервис недоступен» из кеша;</li><li>иначе (это был xhr-запрос от htmx/alpine) — возвращаем ответ со статусом 503 и без тела.</li></ol></li></ol></div><p>Но гопатыч опять же нагенерил мне что-то «волосатое":</p><div class=listing-block><pre class="rouge highlight"><code data-lang=js><span class=nb>self</span><span class=p>.</span><span class=nf>addEventListener</span><span class=p>(</span><span class=dl>&#39;</span><span class=s1>fetch</span><span class=dl>&#39;</span><span class=p>,</span> <span class=p>(</span><span class=nx>event</span><span class=p>)</span> <span class=o>=&gt;</span> <span class=p>{</span>
+    <span class=kd>const</span> <span class=nx>req</span> <span class=o>=</span> <span class=nx>event</span><span class=p>.</span><span class=nx>request</span>
+    <span class=k>if </span><span class=p>(</span><span class=nx>req</span><span class=p>.</span><span class=nx>method</span> <span class=o>!==</span> <span class=dl>&#39;</span><span class=s1>GET</span><span class=dl>&#39;</span><span class=p>)</span> <span class=p>{</span>
+        <span class=k>return</span>
+    <span class=p>}</span>
+
+    <span class=k>if </span><span class=p>(</span><span class=nx>req</span><span class=p>.</span><span class=nx>mode</span> <span class=o>===</span> <span class=dl>&#39;</span><span class=s1>navigate</span><span class=dl>&#39;</span> <span class=o>||</span> <span class=p>(</span><span class=nx>req</span><span class=p>.</span><span class=nx>destination</span> <span class=o>===</span> <span class=dl>&#39;</span><span class=s1>document</span><span class=dl>&#39;</span><span class=p>))</span> <span class=p>{</span>
+        <span class=nx>event</span><span class=p>.</span><span class=nf>respondWith</span><span class=p>((</span><span class=k>async </span><span class=p>()</span> <span class=o>=&gt;</span> <span class=p>{</span>
+            <span class=k>try</span> <span class=p>{</span>
+                <span class=kd>const</span> <span class=nx>fresh</span> <span class=o>=</span> <span class=k>await</span> <span class=nf>fetch</span><span class=p>(</span><span class=nx>req</span><span class=p>)</span>
+                <span class=k>if </span><span class=p>(</span><span class=nx>fresh</span> <span class=o>&amp;&amp;</span> <span class=p>(</span><span class=nx>fresh</span><span class=p>.</span><span class=nx>ok</span> <span class=o>||</span> <span class=nx>fresh</span><span class=p>.</span><span class=nx>type</span> <span class=o>===</span> <span class=dl>&#39;</span><span class=s1>opaqueredirect</span><span class=dl>&#39;</span> <span class=o>||</span> <span class=p>(</span><span class=nx>fresh</span><span class=p>.</span><span class=nx>status</span> <span class=o>&gt;=</span> <span class=mi>300</span> <span class=o>&amp;&amp;</span> <span class=nx>fresh</span><span class=p>.</span><span class=nx>status</span> <span class=o>&lt;</span> <span class=mi>400</span><span class=p>)))</span> <span class=p>{</span>
+                    <span class=k>return</span> <span class=nx>fresh</span>
+                <span class=p>}</span>
+
+                <span class=kd>const</span> <span class=nx>cached</span> <span class=o>=</span> <span class=k>await</span> <span class=nx>caches</span><span class=p>.</span><span class=nf>match</span><span class=p>(</span><span class=nx>req</span><span class=p>)</span>
+                <span class=k>if </span><span class=p>(</span><span class=nx>cached</span><span class=p>)</span> <span class=p>{</span>
+                    <span class=k>return</span> <span class=nx>cached</span>
+                <span class=p>}</span>
+                <span class=k>return</span> <span class=k>await</span> <span class=nx>caches</span><span class=p>.</span><span class=nf>match</span><span class=p>(</span><span class=nx>OFFLINE_URL</span><span class=p>)</span>
+            <span class=p>}</span> <span class=k>catch </span><span class=p>(</span><span class=nx>_</span><span class=p>)</span> <span class=p>{</span>
+                <span class=kd>const</span> <span class=nx>cached</span> <span class=o>=</span> <span class=k>await</span> <span class=nx>caches</span><span class=p>.</span><span class=nf>match</span><span class=p>(</span><span class=nx>req</span><span class=p>)</span>
+                <span class=k>if </span><span class=p>(</span><span class=nx>cached</span><span class=p>)</span> <span class=p>{</span>
+                    <span class=k>return</span> <span class=nx>cached</span>
+                <span class=p>}</span>
+                <span class=k>return</span> <span class=k>await</span> <span class=nx>caches</span><span class=p>.</span><span class=nf>match</span><span class=p>(</span><span class=nx>OFFLINE_URL</span><span class=p>)</span>
+            <span class=p>}</span>
+        <span class=p>})())</span>
+        <span class=k>return</span>
+    <span class=p>}</span>
+
+    <span class=nx>event</span><span class=p>.</span><span class=nf>respondWith</span><span class=p>((</span><span class=k>async </span><span class=p>()</span> <span class=o>=&gt;</span> <span class=p>{</span>
+        <span class=k>try</span> <span class=p>{</span>
+            <span class=kd>const</span> <span class=nx>fresh</span> <span class=o>=</span> <span class=k>await</span> <span class=nf>fetch</span><span class=p>(</span><span class=nx>req</span><span class=p>)</span>
+            <span class=kd>const</span> <span class=nx>cache</span> <span class=o>=</span> <span class=k>await</span> <span class=nx>caches</span><span class=p>.</span><span class=nf>open</span><span class=p>(</span><span class=nx>CACHE_NAME</span><span class=p>)</span>
+            <span class=nx>cache</span><span class=p>.</span><span class=nf>put</span><span class=p>(</span><span class=nx>req</span><span class=p>,</span> <span class=nx>fresh</span><span class=p>.</span><span class=nf>clone</span><span class=p>())</span>
+                <span class=p>.</span><span class=k>catch</span><span class=p>(()</span> <span class=o>=&gt;</span> <span class=p>{</span>
+                <span class=p>})</span>
+            <span class=k>return</span> <span class=nx>fresh</span>
+        <span class=p>}</span> <span class=k>catch </span><span class=p>(</span><span class=nx>_</span><span class=p>)</span> <span class=p>{</span>
+            <span class=kd>const</span> <span class=nx>cached</span> <span class=o>=</span> <span class=k>await</span> <span class=nx>caches</span><span class=p>.</span><span class=nf>match</span><span class=p>(</span><span class=nx>req</span><span class=p>)</span>
+            <span class=k>if </span><span class=p>(</span><span class=nx>cached</span><span class=p>)</span> <span class=p>{</span>
+                <span class=k>return</span> <span class=nx>cached</span>
+            <span class=p>}</span>
+            <span class=k>return</span> <span class=k>new</span> <span class=nc>Response</span><span class=p>(</span><span class=dl>&#39;</span><span class=s1>Offline</span><span class=dl>&#39;</span><span class=p>,</span> <span class=p>{</span><span class=na>status</span><span class=p>:</span> <span class=mi>503</span><span class=p>})</span>
+        <span class=p>}</span>
+    <span class=p>})())</span>
+<span class=p>})</span></code></pre></div><p>«И кони, и люди — всё смешалось в доме Облонских": в этой функции и разведение xhr и не-xhr запросов, и собственно выполнение запросов, и работа с кэшем, и обработка ошибок.</p><p>И лечится это опять же выделением пачки функций-механизмов, которые вызываются из центральной функции-оркестратора:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=js><span class=nb>self</span><span class=p>.</span><span class=nx>resolveRequest</span> <span class=o>=</span> <span class=k>async</span> <span class=kd>function</span> <span class=nf>resolveRequest</span><span class=p>(</span><span class=nx>req</span><span class=p>)</span> <span class=p>{</span>
+    <span class=nx>console</span><span class=p>.</span><span class=nf>debug</span><span class=p>(</span><span class=dl>&#34;</span><span class=s2>Fetching </span><span class=dl>&#34;</span> <span class=o>+</span> <span class=nx>req</span><span class=p>)</span>
+
+    <span class=kd>let</span> <span class=nx>resp</span> <span class=o>=</span> <span class=k>await</span> <span class=nf>fetchOrGetFromCache</span><span class=p>(</span><span class=nx>req</span><span class=p>);</span>
+    <span class=k>if </span><span class=p>(</span><span class=o>!</span><span class=nx>resp</span><span class=p>)</span> <span class=p>{</span>
+        <span class=k>return</span> <span class=nf>offlineFor</span><span class=p>(</span><span class=nx>req</span><span class=p>);</span>
+    <span class=p>}</span>
+
+    <span class=k>if </span><span class=p>(</span><span class=nf>isAsset</span><span class=p>(</span><span class=nx>req</span><span class=p>)</span> <span class=o>&amp;&amp;</span> <span class=nf>isOk</span><span class=p>(</span><span class=nx>resp</span><span class=p>))</span> <span class=p>{</span>
+        <span class=k>await</span> <span class=nf>cacheAsset</span><span class=p>(</span><span class=nx>req</span><span class=p>,</span> <span class=nx>resp</span><span class=p>);</span>
+    <span class=p>}</span>
+
+    <span class=k>return</span> <span class=nx>resp</span><span class=p>;</span>
+<span class=p>}</span>
+
+<span class=k>async</span> <span class=kd>function</span> <span class=nf>fetchOrGetFromCache</span><span class=p>(</span><span class=nx>req</span><span class=p>)</span> <span class=p>{</span>
+    <span class=k>try</span> <span class=p>{</span>
+        <span class=k>return</span> <span class=k>await</span> <span class=nf>fetch</span><span class=p>(</span><span class=nx>req</span><span class=p>);</span>
+    <span class=p>}</span> <span class=k>catch </span><span class=p>(</span><span class=nx>e</span><span class=p>)</span> <span class=p>{</span>
+        <span class=nx>console</span><span class=p>.</span><span class=nf>debug</span><span class=p>(</span><span class=dl>&#34;</span><span class=s2>Fetching</span><span class=dl>&#34;</span><span class=p>,</span> <span class=nx>req</span><span class=p>.</span><span class=nx>url</span><span class=p>,</span> <span class=dl>&#34;</span><span class=s2>destination:</span><span class=dl>&#34;</span><span class=p>,</span> <span class=nx>req</span><span class=p>.</span><span class=nx>destination</span><span class=p>,</span> <span class=dl>&#34;</span><span class=s2>mode:</span><span class=dl>&#34;</span><span class=p>,</span> <span class=nx>req</span><span class=p>.</span><span class=nx>mode</span><span class=p>);</span>
+        <span class=kd>const</span> <span class=nx>cached</span> <span class=o>=</span> <span class=k>await</span> <span class=nx>caches</span><span class=p>.</span><span class=nf>match</span><span class=p>(</span><span class=nx>req</span><span class=p>);</span>
+        <span class=k>return</span> <span class=nx>cached</span> <span class=o>||</span> <span class=kc>null</span><span class=p>;</span>
+    <span class=p>}</span>
+<span class=p>}</span>
+
+<span class=kd>function</span> <span class=nf>offlineFor</span><span class=p>(</span><span class=nx>req</span><span class=p>)</span> <span class=p>{</span>
+    <span class=k>if </span><span class=p>(</span><span class=nf>isNavRequest</span><span class=p>(</span><span class=nx>req</span><span class=p>))</span> <span class=p>{</span>
+        <span class=k>return</span> <span class=nx>caches</span><span class=p>.</span><span class=nf>match</span><span class=p>(</span><span class=nx>OFFLINE_URL</span><span class=p>);</span>
+    <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+        <span class=k>return</span> <span class=k>new</span> <span class=nc>Response</span><span class=p>(</span><span class=dl>&#39;</span><span class=s1>Offline</span><span class=dl>&#39;</span><span class=p>,</span> <span class=p>{</span>
+            <span class=na>status</span><span class=p>:</span> <span class=mi>503</span><span class=p>,</span>
+            <span class=na>headers</span><span class=p>:</span> <span class=p>{</span><span class=dl>&#39;</span><span class=s1>Content-Type</span><span class=dl>&#39;</span><span class=p>:</span> <span class=dl>&#39;</span><span class=s1>text/plain; charset=utf-8</span><span class=dl>&#39;</span><span class=p>}</span>
+        <span class=p>});</span>
+    <span class=p>}</span>
+<span class=p>}</span>
+
+<span class=kd>function</span> <span class=nf>isNavRequest</span><span class=p>(</span><span class=nx>req</span><span class=p>)</span> <span class=p>{</span>
+    <span class=k>return</span> <span class=nx>req</span><span class=p>.</span><span class=nx>mode</span> <span class=o>===</span> <span class=dl>&#39;</span><span class=s1>navigate</span><span class=dl>&#39;</span> <span class=o>||</span> <span class=nx>req</span><span class=p>.</span><span class=nx>destination</span> <span class=o>===</span> <span class=dl>&#39;</span><span class=s1>document</span><span class=dl>&#39;</span><span class=p>;</span>
+<span class=p>}</span>
+
+<span class=kd>function</span> <span class=nf>isAsset</span><span class=p>(</span><span class=nx>req</span><span class=p>)</span> <span class=p>{</span>
+    <span class=kd>const</span> <span class=nx>dest</span> <span class=o>=</span> <span class=nx>req</span><span class=p>.</span><span class=nx>destination</span> <span class=o>||</span> <span class=dl>&#39;&#39;</span><span class=p>;</span>
+    <span class=k>return</span> <span class=p>[</span><span class=dl>&#39;</span><span class=s1>script</span><span class=dl>&#39;</span><span class=p>,</span> <span class=dl>&#39;</span><span class=s1>style</span><span class=dl>&#39;</span><span class=p>,</span> <span class=dl>&#39;</span><span class=s1>image</span><span class=dl>&#39;</span><span class=p>,</span> <span class=dl>&#39;</span><span class=s1>font</span><span class=dl>&#39;</span><span class=p>,</span> <span class=dl>&#39;</span><span class=s1>manifest</span><span class=dl>&#39;</span><span class=p>].</span><span class=nf>includes</span><span class=p>(</span><span class=nx>dest</span><span class=p>);</span>
+<span class=p>}</span>
+
+<span class=kd>function</span> <span class=nf>isOk</span><span class=p>(</span><span class=nx>resp</span><span class=p>)</span> <span class=p>{</span>
+    <span class=k>return</span> <span class=nx>resp</span><span class=p>.</span><span class=nx>ok</span> <span class=o>&amp;&amp;</span> <span class=nx>resp</span><span class=p>.</span><span class=nx>type</span> <span class=o>===</span> <span class=dl>&#39;</span><span class=s1>basic</span><span class=dl>&#39;</span><span class=p>;</span>
+<span class=p>}</span>
+
+<span class=k>async</span> <span class=kd>function</span> <span class=nf>cacheAsset</span><span class=p>(</span><span class=nx>req</span><span class=p>,</span> <span class=nx>res</span><span class=p>)</span> <span class=p>{</span>
+    <span class=kd>let</span> <span class=nx>cache</span> <span class=o>=</span> <span class=k>await</span> <span class=nx>caches</span><span class=p>.</span><span class=nf>open</span><span class=p>(</span><span class=nx>CACHE_NAME</span><span class=p>)</span>
+    <span class=k>try</span> <span class=p>{</span>
+        <span class=k>await</span> <span class=nx>cache</span><span class=p>.</span><span class=nf>put</span><span class=p>(</span><span class=nx>req</span><span class=p>,</span> <span class=nx>res</span><span class=p>.</span><span class=nf>clone</span><span class=p>());</span>
+    <span class=p>}</span> <span class=k>catch </span><span class=p>(</span><span class=nx>reason</span><span class=p>)</span> <span class=p>{</span>
+        <span class=nx>console</span><span class=p>.</span><span class=nf>warn</span><span class=p>(</span><span class=dl>&#34;</span><span class=s2>Caching failed: </span><span class=dl>&#34;</span> <span class=o>+</span> <span class=nx>reason</span><span class=p>)</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></div></section></section><section class="doc-section level-1"><h2 id=_postgres_generated_колонки_для_ограничений_целостности_в_jsonb><a class=link href=#_postgres_generated_колонки_для_ограничений_целостности_в_jsonb>Postgres GENERATED-колонки для ограничений целостности в JSONB</a></h2><p>JSONB.
+Как много в этом звуке для сердца SDJ-разработчика слилось!</p><p>С одной стороны, JSONB делает тривиальным персистанс агрегатов практически произвольной структуры.</p><p>С другой стороны, данные внутри JSONB-колонки не могут быть использованы в ограничениях целостности, а этого иногда хочется.</p><p>В фиче пушей таким агрегатом является сущность TherapistWebPushSubscription, которая содержит в себе объект-значение подписки на пуши (WebPushSubscription), который содержит в себе пару ключей (Keys) для шифрования пушей.</p><p>А желаемым, но запретным (из-за использования JSONB) плодом был апсёрт по иду устройства, для чего на него должно быть наложено ограничение уникальности.</p><p>Однако в Postgres-е есть GENERATED-колонки, которые можно вычислять по данным из других колонок, в том числе — JSONB-колонок.
+И вот эти колонки уже можно использовать в ограничениях целостности — от первичного ключа, через внешний ключ, до юника:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=sql><span class=k>DROP</span> <span class=k>TABLE</span> <span class=n>IF</span> <span class=k>EXISTS</span> <span class=n>test</span><span class=p>;</span>
+<span class=k>CREATE</span> <span class=k>TABLE</span> <span class=n>test</span>
+<span class=p>(</span>
+    <span class=k>data</span> <span class=n>JSONB</span><span class=p>,</span>
+    <span class=n>id</span>   <span class=n>UUID</span> <span class=k>NOT</span> <span class=k>NULL</span> <span class=k>GENERATED</span> <span class=n>ALWAYS</span> <span class=k>AS</span> <span class=p>((</span><span class=k>data</span> <span class=o>-&gt;&gt;</span> <span class=s1>&#39;id&#39;</span><span class=p>)::</span><span class=n>UUID</span><span class=p>)</span> <span class=n>STORED</span> <span class=k>PRIMARY</span> <span class=k>KEY</span><span class=p>,</span>
+    <span class=n>therapist_ref</span> <span class=n>UUID</span> <span class=k>NOT</span> <span class=k>NULL</span> <span class=k>GENERATED</span> <span class=n>ALWAYS</span> <span class=k>AS</span> <span class=p>((</span><span class=k>data</span> <span class=o>-&gt;&gt;</span> <span class=s1>&#39;therapist_ref&#39;</span><span class=p>)::</span><span class=n>UUID</span><span class=p>)</span> <span class=n>STORED</span> <span class=k>REFERENCES</span> <span class=n>therapists</span> <span class=k>ON</span> <span class=k>DELETE</span> <span class=k>CASCADE</span><span class=p>,</span>
+    <span class=k>key</span> <span class=nb>VARCHAR</span> <span class=k>NOT</span> <span class=k>NULL</span> <span class=k>GENERATED</span> <span class=n>ALWAYS</span> <span class=k>AS</span> <span class=p>((</span><span class=k>data</span> <span class=o>-&gt;&gt;</span> <span class=s1>&#39;key&#39;</span><span class=p>))</span> <span class=n>STORED</span> <span class=k>UNIQUE</span>
+<span class=p>);</span>
+
+<span class=k>INSERT</span> <span class=k>INTO</span> <span class=n>test</span> <span class=p>(</span><span class=k>data</span><span class=p>)</span> <span class=k>VALUES</span> <span class=p>(</span><span class=s1>&#39;{&#34;id&#34;: &#34;c42b4abe-dd96-4204-a24a-0b560a66b79a&#34;, &#34;therapist_ref&#34;: &#34;c42b4abe-dd96-4204-a24a-0b560a66b79a&#34;, &#34;key&#34;: &#34;789&#34;}&#39;</span><span class=p>::</span><span class=n>JSONB</span><span class=p>);</span></code></pre></div><p>До Postgres 18 GENERATED-колонки могли быть только STORED (то есть физически храниться в таблице), но начиная с Postgres 18 появились VIRTUAL GENERATED-колонки, которые не хранятся физически, а вычисляются на лету.</p><p>Трюк с GENERATED-колонкой я и применил для навешивания юника на id устройства в таблице подписок на пуши:</p><figure class=listing-block><figcaption><a href=https://github.com/ergonomic-code/Trainer-Advisor/blob/master/app/src/main/resources/db/migration/common/current/V25100801__add_web_pushes.sql#L9>V25100801__add_web_pushes.sql</a></figcaption><pre class="rouge highlight"><code data-lang=sql><span class=k>CREATE</span> <span class=k>TABLE</span> <span class=n>therapist_web_push_subscriptions</span>
+<span class=p>(</span>
+    <span class=n>id</span>            <span class=n>UUID</span> <span class=k>PRIMARY</span> <span class=k>KEY</span><span class=p>,</span>
+    <span class=n>therapist_ref</span> <span class=n>UUID</span>                     <span class=k>NOT</span> <span class=k>NULL</span> <span class=k>REFERENCES</span> <span class=n>therapists</span> <span class=k>ON</span> <span class=k>DELETE</span> <span class=k>CASCADE</span> <span class=k>ON</span> <span class=k>UPDATE</span> <span class=k>CASCADE</span><span class=p>,</span>
+    <span class=n>subscription</span>  <span class=n>JSONB</span>                    <span class=k>NOT</span> <span class=k>NULL</span><span class=p>,</span>
+    <span class=n>created_at</span>    <span class=nb>TIMESTAMP</span> <span class=k>WITH</span> <span class=nb>TIME</span> <span class=k>ZONE</span> <span class=k>NOT</span> <span class=k>NULL</span> <span class=k>DEFAULT</span> <span class=k>CURRENT_TIMESTAMP</span><span class=p>,</span>
+    <span class=n>updated_at</span>    <span class=nb>TIMESTAMP</span> <span class=k>WITH</span> <span class=nb>TIME</span> <span class=k>ZONE</span>          <span class=k>DEFAULT</span> <span class=k>NULL</span><span class=p>,</span>
+    <span class=k>version</span>       <span class=nb>BIGINT</span>                   <span class=k>NOT</span> <span class=k>NULL</span> <span class=k>DEFAULT</span> <span class=mi>1</span><span class=p>,</span>
+    <span class=n>p256dh</span>        <span class=nb>VARCHAR</span><span class=p>(</span><span class=mi>256</span><span class=p>)</span>             <span class=k>NOT</span> <span class=k>NULL</span> <span class=k>GENERATED</span> <span class=n>ALWAYS</span> <span class=k>AS</span> <span class=p>(</span><span class=n>subscription</span> <span class=o>-&gt;</span> <span class=s1>&#39;keys&#39;</span> <span class=o>-&gt;&gt;</span> <span class=s1>&#39;p256dh&#39;</span><span class=p>)</span> <span class=n>STORED</span><span class=p>,</span>
+    <span class=k>UNIQUE</span> <span class=p>(</span><span class=n>therapist_ref</span><span class=p>,</span> <span class=n>p256dh</span><span class=p>)</span>
+<span class=p>);</span></code></pre></figure><p>Эти же колонки можно использовать и фильтрации с помощью Criteria API, а если вытащить их на уровень <a href=https://github.com/ergonomic-code/Trainer-Advisor/blob/d074d5b175ab099e5e0107a957ceeceb78762be0/app/src/main/kotlin/pro/qyoga/i9ns/pushes/web/model/TherapistWebPushSubscription.kt#L27>SDJ-сущности</a>, то их можно и в моём DSL-использовать в духе:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>val</span> <span class=py>query</span> <span class=p>=</span> <span class=nf>query</span> <span class=p>{</span>
+    <span class=nc>TherapistWebPushSubscription</span><span class=o>::</span><span class=n>p256dh</span> <span class=n>isEqual</span> <span class=n>p256dh</span>
+<span class=p>}</span>
+<span class=kd>val</span> <span class=py>subscriptionByP256dh</span> <span class=p>=</span> <span class=n>webPushSubscriptionsDao</span><span class=p>.</span><span class=nf>findOne</span><span class=p>(</span><span class=n>query</span><span class=p>)</span></code></pre></div></section><section class="doc-section level-1"><h2 id=_traineradvisorapis><a class=link href=#_traineradvisorapis>TrainerAdvisorApis</a></h2><p>Мой подход к кодированию клиентов HTTP API в тестах за последние 5 лет прошёл несколько этапов эволюции.</p><p>Изначально я писал RestAssured-ные Given/When/Then прямо в тест-кейсах:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@Test</span>
+<span class=k>fun</span> <span class=nf>`Test</span> <span class=n>first</span> <span class=n>pair</span> <span class=nf>activation`</span><span class=p>()</span> <span class=p>{</span>
+    <span class=nc>Given</span> <span class=p>{</span>
+        <span class=nf>contentType</span><span class=p>(</span><span class=nc>ContentType</span><span class=p>.</span><span class=nc>JSON</span><span class=p>)</span>
+        <span class=nf>header</span><span class=p>(</span><span class=s>&#34;X-Tcs-Token&#34;</span><span class=p>,</span> <span class=n>client</span><span class=p>.</span><span class=n>botToken</span><span class=p>)</span>
+        <span class=nf>body</span><span class=p>(</span><span class=nc>UpdateActivePairsDto</span><span class=p>(</span><span class=n>initialActivePairs</span><span class=p>))</span>
+    <span class=p>}</span> <span class=nc>When</span> <span class=p>{</span>
+        <span class=nf>post</span><span class=p>(</span><span class=s>&#34;/user/pairs&#34;</span><span class=p>)</span>
+    <span class=p>}</span> <span class=nc>Then</span> <span class=p>{</span>
+        <span class=nf>statusCode</span><span class=p>(</span><span class=mi>200</span><span class=p>)</span>
+        <span class=nf>body</span><span class=p>(</span><span class=s>&#34;pairs&#34;</span><span class=p>,</span> <span class=nc>Matchers</span><span class=p>.</span><span class=n>empty</span><span class=p>&lt;</span><span class=nc>Any</span><span class=p>&gt;())</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></div><p>Однако по мере того как я начал фокусироваться всё больше на тестах поведения, в которых помимо собственно HTTP-вызова есть ещё и подготовка данных и проверка состояния системы, такой код начал выглядеть странно:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@Test</span>
+<span class=k>fun</span> <span class=nf>`xxx</span> <span class=n>can</span> <span class=n>create</span> <span class=n>device</span> <span class=nf>models`</span><span class=p>()</span> <span class=p>{</span>
+    <span class=kd>var</span> <span class=py>models</span><span class=p>:</span> <span class=nc>List</span><span class=p>&lt;</span><span class=nc>DeviceModelDto</span><span class=p>&gt;?</span> <span class=p>=</span> <span class=k>null</span>
+    <span class=nc>Given</span> <span class=p>{</span>
+        <span class=nf>token</span><span class=p>(</span><span class=n>adminToken</span><span class=p>)</span>
+    <span class=p>}</span> <span class=nc>When</span> <span class=p>{</span>
+        <span class=k>get</span><span class=p>(</span><span class=s>&#34;device-models&#34;</span><span class=p>)</span>
+    <span class=p>}</span> <span class=nc>Then</span> <span class=p>{</span>
+        <span class=nf>statusCode</span><span class=p>(</span><span class=nc>HttpStatus</span><span class=p>.</span><span class=nc>OK</span><span class=p>.</span><span class=nf>value</span><span class=p>())</span>
+        <span class=n>models</span> <span class=p>=</span> <span class=nf>extract</span><span class=p>().</span><span class=nf>jsonPath</span><span class=p>().</span><span class=nf>getList</span><span class=p>(</span><span class=s>&#34;$&#34;</span><span class=p>,</span> <span class=nc>DeviceModelDto</span><span class=o>::</span><span class=k>class</span><span class=p>.</span><span class=n>java</span><span class=p>)</span>
+    <span class=p>}</span>
+
+    <span class=kd>val</span> <span class=py>newModelName</span> <span class=p>=</span> <span class=s>&#34;New model name&#34;</span>
+    <span class=kd>val</span> <span class=py>newModel</span> <span class=p>=</span> <span class=nc>NewModel</span><span class=p>(</span><span class=n>newModelName</span><span class=p>)</span>
+
+    <span class=nc>Given</span> <span class=p>{</span>
+        <span class=nf>token</span><span class=p>(</span><span class=n>adminToken</span><span class=p>)</span>
+        <span class=nf>body</span><span class=p>(</span><span class=nc>UpdateDeviceModelsRequest</span><span class=p>(</span><span class=n>models</span><span class=o>!!</span><span class=p>,</span> <span class=nf>arrayListOf</span><span class=p>(</span><span class=n>newModel</span><span class=p>)))</span>
+        <span class=nf>filter</span><span class=p>(</span><span class=nc>ResponseLoggingFilter</span><span class=p>())</span>
+    <span class=p>}</span> <span class=nc>When</span> <span class=p>{</span>
+        <span class=nf>post</span><span class=p>(</span><span class=s>&#34;device-models&#34;</span><span class=p>)</span>
+    <span class=p>}</span> <span class=nc>Then</span> <span class=p>{</span>
+        <span class=nf>statusCode</span><span class=p>(</span><span class=nc>HttpStatus</span><span class=p>.</span><span class=nc>OK</span><span class=p>.</span><span class=nf>value</span><span class=p>())</span>
+        <span class=n>models</span> <span class=p>=</span> <span class=k>this</span><span class=p>.</span><span class=nf>extract</span><span class=p>().</span><span class=nf>jsonPath</span><span class=p>().</span><span class=nf>getList</span><span class=p>(</span><span class=s>&#34;$&#34;</span><span class=p>,</span> <span class=nc>DeviceModelDto</span><span class=o>::</span><span class=k>class</span><span class=p>.</span><span class=n>java</span><span class=p>)</span>
+    <span class=p>}</span>
+
+    <span class=kd>val</span> <span class=py>savedModel</span> <span class=p>=</span> <span class=n>models</span><span class=o>?.</span><span class=nf>find</span> <span class=p>{</span> <span class=n>it</span><span class=p>.</span><span class=n>name</span> <span class=p>==</span> <span class=n>newModelName</span> <span class=p>}</span>
+    <span class=n>savedModel</span> <span class=n>shouldNotBe</span> <span class=k>null</span>
+    <span class=n>savedModel</span><span class=o>?.</span><span class=n>id</span> <span class=n>shouldNotBe</span> <span class=k>null</span>
+    <span class=n>models</span><span class=o>?.</span><span class=nf>filter</span> <span class=p>{</span> <span class=n>it</span><span class=p>.</span><span class=n>name</span> <span class=p>==</span> <span class=n>newModelName</span> <span class=p>}</span><span class=o>?.</span><span class=n>size</span> <span class=n>shouldBe</span> <span class=mi>1</span>
+<span class=p>}</span></code></pre></div><p>Тогда я начал инкапсулировать непосредственно вызовы в отдельные классы (нарезанные по ресурсам и ролям), которые собирались в классы клиентов (для каждой роли):</p><figure class=listing-block><figcaption><a href=https://github.com/ergonomic-code/Trainer-Advisor/blob/d074d5b175ab099e5e0107a957ceeceb78762be0/app/src/test/kotlin/pro/qyoga/tests/clients/TherapistClient.kt>TherapistClient</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>TherapistClient</span><span class=p>(</span>
+    <span class=kd>val</span> <span class=py>authCookie</span><span class=p>:</span> <span class=nc>Cookie</span><span class=p>,</span>
+    <span class=n>webTestClient</span><span class=p>:</span> <span class=nc>WebTestClient</span> <span class=p>=</span> <span class=n>mainWebTestClient</span>
+<span class=p>)</span> <span class=p>{</span>
+
+    <span class=c1>// Work</span>
+    <span class=kd>val</span> <span class=py>appointments</span> <span class=p>=</span> <span class=nc>TherapistAppointmentsApi</span><span class=p>(</span><span class=n>authCookie</span><span class=p>)</span>
+    <span class=kd>val</span> <span class=py>googleCalendarIntegration</span> <span class=p>=</span> <span class=nc>TherapistGoogleCalendarIntegrationApi</span><span class=p>(</span><span class=n>authCookie</span><span class=p>,</span> <span class=n>webTestClient</span><span class=p>)</span>
+    <span class=c1>// ...</span>
+
+<span class=p>}</span></code></pre></figure><figure class=listing-block><figcaption><a href=https://github.com/ergonomic-code/Trainer-Advisor/blob/d074d5b175ab099e5e0107a957ceeceb78762be0/app/src/test/kotlin/pro/qyoga/tests/clients/api/TherapistGoogleCalendarIntegrationApi.kt>TherapistGoogleCalendarIntegrationApi</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>TherapistGoogleCalendarIntegrationApi</span><span class=p>(</span>
+    <span class=k>override</span> <span class=kd>val</span> <span class=py>authCookie</span><span class=p>:</span> <span class=nc>Cookie</span><span class=p>,</span>
+    <span class=k>private</span> <span class=kd>val</span> <span class=py>webTestClient</span><span class=p>:</span> <span class=nc>WebTestClient</span>
+<span class=p>)</span> <span class=p>:</span> <span class=nc>AuthorizedApi</span> <span class=p>{</span>
+
+    <span class=k>fun</span> <span class=nf>authorizeInGoogle</span><span class=p>():</span> <span class=nc>URI</span> <span class=p>{</span>
+        <span class=kd>val</span> <span class=py>response</span> <span class=p>=</span> <span class=n>webTestClient</span><span class=p>.</span><span class=k>get</span><span class=p>()</span>
+            <span class=p>.</span><span class=nf>uri</span><span class=p>(</span><span class=s>&#34;/oauth2/authorization/google&#34;</span><span class=p>)</span>
+            <span class=p>.</span><span class=nf>authorized</span><span class=p>()</span>
+            <span class=p>.</span><span class=nf>exchange</span><span class=p>()</span>
+            <span class=p>.</span><span class=nf>expectStatus</span><span class=p>().</span><span class=n>isFound</span>
+
+        <span class=k>return</span> <span class=n>response</span><span class=p>.</span><span class=nf>redirectLocation</span><span class=p>()</span>
+    <span class=p>}</span>
+
+    <span class=c1>// ...</span>
+
+<span class=p>}</span></code></pre></figure><p>Но с таким подходом есть ряд проблем:</p><div class="olist arabic"><ol class=arabic><li>Классы клиентов разрастаются неограниченно.
+Особенно если необходимо обеспечивать обратную совместимость и для ресурсов надо держать по нескольку версий АПИ;</li><li>непонятно, куда пихать методы, доступные нескольким ролям;</li><li>невозможно протестировать контроль доступа — например, вызова админского метода с токеном пользователя.</li></ol></div><p>И вот в рамках реализации этой фичи я начал экспериментировать с новым подходом к организации кода клиентов HTTP API.</p><p>Есть корневой пустой объект, с которого мы начинаем искать АПИ автокомплитом:</p><figure class=listing-block><figcaption><a href=https://github.com/ergonomic-code/Trainer-Advisor/blob/d074d5b175ab099e5e0107a957ceeceb78762be0/app/src/test/kotlin/pro/qyoga/tests/clients/api/TrainerAdvisorApis.kt#L3>TrainerAdvisorApis</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>object</span> <span class=nc>TrainerAdvisorApis</span></code></pre></figure><p>На него через экстеншн-свойства навешиваются фабрики АПИ для всех ресурсов:</p><figure class=listing-block><figcaption><a href=https://github.com/ergonomic-code/Trainer-Advisor/blob/d074d5b175ab099e5e0107a957ceeceb78762be0/app/src/test/kotlin/pro/qyoga/tests/clients/api/WebPushesPublicApi.kt#L21>WebPushesApi</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>val</span> <span class=py>TrainerAdvisorApis</span><span class=p>.</span><span class=nc>WebPushes</span>
+    <span class=k>get</span><span class=p>()</span> <span class=p>=</span> <span class=nc>WebPushesApiFactory</span></code></pre></figure><p>Каждая фабрика, позволяет получить АПИ под все возможные роли с любым токеном:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>object</span> <span class=nc>WebPushesApiFactory</span> <span class=p>{</span>
+
+    <span class=kd>val</span> <span class=py>publicApi</span> <span class=p>=</span> <span class=nc>WebPushesPublicApi</span><span class=p>(</span><span class=n>mainWebTestClient</span><span class=p>)</span>
+
+    <span class=k>fun</span> <span class=nf>therapistApi</span><span class=p>(</span>
+        <span class=n>principal</span><span class=p>:</span> <span class=nc>Cookie</span><span class=p>,</span>
+    <span class=p>)</span> <span class=p>=</span> <span class=nc>WebPushesTherapistApi</span><span class=p>(</span><span class=n>principal</span><span class=p>,</span> <span class=n>mainWebTestClient</span><span class=p>)</span>
+
+<span class=p>}</span></code></pre></div><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Вообще, хорошо бы как-то прокинуть WebTestClient через параметры, а не использовать глобальный mainWebTestClient.
+Но надо подумать как это лучше сделать.</p></aside><p>Ну и далее сами АПИ уже реализованы так же как и в итерации с клиентами:</p><figure class=listing-block><figcaption><a href=https://github.com/ergonomic-code/Trainer-Advisor/blob/d074d5b175ab099e5e0107a957ceeceb78762be0/app/src/test/kotlin/pro/qyoga/tests/clients/api/WebPushesTherapistApi.kt>WebPushesTherapistApi</a></figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>WebPushesTherapistApi</span><span class=p>(</span>
+    <span class=k>override</span> <span class=kd>val</span> <span class=py>authCookie</span><span class=p>:</span> <span class=nc>Cookie</span><span class=p>,</span>
+    <span class=k>private</span> <span class=kd>val</span> <span class=py>webTestClient</span><span class=p>:</span> <span class=nc>WebTestClient</span>
+<span class=p>)</span> <span class=p>:</span> <span class=nc>AuthorizedApi</span> <span class=p>{</span>
+
+    <span class=k>fun</span> <span class=nf>createSubscription</span><span class=p>(</span><span class=n>subscription</span><span class=p>:</span> <span class=nc>WebPushSubscription</span><span class=p>)</span> <span class=p>{</span>
+        <span class=n>webTestClient</span><span class=p>.</span><span class=nf>post</span><span class=p>()</span>
+            <span class=p>.</span><span class=nf>uri</span><span class=p>(</span><span class=nc>WebPushesController</span><span class=p>.</span><span class=nc>PATH</span><span class=p>)</span>
+            <span class=p>.</span><span class=nf>body</span><span class=p>(</span><span class=nf>fromValue</span><span class=p>(</span><span class=n>subscription</span><span class=p>))</span>
+            <span class=p>.</span><span class=nf>authorized</span><span class=p>()</span>
+            <span class=p>.</span><span class=nf>exchange</span><span class=p>()</span>
+            <span class=p>.</span><span class=nf>expectStatus</span><span class=p>().</span><span class=n>isNoContent</span>
+    <span class=p>}</span>
+    <span class=c1>// ...</span>
+<span class=p>}</span></code></pre></figure><p>И в итоге использование в тестах выглядит так:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=c1>// Given</span>
+<span class=kd>val</span> <span class=py>theTherapist</span> <span class=p>=</span> <span class=nc>TherapistClient</span><span class=p>.</span><span class=nf>loginAsTheTherapist</span><span class=p>()</span>
+<span class=kd>val</span> <span class=py>webPushesApi</span> <span class=p>=</span> <span class=nc>TrainerAdvisorApis</span><span class=p>.</span><span class=nc>WebPushes</span><span class=p>.</span><span class=nf>therapistApi</span><span class=p>(</span><span class=n>theTherapist</span><span class=p>.</span><span class=n>authCookie</span><span class=p>)</span>
+
+<span class=c1>// When</span>
+<span class=n>webPushesApi</span><span class=p>.</span><span class=nf>createSubscription</span><span class=p>(</span><span class=n>webPushSubscription</span><span class=p>)</span>
+
+<span class=c1>// Then</span>
+<span class=o>..</span><span class=p>.</span></code></pre></div><p>И, кажется, этот подход решает все проблемы, хотя бы частично:</p><div class="olist arabic"><ol class=arabic><li>Больше нет единого места, где перечислены все возможные версии API всех возможных ресурсов для каждой роли.
+Наверное, это наименьшая из проблем, но тем не менее меня классы с десятками полей пугают;</li><li>Общие методы, теперь можно складывать в ResourceSharedApi/ResourceCommonApi — тоже не идеально, но идеального решения, что делать с такими методами я в целом пока не придумал;</li><li>Чтобы протестировать авторизацию, теперь можно просто подсунуть левый токен в фабрику АПИ.
+Правда, с такой реализацией появляется дыра: теперь можно случайно создать админское АПИ с пользовательским токеном.
+Но я решил, что такие проблемы, скорее всего будут обнаруживаться и дебажиться моментально, и этот риск стоит того, чтобы избавиться от изобретения велосипеда каждый раз, когда мне надо протестировать авторизацию.</li></ol></div><p>Приносит ли этот подход новые проблемы?
+Как знать…​
+Время покажет:)</p></section><section class="doc-section level-1"><h2 id=_в_gradle_плагин_gitproperties_завезли_поддержку_git_worktrees><a class=link href=#_в_gradle_плагин_gitproperties_завезли_поддержку_git_worktrees>В Gradle-плагин GitProperties завезли поддержку git worktrees</a></h2><p>Помните, я <a href=https://t.me/ergonomic_code/585>писал</a>, как закостылять Gradle GitProperties, чтобы он работал с git worktrees?
+Так вот, больше этого делать не надо — поддержку git worktrees <a href=https://github.com/n0mer/gradle-git-properties/releases/tag/v.2.5.2>завезли</a> в сам плагин.</p><p>Правда, в git.properties пишутся всё равно данные корневой директории, а не той, в которой идёт сборка, но всё равно стало чуть лучше:)</p></section><section class="doc-section level-1"><h2 id=_отказ_от_kotest_matchers_в_пользу_shuold_методов><a class=link href=#_отказ_от_kotest_matchers_в_пользу_shuold_методов>Отказ от Kotest Matchers в пользу shuold*-методов</a></h2><p>Я в верификации вёрстки пытался активно использовать <a href=https://kotest.io/docs/assertions/custom-matchers.html>кастомные</a> и <a href=https://kotest.io/docs/assertions/composed-matchers.html>составные</a> Kotest Matchers.</p><p>И может я просто не познал их дзен, но для меня использование матчеров ведёт к потере контекста и мучительным сессиям дебага, когда что-то падает.</p><p>Например, если скрестить passwordMatcher и personMatcher из их же доки:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>data class</span> <span class=nc>Person</span><span class=p>(</span>
+    <span class=kd>val</span> <span class=py>name</span><span class=p>:</span> <span class=nc>String</span><span class=p>,</span>
+    <span class=kd>val</span> <span class=py>age</span><span class=p>:</span> <span class=nc>Int</span><span class=p>,</span>
+    <span class=kd>val</span> <span class=py>address</span><span class=p>:</span> <span class=nc>Address</span><span class=p>,</span>
+    <span class=kd>val</span> <span class=py>password</span><span class=p>:</span> <span class=nc>String</span>
+<span class=p>)</span>
+
+<span class=kd>data class</span> <span class=nc>Address</span><span class=p>(</span>
+    <span class=kd>val</span> <span class=py>city</span><span class=p>:</span> <span class=nc>String</span><span class=p>,</span>
+    <span class=kd>val</span> <span class=py>street</span><span class=p>:</span> <span class=nc>String</span><span class=p>,</span>
+    <span class=kd>val</span> <span class=py>buildingNumber</span><span class=p>:</span> <span class=nc>String</span><span class=p>,</span>
+<span class=p>)</span>
+
+<span class=k>fun</span> <span class=nf>nameMatcher</span><span class=p>(</span><span class=n>name</span><span class=p>:</span> <span class=nc>String</span><span class=p>)</span> <span class=p>=</span> <span class=nc>Matcher</span><span class=p>&lt;</span><span class=nc>String</span><span class=p>&gt;</span> <span class=p>{</span>
+    <span class=nc>MatcherResult</span><span class=p>(</span>
+        <span class=n>it</span> <span class=p>==</span> <span class=n>name</span><span class=p>,</span>
+        <span class=p>{</span> <span class=s>&#34;Name $it should be $name&#34;</span> <span class=p>},</span>
+        <span class=p>{</span> <span class=s>&#34;Name $it should not be $name&#34;</span> <span class=p>}</span>
+    <span class=p>)</span>
+<span class=p>}</span>
+
+<span class=k>fun</span> <span class=nf>ageMatcher</span><span class=p>(</span><span class=n>age</span><span class=p>:</span> <span class=nc>Int</span><span class=p>)</span> <span class=p>=</span> <span class=nc>Matcher</span><span class=p>&lt;</span><span class=nc>Int</span><span class=p>&gt;</span> <span class=p>{</span>
+    <span class=nc>MatcherResult</span><span class=p>(</span>
+        <span class=n>it</span> <span class=p>==</span> <span class=n>age</span><span class=p>,</span>
+        <span class=p>{</span> <span class=s>&#34;Age $it should be $age&#34;</span> <span class=p>},</span>
+        <span class=p>{</span> <span class=s>&#34;Age $it should not be $age&#34;</span> <span class=p>}</span>
+    <span class=p>)</span>
+<span class=p>}</span>
+
+<span class=kd>val</span> <span class=py>addressMatcher</span> <span class=p>=</span> <span class=nc>Matcher</span><span class=p>&lt;</span><span class=nc>Address</span><span class=p>&gt;</span> <span class=p>{</span>
+    <span class=nc>MatcherResult</span><span class=p>(</span>
+        <span class=n>it</span> <span class=p>==</span> <span class=nc>Address</span><span class=p>(</span><span class=s>&#34;Warsaw&#34;</span><span class=p>,</span> <span class=s>&#34;Test&#34;</span><span class=p>,</span> <span class=s>&#34;1/1&#34;</span><span class=p>),</span>
+        <span class=p>{</span> <span class=s>&#34;Address $it should be Test 1/1 Warsaw&#34;</span> <span class=p>},</span>
+        <span class=p>{</span> <span class=s>&#34;Address $it should not be Test 1/1 Warsaw&#34;</span> <span class=p>}</span>
+    <span class=p>)</span>
+<span class=p>}</span>
+
+<span class=kd>val</span> <span class=py>passwordMatcher</span> <span class=p>=</span> <span class=nc>Matcher</span><span class=p>.</span><span class=nf>all</span><span class=p>(</span>
+    <span class=nf>containADigit</span><span class=p>(),</span> <span class=nf>contain</span><span class=p>(</span><span class=nc>Regex</span><span class=p>(</span><span class=s>&#34;[a-z]&#34;</span><span class=p>)),</span> <span class=nf>contain</span><span class=p>(</span><span class=nc>Regex</span><span class=p>(</span><span class=s>&#34;[A-Z]&#34;</span><span class=p>))</span>
+<span class=p>)</span>
+
+<span class=k>fun</span> <span class=nf>personMatcher</span><span class=p>(</span><span class=n>name</span><span class=p>:</span> <span class=nc>String</span><span class=p>,</span> <span class=n>age</span><span class=p>:</span> <span class=nc>Int</span><span class=p>)</span> <span class=p>=</span> <span class=nc>Matcher</span><span class=p>.</span><span class=nf>all</span><span class=p>(</span>
+    <span class=nf>havingProperty</span><span class=p>(</span><span class=nf>nameMatcher</span><span class=p>(</span><span class=n>name</span><span class=p>)</span> <span class=n>to</span> <span class=nc>Person</span><span class=o>::</span><span class=n>name</span><span class=p>),</span>
+    <span class=nf>havingProperty</span><span class=p>(</span><span class=nf>ageMatcher</span><span class=p>(</span><span class=n>age</span><span class=p>)</span> <span class=n>to</span> <span class=nc>Person</span><span class=o>::</span><span class=n>age</span><span class=p>),</span>
+    <span class=nf>havingProperty</span><span class=p>(</span><span class=n>addressMatcher</span> <span class=n>to</span> <span class=nc>Person</span><span class=o>::</span><span class=n>address</span><span class=p>),</span>
+    <span class=nf>havingProperty</span><span class=p>(</span><span class=n>passwordMatcher</span> <span class=n>to</span> <span class=nc>Person</span><span class=o>::</span><span class=n>password</span><span class=p>)</span>
+<span class=p>)</span>
+
+<span class=k>fun</span> <span class=nc>Person</span><span class=p>.</span><span class=nf>shouldBePerson</span><span class=p>(</span><span class=n>name</span><span class=p>:</span> <span class=nc>String</span><span class=p>,</span> <span class=n>age</span><span class=p>:</span> <span class=nc>Int</span><span class=p>)</span> <span class=p>=</span> <span class=k>this</span> <span class=n>shouldBe</span> <span class=nf>personMatcher</span><span class=p>(</span><span class=n>name</span><span class=p>,</span> <span class=n>age</span><span class=p>)</span>
+
+<span class=k>fun</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+    <span class=nc>Person</span><span class=p>(</span><span class=s>&#34;John&#34;</span><span class=p>,</span> <span class=mi>21</span><span class=p>,</span> <span class=nc>Address</span><span class=p>(</span><span class=s>&#34;Warsaw&#34;</span><span class=p>,</span> <span class=s>&#34;Test&#34;</span><span class=p>,</span> <span class=s>&#34;1/1&#34;</span><span class=p>),</span> <span class=s>&#34;test&#34;</span><span class=p>).</span><span class=nf>shouldBePerson</span><span class=p>(</span><span class=s>&#34;John&#34;</span><span class=p>,</span> <span class=mi>21</span><span class=p>)</span>
+<span class=p>}</span></code></pre></div><p>и запустить, то ошибка будет такая:</p><div class=listing-block><pre class="rouge highlight"><code>Exception in thread &#34;main&#34; java.lang.AssertionError: &#34;test&#34; should contain at least one digit
+&#34;test&#34; should contain regex [A-Z]
+	at MyTest.shouldBePerson(RegisterSubscriptionApiTest.kt:117)
+	at MyTest.main(RegisterSubscriptionApiTest.kt:121)
+	at MyTest.main(RegisterSubscriptionApiTest.kt)</code></pre></div><p>Угадайте только по этим строкам — с каким полем проблема?
+Это прям не тривиально, на самом-то деле — стектрейс указывает на корневую строку <code>this shouldBe personMatcher(name, age)</code>.
+А в самом сообщении никакого указания на то, с каким полем проблема нет.</p><p>В этом случае можно, конечно, по строке test увидеть, что она идёт в поле password, но у меня бо́льшая часть данных генеряется рандомно и в коде не фигурирует.
+А ещё в дереве матчеров один тип матчера ("should contain at least one digit") может встречаться несколько раз и тогда по типу матчера раскрутить проблему тоже не получится.</p><p>В общем, пожрал я этот кактус год-полтора и при работе над пушами бросил.</p></section></article><br></section></div></main><script src=/js/app.js></script></body></html>
