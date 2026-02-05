@@ -5,7 +5,7 @@ draft: false
 tags:
 - fp
 - ergo-approach
-- whyfp
+- why-fp
 ---
 :source-highlighter: rouge
 :rouge-theme: github

@@ -281,6 +281,13 @@ table.layout th, table.layout td, div.layout table tbody tr td {
     border: 0px;
 }
 
+/* Asciidoctor: ensure frame/grid-none tables are truly borderless */
+table.frame-none.grid-none,
+table.frame-none.grid-none th,
+table.frame-none.grid-none td {
+    border: 0 !important;
+}
+
 /** Выступления **/
 
 .talks-table td,

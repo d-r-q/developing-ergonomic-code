@@ -4,7 +4,7 @@ date: 2022-12-22T08:25:37+07:00
 draft: false
 tags:
 - fp
-- whyfp
+- why-fp
 - code
 aliases:
 - /microposts/22/12/why-fp-simpler

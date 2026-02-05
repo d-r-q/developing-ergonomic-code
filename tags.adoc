@@ -1,3 +1,4 @@
+. ai
 . books
 . case
 . clean-arch
@@ -60,14 +61,15 @@
 . tdd
 . terminology
 . testcontainers
+. tips
 . tools
 . trainer-advisor 
-. type-driver-design
+. type-driven-design
 . why-ergo-approach
-. whyfp
-. whykotlin
-. whynojpa
-. whynomocks
+. why-fp
+. why-kotlin
+. why-no-jpa
+. why-no-mocks
 . why-no-microservices
 . why-no-side-effects
 . why-sdj
