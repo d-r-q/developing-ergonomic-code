@@ -1,0 +1,496 @@
+<!doctype html><html lang=ru-ru><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="Алексей Жидков"><meta name=description content="https://azhidkov.pro/"><meta property="og:site_name" content="Алексей Жидков"><meta property="og:title" content="
+  Мигрируем на Spring Boot 4. Что может пойти не так - Алексей Жидков
+"><meta property="og:description" content><meta property="og:type" content="website"><meta property="og:url" content="https://azhidkov.pro/posts/26/04/migrating-to-sb-4-p1/"><meta property="og:image" content="https://azhidkov.pro/"><meta name=twitter:card content="summary"><meta name=twitter:site content="https://azhidkov.pro/posts/26/04/migrating-to-sb-4-p1/"><meta name=twitter:image content="https://azhidkov.pro/"><base href=https://azhidkov.pro/posts/26/04/migrating-to-sb-4-p1/><title>Мигрируем на Spring Boot 4. Что может пойти не так - Алексей Жидков
+</title><link rel=canonical href=https://azhidkov.pro/posts/26/04/migrating-to-sb-4-p1/><link rel=stylesheet href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700"><link rel=stylesheet href=/css/normalize.min.css><link rel=stylesheet href=/css/style.min.css><link rel=stylesheet href=https://use.fontawesome.com/releases/v5.2.0/css/all.css><link rel=stylesheet href=https://azhidkov.pro/css/custom.css><link rel=stylesheet href=https://azhidkov.pro/css/github.css><link rel=stylesheet href=https://azhidkov.pro/css/JetBrains-Mono.css><link rel=icon type=image/png href=/images/favicon-32x32.png sizes=32x32><link rel=icon type=image/png href=/images/favicon-16x16.png sizes=16x16><link rel=alternate href=https://azhidkov.pro/index.xml type=application/rss+xml title="Алексей Жидков"><link href=https://azhidkov.pro/index.xml rel=feed type=application/rss+xml title="Алексей Жидков"><meta name=generator content="Hugo 0.137.0"></head><body><main class=wrapper><link rel=apple-touch-icon sizes=180x180 href=https://azhidkov.pro/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://azhidkov.pro/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://azhidkov.pro/favicon-16x16.png><link rel=manifest href=site.webmanifest><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><link href='https://fonts.googleapis.com/css?family=Roboto' rel=stylesheet type=text/css><nav class=navigation><section class=container style=height:100%><img src=https://azhidkov.pro/images/logo.svg class=logo>
+<a class=navigation-title href=/>Алексей Жидков
+</a><input type=checkbox id=menu-control>
+<label class="menu-mobile float-right" for=menu-control><span class="btn-mobile float-right">&#9776;</span><ul class=navigation-list><li class="navigation-item align-left"><a class=navigation-link href=https://ergowiki.azhidkov.pro>Эргономичный подход</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/talks>Выступления</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/posts>Блог</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/effects-diagram/landing>Диаграмма эффектов</a></li><li class="navigation-item align-left"><a class=navigation-link href=https://azhidkov.pro/>Контакты</a></li></ul></label></section></nav><div class=content><section class="container post"><article><header><h1 class=title>Мигрируем на Spring Boot 4. Что может пойти не так</h1><h2 class=date>April 8, 2026</h2></header><nav id=toc class=toc role=doc-toc><h2 id=toc-title>Содержание</h2><ol class="toc-list level-1"><li><a href=#_если_есть_spring_boot>Если есть Spring Boot …​</a><ol class="toc-list level-2"><li><a href=#_и_автоконфигурируемые_зависимости_без_стартеров>…​ и автоконфигурируемые зависимости без стартеров</a></li><li><a href=#_и_есть_явный_импорт_или_отключение_автоконфигураций>…​ и есть явный импорт или отключение автоконфигураций</a></li><li><a href=#_и_есть_упоминания_webserverapplicationcontext>…​ и есть упоминания WebServerApplicationContext</a></li><li><a href=#_и_есть_упоминания_servletwebserverfactory>…​ и есть упоминания ServletWebServerFactory</a></li></ol></li><li><a href=#_если_есть_jackson>Если есть Jackson</a><ol class="toc-list level-2"><li><a href=#_и_есть_примитивные_типы_в_классах_для_десериализации>…​ и есть примитивные типы в классах для десериализации</a></li><li><a href=#_и_есть_использование_классов_и_интерфейсов_jackson_помимо_аннотаций>…​ и есть использование классов и интерфейсов Jackson (помимо аннотаций)</a></li><li><a href=#_и_есть_конфигурация_objectmapper>…​ и есть конфигурация ObjectMapper</a></li><li><a href=#_и_есть_модуль_jackson_datatype_jsr310>…​ и есть модуль jackson-datatype-jsr310</a></li><li><a href=#_и_есть_конфигурация_mappingjackson2httpmessageconverter>…​ и есть конфигурация MappingJackson2HttpMessageConverter</a></li><li><a href=#_и_есть_конфигурация_jackson2jsonmessageconverter>…​ и есть конфигурация Jackson2JsonMessageConverter</a></li><li><a href=#_и_есть_работа_с_jsonnode>…​ и есть работа с JsonNode</a></li><li><a href=#_и_есть_наследники_stddeserializer_или_jsondeserializer>…​ и есть наследники StdDeserializer или JsonDeserializer</a></li><li><a href=#_и_наследники_stdserializer_или_jsonserializer>…​ и наследники StdSerializer или JsonSerializer</a></li><li><a href=#_и_есть_реализации_интерфейса_contextualdeserializer>…​ и есть реализации интерфейса ContextualDeserializer</a></li><li><a href=#_и_есть_наследники_typeidresolverbase>…​ и есть наследники TypeIdResolverBase</a></li><li><a href=#_и_есть_конфигурация_кодеков_webclientwebtestclient>…​ и есть конфигурация кодеков WebClient/WebTestClient</a></li><li><a href=#_и_есть_net_logstash_logbacklogstash_logback_encoder8_1_с_кастомными_декораторами>…​ и есть net.logstash.logback:logstash-logback-encoder:8.1 с кастомными декораторами</a></li><li><a href=#_бонус_полное_удаление_jackson_2_из_classpath_а_компилияции_в_gradle>Бонус: полное удаление Jackson 2 из classpath-а компилияции в Gradle</a></li></ol></li><li><a href=#_заключение>Заключение</a></li></ol></nav><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Следить за обновлениями блога можно в канале "Эргономичный код" в <a href=https://t.me/ergonomic_code>Telegram</a> и <a href=https://max.ru/join/W_YaWzkZX7uonLpy0cyMUUC1yL0qB-Um3lvSfACiWWY>Max</a>.</p></aside><p>Я недавно перевёл на Spring Boot 4 и выпустил в прод все свои основные проекты - три коммерческих и два опенсорсных.
+Общий объём этих проектов составляет ~80 тысяч строк Kotlin кода.
+И они используют 20 различных библиотек (включая модули Spring), версии которых управляются Spring Boot Dependency Management-ом.</p><p>В процессе этой миграции я собрал и решил порядка 50 проблем — существенно больше, чем я рассчитывал, исходя из опыта миграции на Spring Boot 3.</p><p>И так как описать все проблемы, с которыми я столкнулся, займёт у меня несуразный календарный код, я решил ограничиться только проблемами в технологиях, которые в Spring-проектах используются повсеместно — автоконфигурации и Jackson.</p><p>Я постарался структурировать текст так, чтобы полный набор заголовков разделов описывал условия — «что может пойти не так, если у вас есть Spring Boot и нет стартеров».
+А внутри каждого раздела я постарался привести:</p><div class="olist arabic"><ol class=arabic><li>симптомы, по которым вы можете распознать, что проблема есть;</li><li>код для Spring Boot 3, на котором проблема проявляется;</li><li>объяснение причин проблемы и способа её исправления;</li><li>код для Spring Boot 4, который уже работает корректно.</li></ol></div><section class="doc-section level-1"><h2 id=_если_есть_spring_boot><a class=link href=#_если_есть_spring_boot>Если есть Spring Boot …​</a></h2><section class="doc-section level-2"><h3 id=_и_автоконфигурируемые_зависимости_без_стартеров><a class=link href=#_и_автоконфигурируемые_зависимости_без_стартеров>…​ и автоконфигурируемые зависимости без стартеров</a></h3><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Смотрите также:</p><div class=ulist><ul><li><a href=https://spring.io/blog/2025/10/28/modularizing-spring-boot#how-to-migrate-to-spring-boot-4>Официальный гайд по миграции на Spring Boot 4 от Spring</a>;</li><li><a href=https://www.danvega.dev/blog/spring-boot-4-modularization>Гайд по исправлению проблем от Dan Vega — Spring developer advocate</a>;</li></ul></div></aside><p>Если у вас в проекте есть подключение зависимостей Flyway или Liquibase:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=nf>dependencies</span> <span class=p>{</span>
+    <span class=nf>implementation</span><span class=p>(</span><span class=s>&#34;org.flywaydb:flyway-core&#34;</span><span class=p>)</span>
+<span class=p>}</span></code></pre></div><p>, то после миграции на Spring Boot 4 вы можете столкнуться с проблемой, что эти модули больше не конфигурируются автоматически и миграции не запускаются при старте приложения.</p><p>Это обусловлено тем, что одной из главных фич Spring Boot 4 стала <a href=https://spring.io/blog/2025/10/28/modularizing-spring-boot>модуляризация</a> — вынесение классов автоконфигураций из <code>spring-boot-autoconfigure.jar</code> в jar-ники стартеров соответствующих модулей.</p><p>Решается эта проблема тривиально — заменой зависимости на нужный стартер:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=nf>dependencies</span> <span class=p>{</span>
+<span class=hll>    <span class=nf>implementation</span><span class=p>(</span><span class=s>&#34;org.springframework.boot:spring-boot-starter-flyway&#34;</span><span class=p>)</span>
+</span><span class=p>}</span></code></pre></div><p>Помимо Flyway и Liquibase также проблемы могут быть с:</p><div class=ulist><ul><li><code>com.google.code.gson:gson</code></li><li><code>jakarta.json.bind:jakarta.json.bind-api</code></li><li><code>com.hazelcast:hazelcast</code></li><li><code>com.sendgrid:sendgrid-java</code></li></ul></div></section><section class="doc-section level-2"><h3 id=_и_есть_явный_импорт_или_отключение_автоконфигураций><a class=link href=#_и_есть_явный_импорт_или_отключение_автоконфигураций>…​ и есть явный импорт или отключение автоконфигураций</a></h3><p>Кейс редкий, но если вы где-то явно отключали или, наоборот, импортировали автоконфигурации примерно так:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=k>import</span> <span class=nn>org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration</span>
+<span class=c1>// ...</span>
+
+<span class=nd>@SpringBootApplication</span><span class=p>(</span>
+    <span class=n>exclude</span> <span class=p>=</span> <span class=p>[</span>
+        <span class=nc>FlywayAutoConfiguration</span><span class=o>::</span><span class=k>class</span><span class=p>,</span> <span class=c1>// Отключаем Flyway для дефолтного датасорса</span>
+    <span class=p>]</span>
+<span class=p>)</span>
+<span class=kd>class</span> <span class=nc>MyApp</span></code></pre></div><p>, то эти места перестанут компилироваться с "Unresolved reference":</p><div class=listing-block><pre class="rouge highlight"><code>e: file:///home/my-project/src/main/kotlin/MyApp.kt:4:47 Unresolved reference &#39;flyway&#39;.</code></pre></div><p>Лечится это тоже просто — исправлением импорта.
+В большинстве случаев достаточно поменять <code>autoconfigure.&lt;module></code>, на <code>&lt;module>.autoconfigure</code>:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=hll><span class=k>import</span> <span class=nn>org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration</span>
+</span><span class=c1>// ...</span>
+
+<span class=nd>@SpringBootApplication</span><span class=p>(</span>
+    <span class=n>exclude</span> <span class=p>=</span> <span class=p>[</span>
+        <span class=nc>FlywayAutoConfiguration</span><span class=o>::</span><span class=k>class</span><span class=p>,</span> <span class=c1>// Отключаем Flyway для дефолтного датасорса</span>
+    <span class=p>]</span>
+<span class=p>)</span>
+<span class=kd>class</span> <span class=nc>MyApp</span></code></pre></div><p>Но с частью автоконфигураций могут быть небольшие сложности:</p><div class="olist arabic"><ol class=arabic><li>&lt;module> может быть составным — например, для Spring Data Jdbc надо поменять <code>autoconfigure.data.jdbc</code> на <code>data.jdbc.autoconfigure</code>;</li><li>ненужные вам автоконфигурации (например, <code>GsonAutoConfiguration</code>, <code>ErrorMvcAutoConfiguration</code>, <code>WebSocketServletAutoConfiguration</code>) пропадут из classpath-а вообще и их надо будет просто удалить;</li><li>для <code>WebMvcAutoConfiguration</code>, <code>DataJdbcRepositoriesAutoConfiguration</code>, <code>ServletWebServerFactoryAutoConfiguration</code> миграция нетиповая:<ol class=loweralpha type=a><li><code>org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration</code> → <code>org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration</code> — <code>web.servlet</code> меняется на <code>webmvc</code>;</li><li><code>org.springframework.boot.autoconfigure.data.jdbc.JdbcRepositoriesAutoConfiguration</code> → <code>org.springframework.boot.data.jdbc.autoconfigure.DataJdbcRepositoriesAutoConfiguration</code> — меняется ещё и имя класса;</li><li><code>org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration</code> → <code>org.springframework.boot.tomcat.autoconfigure.servlet.TomcatServletWebServerAutoConfiguration</code> и <code>org.springframework.boot.web.server.autoconfigure.servlet.ServletWebServerConfiguration</code> — класс разбили на два.</li></ol></li></ol></div><p>Также ссылка на класс автоконфигурации может быть нетипизированной.
+Например, в случае отключения через свойства:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@SpringBootTest</span><span class=p>(</span>
+    <span class=n>properties</span> <span class=p>=</span> <span class=p>[</span>
+        <span class=s>&#34;spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration&#34;</span><span class=p>],</span>
+<span class=p>)</span></code></pre></div><p>В этом случае компилятор вам не поможет, и у вас просто втихую начнёт запускаться соответствующий модуль с последствиями, которые могут оказаться сложно диагностируемыми.
+Поэтому перед завершением миграции, лучше явно поискать по проекту подстроку "org.springframework.boot.autoconfigure".</p></section><section class="doc-section level-2"><h3 id=_и_есть_упоминания_webserverapplicationcontext><a class=link href=#_и_есть_упоминания_webserverapplicationcontext>…​ и есть упоминания WebServerApplicationContext</a></h3><p>Если у вас в проекте есть Spring Boot и где-то упоминается <code>org.springframework.boot.web.context.WebServerApplicationContext</code>, например так:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=k>import</span> <span class=nn>org.springframework.boot.web.context.WebServerApplicationContext</span>
+
+<span class=kd>val</span> <span class=py>context</span> <span class=p>=</span> <span class=nc>SpringApplicationBuilder</span><span class=p>(</span><span class=o>..</span><span class=p>.)</span>
+                  <span class=p>.</span><span class=nf>web</span><span class=p>(</span><span class=nc>WebApplicationType</span><span class=p>.</span><span class=nc>SERVLET</span><span class=p>)</span>
+                  <span class=p>.</span><span class=nf>build</span><span class=p>()</span>
+                  <span class=p>.</span><span class=nf>run</span><span class=p>()</span> <span class=k>as</span> <span class=nc>WebServerApplicationContext</span>
+
+<span class=c1>// ...</span>
+<span class=k>abstract</span> <span class=kd>class</span> <span class=nc>MyBaseE2ETest</span> <span class=p>{</span>
+
+    <span class=k>protected</span> <span class=kd>val</span> <span class=py>apiBaseUri</span> <span class=p>=</span> <span class=s>&#34;http://localhost:${mainContext.webServer!!.port}/api&#34;</span>
+
+    <span class=c1>// ...</span>
+
+<span class=p>}</span></code></pre></div><p>, то этот код перестанет компилироваться с очередным <code>Unresolved reference 'WebServerApplicationContext'.</code>, потому что класс переехал в <code>org.springframework.boot.web.server.context</code>.
+Чинится заменой импорта:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=hll><span class=k>import</span> <span class=nn>org.springframework.boot.web.server.context.WebServerApplicationContext</span>
+</span>
+<span class=kd>val</span> <span class=py>context</span> <span class=p>=</span> <span class=nc>SpringApplicationBuilder</span><span class=p>(</span><span class=o>..</span><span class=p>.)</span>
+                  <span class=p>.</span><span class=nf>web</span><span class=p>(</span><span class=nc>WebApplicationType</span><span class=p>.</span><span class=nc>SERVLET</span><span class=p>)</span>
+                  <span class=p>.</span><span class=nf>build</span><span class=p>()</span>
+                  <span class=p>.</span><span class=nf>run</span><span class=p>()</span> <span class=k>as</span> <span class=nc>WebServerApplicationContext</span>
+
+<span class=c1>// ...</span>
+<span class=k>abstract</span> <span class=kd>class</span> <span class=nc>MyBaseE2ETest</span> <span class=p>{</span>
+
+    <span class=k>protected</span> <span class=kd>val</span> <span class=py>apiBaseUri</span> <span class=p>=</span> <span class=s>&#34;http://localhost:${mainContext.context.port}/api&#34;</span>
+
+    <span class=c1>// ...</span>
+
+<span class=p>}</span></code></pre></div></section><section class="doc-section level-2"><h3 id=_и_есть_упоминания_servletwebserverfactory><a class=link href=#_и_есть_упоминания_servletwebserverfactory>…​ и есть упоминания ServletWebServerFactory</a></h3><p>Наконец, проблема редкостных гурманов — если у вас в проекте есть упоминания <code>org.springframework.boot.web.servlet.server.ServletWebServerFactory</code>:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=k>import</span> <span class=nn>org.springframework.boot.web.servlet.server.ServletWebServerFactory</span>
+<span class=c1>// ...</span>
+
+<span class=nd>@TestConfiguration</span>
+<span class=kd>class</span> <span class=nc>FakeWebServerConf</span> <span class=p>{</span>
+
+    <span class=nd>@Bean</span>
+    <span class=k>fun</span> <span class=nf>servletWebServerFactory</span><span class=p>():</span> <span class=nc>ServletWebServerFactory</span> <span class=p>=</span>
+        <span class=nc>ServletWebServerFactory</span> <span class=p>{</span>
+            <span class=kd>object</span> <span class=err>: </span><span class=nc>WebServer</span> <span class=p>{</span>
+                <span class=k>override</span> <span class=k>fun</span> <span class=nf>start</span><span class=p>()</span> <span class=p>{}</span>
+
+                <span class=k>override</span> <span class=k>fun</span> <span class=nf>stop</span><span class=p>()</span> <span class=p>{}</span>
+
+                <span class=k>override</span> <span class=k>fun</span> <span class=nf>getPort</span><span class=p>():</span> <span class=nc>Int</span> <span class=p>{</span>
+                    <span class=k>return</span> <span class=mi>0</span>
+                <span class=p>}</span>
+
+            <span class=p>}</span>
+        <span class=p>}</span>
+
+<span class=p>}</span></code></pre></div><p>, то компиляция этого кода сломается с…​ ну, вы догадались — <code>Unresolved reference 'server'.</code>.
+Потому что и этот интерфейс в Spring Boot 4 тоже переехал — в <code>org.springframework.boot.web.server.servlet.ServletWebServerFactory</code>.
+Чинится заменой импорта:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=hll><span class=k>import</span> <span class=nn>org.springframework.boot.web.server.servlet.ServletWebServerFactory</span>
+</span><span class=c1>// ...</span></code></pre></div></section></section><section class="doc-section level-1"><h2 id=_если_есть_jackson><a class=link href=#_если_есть_jackson>Если есть Jackson</a></h2><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p><a href=https://spring.io/blog/2025/10/07/introducing-jackson-3-support-in-spring>Смотрите также официальный гайд по миграции на Jackson 3 от Spring</a>.</p></aside><p>Spring Boot 4 мигрировал на Jackson 3.
+Но так как практически все используют Jackson, а в новой версии API Jackson-а довольно сильно поменялось, то ребята из Spring заморочились и обеспечили поддержку Jaсkson 2 в Spring Boot 4 окружении.
+Поэтому в принципе вы можете пока отложить миграцию на Jackson 3 и все дальнейшие разделы (и в целом бо́льшая часть проблем миграции на Spring Boot 4, по моему опыту) для вас будут неактуальны.</p><p>Однако многие старые Spring API для Jackson 2 помечены как deprecated, и если у вас включён флаг компилятора <code>-Werror</code> (а он должен быть включён, на мой взгляд), то проект у вас перестанет компилироваться.
+Да и в любом случае копить предупреждения — это копить техдолг, который рано или поздно придётся отдавать.
+А отдавать его, имхо, лучше сразу по чуть-чуть, чем когда-то потом удваивать работу по очередному обновлению.
+Поэтому миграцию на Jackson 3 я бы порекомендовал всё-таки провести.</p><p>И если вы решите последовать моему совету, то у вас очень многое сможет пойти не так.</p><section class="doc-section level-2"><h3 id=_и_есть_примитивные_типы_в_классах_для_десериализации><a class=link href=#_и_есть_примитивные_типы_в_классах_для_десериализации>…​ и есть примитивные типы в классах для десериализации</a></h3><p>Если у вас во входящих DTO есть поля примитивных типов (int, double, boolean и т. д.), и в конфигурации <code>JsonMapper</code>/<code>ObjectMapper</code> <strong>явно</strong> не была выставлена фича <code>mapper.enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);</code>, то у вас могут начать падать тесты (или ещё хуже — сервис в проде) с</p><div class=listing-block><pre class="rouge highlight"><code>tools.jackson.databind.exc.MismatchedInputException: Cannot map `null` into type `int` (set DeserializationConfig.DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES to &#39;false&#39; to allow)</code></pre></div><p>, если клиенты вообще не присылают какие-то из этих полей, либо присылают в них <code>null</code>.</p><p>Быстрый способ вернуть прежнее поведение указан прямо в исключении — выставить <code>mapperBuilder.disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);</code>.</p><p>Но у такого решения могут быть неприятные последствия: если клиент опечатался в имени примитивного поля, то узнает он об этом не сразу, а спустя какое-то время, когда при чтении этого значения получит <code>0</code>, вместо того, значения, которое он записывал.
+Удачи в отладке, что называется.</p><p>Другой вариант решения этой проблемы — доработать клиентов, чтобы они всегда присылали значения в примитивные поля.
+Но он не всегда возможен: например, если среди клиентов есть мобильные приложения или сторонние интеграции, которые не так просто обновлять.</p><p>Поэтому я в своих проектах провёл тщательный аудит API на предмет примитивных полей, а потом ещё и тщательный аудит клиентов на предмет того, для каких полей они гарантированно присылают значения, а для каких — нет.</p><p>И для тех полей, где может не прийти значение, сделал локальные правки примерно такого вида:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>data class</span> <span class=nc>MyDto</span><span class=p>(</span>
+    <span class=kd>val</span> <span class=py>field</span><span class=p>:</span> <span class=nc>Int</span>
+<span class=p>)</span>
+
+<span class=kd>class</span> <span class=nc>MyMapper</span> <span class=p>{</span>
+
+    <span class=k>fun</span> <span class=nf>toDomain</span><span class=p>(</span><span class=n>dto</span><span class=p>:</span> <span class=nc>MyDto</span><span class=p>):</span> <span class=nc>MyDomain</span> <span class=p>{</span>
+        <span class=k>return</span> <span class=nc>MyDomain</span><span class=p>(</span><span class=n>field</span> <span class=p>=</span> <span class=n>dto</span><span class=p>.</span><span class=n>field</span><span class=p>)</span>
+    <span class=p>}</span>
+
+<span class=p>}</span></code></pre></div><p class=text-center>→</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>data class</span> <span class=nc>MyDto</span><span class=p>(</span>
+<span class=hll>    <span class=kd>val</span> <span class=py>field</span><span class=p>:</span> <span class=nc>Int</span><span class=p>?</span>
+</span><span class=p>)</span>
+<span class=n>мезазойского</span>
+<span class=kd>class</span> <span class=nc>MyMapper</span> <span class=p>{</span>
+
+    <span class=k>fun</span> <span class=nf>toDomain</span><span class=p>(</span><span class=n>dto</span><span class=p>:</span> <span class=nc>MyDto</span><span class=p>):</span> <span class=nc>MyDomain</span> <span class=p>{</span>
+<span class=hll>        <span class=k>return</span> <span class=nc>MyDomain</span><span class=p>(</span><span class=n>field</span> <span class=p>=</span> <span class=n>dto</span><span class=p>.</span><span class=n>field</span> <span class=o>?:</span> <span class=mi>0</span><span class=p>)</span>
+</span>    <span class=p>}</span>
+
+<span class=p>}</span></code></pre></div><div class=ulist><ul><li>в DTO поле пометил как nullable — <code>val field: Int?</code> (для Java — использовать тип-обёртку <code>Integer</code> вместо <code>int</code>);</li><li>проставил дефолтные 0/false при маппинге в доменную модель.</li></ul></div></section><section class="doc-section level-2"><h3 id=_и_есть_использование_классов_и_интерфейсов_jackson_помимо_аннотаций><a class=link href=#_и_есть_использование_классов_и_интерфейсов_jackson_помимо_аннотаций>…​ и есть использование классов и интерфейсов Jackson (помимо аннотаций)</a></h3><p>Если вы в коде где-то используете классы или интерфейсы Jackson (но не аннотации), то после миграции он у вас перестанет компилироваться с <code>Unresolved reference</code>.
+Потому что они переехали из <code>com.fasterxml.jackson.*</code> в <code>tools.jackson.*</code>.</p><p>Многие (не все) из этих проблем решаются простой заменой <code>com.fasterxml.jackson.*</code> на <code>tools.jackson.*</code>.</p><p>Также сто́ит отметить, что из <a href=https://github.com/FasterXML/jackson-future-ideas/wiki/JSTEP-1>соображений совместимости</a> пакет аннотации вроде <code>@JsonProperty</code> не изменился.</p></section><section class="doc-section level-2"><h3 id=_и_есть_конфигурация_objectmapper><a class=link href=#_и_есть_конфигурация_objectmapper>…​ и есть конфигурация ObjectMapper</a></h3><p>Если в вашем проекте есть Jackson и программная конфигурация <code>ObjectMapper</code>-ов, то при миграции потребуется несколько изменений.</p><p>Для начала сразу после миграции на Spring Boot 4 вы увидите предупреждения о депрекации метода:</p><div class=listing-block><pre class="rouge highlight"><code>fun enable(vararg p0: MapperFeature!): ObjectMapper!&#39; is deprecated. Deprecated in Java</code></pre></div><p>И вместо этого предлагают использовать <code>JsonMapper.builder().enable(…​)</code> — то есть перейти от изменения состояния готового <code>ObjectMapper</code> к конфигурированию builder-а, из которого потом строится <code>ObjectMapper</code>.
+Для того чтобы перейти от <code>ObjectMapper</code> к <code>JsonMapper.Builder</code> с такой же конфигурацией, нужно использовать метод <code>jsonMapper.rebuild()</code>.</p><p>После этого вам потребуется заменить несколько методов, а также несколько констант, которые были перемещены в другой класс.
+Вот список изменений в конфигурировании маппера, которые потребовались мне:</p><div class="table-block migration-map"><table class="frame-none grid-none"><col><col><thead><tr><th class="halign-left valign-top">Jackson 2</th><th class="halign-left valign-top">Jackson 3</th></tr></thead><tbody><tr><td class="halign-left valign-top"><p><code>objectMapper.registerModule(module)</code></p></td><td class="halign-left valign-top"><p><code>builder.addModule(module)</code></p></td></tr><tr><td class="halign-left valign-top"><p><code>mapper.configure(DeserializationFeature.xxx, false)</code></p></td><td class="halign-left valign-top"><p><code>builder.disable(DateTimeFeature.xxx)</code></p></td></tr><tr><td class="halign-left valign-top"><p><code>mapper.enable(MapperFeature.xxx);</code></p></td><td class="halign-left valign-top"><p><code>builder.enable(MapperFeature.xxx)</code></p></td></tr><tr><td class="halign-left valign-top"><p><code>SerializationFeature.WRITE_DATES_AS_TIMESTAMPS</code></p></td><td class="halign-left valign-top"><p><code>DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS</code></p></td></tr><tr><td class="halign-left valign-top"><p><code>SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS</code></p></td><td class="halign-left valign-top"><p><code>DateTimeFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS</code></p></td></tr><tr><td class="halign-left valign-top"><p><code>SerializationFeature.WRITE_DATES_WITH_CONTEXT_TIME_ZONE</code></p></td><td class="halign-left valign-top"><p><code>DateTimeFeature.WRITE_DATES_WITH_CONTEXT_TIME_ZONE</code></p></td></tr><tr><td class="halign-left valign-top"><p><code>DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE</code></p></td><td class="halign-left valign-top"><p><code>DateTimeFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE</code></p></td></tr><tr><td class="halign-left valign-top"><p><code>JsonParser.Feature.STRICT_DUPLICATE_DETECTION</code></p></td><td class="halign-left valign-top"><p><code>StreamReadFeature.STRICT_DUPLICATE_DETECTION</code></p></td></tr><tr><td class="halign-left valign-top"><p><code>JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION</code></p></td><td class="halign-left valign-top"><p><code>StreamWriteFeature.STRICT_DUPLICATE_DETECTION</code></p></td></tr></tbody></table></div><div class=listing-block><pre class="rouge highlight"><code data-lang=java><span class=kd>public</span> <span class=kd>class</span> <span class=nc>ObjectMapperJackson2Example</span> <span class=o>{</span>
+    <span class=kd>public</span> <span class=kd>static</span> <span class=nc>ObjectMapper</span> <span class=nf>createMapper</span><span class=o>()</span> <span class=o>{</span>
+        <span class=nc>SimpleModule</span> <span class=n>module</span> <span class=o>=</span> <span class=k>new</span> <span class=nc>SimpleModule</span><span class=o>(</span><span class=s>&#34;example&#34;</span><span class=o>);</span>
+
+        <span class=nc>ObjectMapper</span> <span class=n>mapper</span> <span class=o>=</span> <span class=k>new</span> <span class=nc>ObjectMapper</span><span class=o>();</span>
+        <span class=n>mapper</span><span class=o>.</span><span class=na>registerModule</span><span class=o>(</span><span class=n>module</span><span class=o>);</span>
+        <span class=n>mapper</span><span class=o>.</span><span class=na>disable</span><span class=o>(</span><span class=nc>SerializationFeature</span><span class=o>.</span><span class=na>WRITE_DATES_AS_TIMESTAMPS</span><span class=o>);</span>
+        <span class=n>mapper</span><span class=o>.</span><span class=na>disable</span><span class=o>(</span><span class=nc>SerializationFeature</span><span class=o>.</span><span class=na>WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS</span><span class=o>);</span>
+        <span class=n>mapper</span><span class=o>.</span><span class=na>disable</span><span class=o>(</span><span class=nc>SerializationFeature</span><span class=o>.</span><span class=na>WRITE_DATES_WITH_CONTEXT_TIME_ZONE</span><span class=o>);</span>
+        <span class=n>mapper</span><span class=o>.</span><span class=na>disable</span><span class=o>(</span><span class=nc>DeserializationFeature</span><span class=o>.</span><span class=na>ADJUST_DATES_TO_CONTEXT_TIME_ZONE</span><span class=o>);</span>
+        <span class=n>mapper</span><span class=o>.</span><span class=na>disable</span><span class=o>(</span><span class=nc>DeserializationFeature</span><span class=o>.</span><span class=na>FAIL_ON_UNKNOWN_PROPERTIES</span><span class=o>);</span>
+        <span class=n>mapper</span><span class=o>.</span><span class=na>disable</span><span class=o>(</span><span class=nc>SerializationFeature</span><span class=o>.</span><span class=na>FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS</span><span class=o>);</span>
+        <span class=n>mapper</span><span class=o>.</span><span class=na>enable</span><span class=o>(</span><span class=nc>MapperFeature</span><span class=o>.</span><span class=na>ACCEPT_CASE_INSENSITIVE_ENUMS</span><span class=o>);</span>
+        <span class=n>mapper</span><span class=o>.</span><span class=na>enable</span><span class=o>(</span><span class=nc>JsonParser</span><span class=o>.</span><span class=na>Feature</span><span class=o>.</span><span class=na>STRICT_DUPLICATE_DETECTION</span><span class=o>);</span>
+        <span class=n>mapper</span><span class=o>.</span><span class=na>enable</span><span class=o>(</span><span class=nc>JsonGenerator</span><span class=o>.</span><span class=na>Feature</span><span class=o>.</span><span class=na>STRICT_DUPLICATE_DETECTION</span><span class=o>);</span>
+        <span class=k>return</span> <span class=n>mapper</span><span class=o>;</span>
+    <span class=o>}</span>
+<span class=o>}</span></code></pre></div><p class=text-center>→</p><div class=listing-block><pre class="rouge highlight"><code data-lang=java><span class=kd>public</span> <span class=kd>class</span> <span class=nc>JsonMapperJackson3Example</span> <span class=o>{</span>
+    <span class=kd>public</span> <span class=kd>static</span> <span class=nc>JsonMapper</span> <span class=nf>createMapper</span><span class=o>()</span> <span class=o>{</span>
+        <span class=nc>SimpleModule</span> <span class=n>module</span> <span class=o>=</span> <span class=k>new</span> <span class=nc>SimpleModule</span><span class=o>(</span><span class=s>&#34;example&#34;</span><span class=o>);</span>
+
+        <span class=k>return</span> <span class=nc>JsonMapper</span><span class=o>.</span><span class=na>builder</span><span class=o>()</span>
+                <span class=o>.</span><span class=na>addModule</span><span class=o>(</span><span class=n>module</span><span class=o>)</span>
+                <span class=o>.</span><span class=na>disable</span><span class=o>(</span><span class=nc>DateTimeFeature</span><span class=o>.</span><span class=na>WRITE_DATES_AS_TIMESTAMPS</span><span class=o>)</span>
+                <span class=o>.</span><span class=na>disable</span><span class=o>(</span><span class=nc>DateTimeFeature</span><span class=o>.</span><span class=na>WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS</span><span class=o>)</span>
+                <span class=o>.</span><span class=na>disable</span><span class=o>(</span><span class=nc>DateTimeFeature</span><span class=o>.</span><span class=na>WRITE_DATES_WITH_CONTEXT_TIME_ZONE</span><span class=o>)</span>
+                <span class=o>.</span><span class=na>disable</span><span class=o>(</span><span class=nc>DateTimeFeature</span><span class=o>.</span><span class=na>ADJUST_DATES_TO_CONTEXT_TIME_ZONE</span><span class=o>)</span>
+                <span class=o>.</span><span class=na>disable</span><span class=o>(</span><span class=nc>DeserializationFeature</span><span class=o>.</span><span class=na>FAIL_ON_UNKNOWN_PROPERTIES</span><span class=o>)</span>
+                <span class=o>.</span><span class=na>disable</span><span class=o>(</span><span class=nc>SerializationFeature</span><span class=o>.</span><span class=na>FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS</span><span class=o>)</span>
+                <span class=o>.</span><span class=na>enable</span><span class=o>(</span><span class=nc>MapperFeature</span><span class=o>.</span><span class=na>ACCEPT_CASE_INSENSITIVE_ENUMS</span><span class=o>)</span>
+                <span class=o>.</span><span class=na>enable</span><span class=o>(</span><span class=nc>StreamReadFeature</span><span class=o>.</span><span class=na>STRICT_DUPLICATE_DETECTION</span><span class=o>)</span>
+                <span class=o>.</span><span class=na>enable</span><span class=o>(</span><span class=nc>StreamWriteFeature</span><span class=o>.</span><span class=na>STRICT_DUPLICATE_DETECTION</span><span class=o>)</span>
+                <span class=o>.</span><span class=na>build</span><span class=o>();</span>
+    <span class=o>}</span>
+<span class=o>}</span></code></pre></div><aside class="admonition-block note" role=note><h6 class="block-title label-only"><span class=title-label>Note:</span></h6><p>Напомню, это не исчерпывающий список изменений в API Jackson, а только те изменения в API, об которые я споткнулся в своих проектах.</p></aside></section><section class="doc-section level-2"><h3 id=_и_есть_модуль_jackson_datatype_jsr310><a class=link href=#_и_есть_модуль_jackson_datatype_jsr310>…​ и есть модуль jackson-datatype-jsr310</a></h3><p>Если у вас в проекте вручную подключался модуль <code>JavaTimeModule</code>:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@Configuration</span>
+<span class=kd>class</span> <span class=nc>MyObjectMapperConf</span> <span class=p>{</span>
+
+    <span class=nd>@Bean</span>
+    <span class=k>fun</span> <span class=nf>objectMapper</span><span class=p>():</span> <span class=nc>ObjectMapper</span> <span class=p>=</span>
+        <span class=nc>ObjectMapper</span><span class=p>()</span>
+            <span class=p>.</span><span class=nf>registerModule</span><span class=p>(</span><span class=nc>JavaTimeModule</span><span class=p>())</span>
+            <span class=c1>// ...</span>
+
+<span class=p>}</span></code></pre></div><p>, то после переезда на классы из <code>tools.jackson.*</code> компиляция у вас сломается с очередным Unresolved reference: <code>Unresolved reference 'JavaTimeModule'</code>.</p><p>Потому что поддержку Java Time API теперь встроили в <code>jackson-databind</code>, и отдельного модуля для этого больше не нужно.</p><p>Соответственно, зависимость <code>com.fasterxml.jackson.datatype:jackson-datatype-jsr310</code> и подключение этого модуля теперь надо удалить.</p></section><section class="doc-section level-2"><h3 id=_и_есть_конфигурация_mappingjackson2httpmessageconverter><a class=link href=#_и_есть_конфигурация_mappingjackson2httpmessageconverter>…​ и есть конфигурация MappingJackson2HttpMessageConverter</a></h3><p>Если у вас в проекте есть конфигурация или создание <code>MappingJackson2HttpMessageConverter</code>:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@Configuration</span>
+<span class=kd>class</span> <span class=nc>WebConfig</span> <span class=p>:</span> <span class=nc>WebMvcConfigurer</span> <span class=p>{</span>
+
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>extendMessageConverters</span><span class=p>(</span><span class=n>messageConverters</span><span class=p>:</span> <span class=nc>MutableList</span><span class=p>&lt;</span><span class=nc>HttpMessageConverter</span><span class=p>&lt;</span><span class=err>*</span><span class=p>&gt;&gt;)</span> <span class=p>{</span>
+        <span class=n>messageConverters</span><span class=p>.</span><span class=n>filterIsInstance</span><span class=p>&lt;</span><span class=nc>MappingJackson2HttpMessageConverter</span><span class=p>&gt;().</span><span class=nf>forEach</span> <span class=p>{</span> <span class=n>conv</span> <span class=p>-&gt;</span>
+            <span class=n>conv</span><span class=p>.</span><span class=n>objectMapper</span><span class=p>.</span><span class=nf>apply</span> <span class=p>{</span>
+                <span class=nf>applyDefaultApiConfiguration</span><span class=p>()</span>
+            <span class=p>}</span>
+        <span class=p>}</span>
+    <span class=p>}</span>
+
+<span class=p>}</span></code></pre></div><p>, то после миграции на Spring Boot 4 при компиляции начнут сыпаться предупреждения:</p><div class=listing-block><pre class="rouge highlight"><code>w: file:///home/my-project//src/main/kotlin/app/web/WebConfig.kt:11:8 &#39;class MappingJackson2HttpMessageConverter : AbstractJackson2HttpMessageConverter&#39; is deprecated. Deprecated in Java.
+w: file:///home/my-project//src/main/kotlin/app/web/WebConfig.kt:26:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Please add the &#39;@Deprecated&#39; annotation or suppress the diagnostic.</code></pre></div><p>Исправляется это переводом конфигурации JsonMapper-а для Spring MVC на бин нового типа <code>ServerHttpMessageConvertersCustomizer</code>:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@Configuration</span>
+<span class=nd>@Import</span><span class=p>(</span><span class=nc>BaseJsonMapperConf</span><span class=o>::</span><span class=k>class</span><span class=p>)</span>
+<span class=kd>class</span> <span class=nc>WebConfig</span> <span class=p>:</span> <span class=nc>WebMvcConfigurer</span> <span class=p>{</span>
+
+    <span class=nd>@Bean</span>
+    <span class=k>fun</span> <span class=nf>jacksonConverterCustomizer</span><span class=p>(</span><span class=n>jsonMapper</span><span class=p>:</span> <span class=nc>JsonMapper</span><span class=p>):</span> <span class=nc>ServerHttpMessageConvertersCustomizer</span> <span class=p>=</span>
+        <span class=nc>ServerHttpMessageConvertersCustomizer</span> <span class=p>{</span> <span class=n>builder</span> <span class=p>-&gt;</span>
+            <span class=n>builder</span><span class=p>.</span><span class=nf>withJsonConverter</span><span class=p>(</span><span class=nc>JacksonJsonHttpMessageConverter</span><span class=p>(</span><span class=n>jsonMapper</span><span class=p>))</span>
+        <span class=p>}</span>
+
+
+<span class=p>}</span></code></pre></div></section><section class="doc-section level-2"><h3 id=_и_есть_конфигурация_jackson2jsonmessageconverter><a class=link href=#_и_есть_конфигурация_jackson2jsonmessageconverter>…​ и есть конфигурация Jackson2JsonMessageConverter</a></h3><p>Если у вас в проекте есть RabbitMQ и конфигурация его <code>Jackson2JsonMessageConverter</code>:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@Configuration</span>
+<span class=kd>class</span> <span class=nc>RabbitMqConfig</span> <span class=p>{</span>
+
+    <span class=nd>@Bean</span>
+    <span class=k>fun</span> <span class=nf>producerJackson2MessageConverter</span><span class=p>(</span>
+        <span class=n>objectMapper</span><span class=p>:</span> <span class=nc>ObjectMapper</span><span class=p>,</span>
+    <span class=p>):</span> <span class=nc>Jackson2JsonMessageConverter</span> <span class=p>{</span>
+        <span class=k>return</span> <span class=nc>Jackson2JsonMessageConverter</span><span class=p>(</span><span class=n>objectMapper</span><span class=p>)</span>
+    <span class=p>}</span>
+
+<span class=p>}</span></code></pre></div><p>, то после миграции у вас посыпятся предупреждения компилятора:</p><div class=listing-block><pre class="rouge highlight"><code>w: file:///home/my-project/src/main/kotlin/rabbitmq/RabbitMQConfig.kt:12:8 &#39;class Jackson2JsonMessageConverter : AbstractJackson2MessageConverter&#39; is deprecated. Deprecated in Java.</code></pre></div><p>или ошибки компилятора, если вы уже убрали Jackson 2 из classpath-а:</p><div class=listing-block><pre class="rouge highlight"><code>e: file:///home/my-project/src/main/kotlin/rabbitmq/RabbitMQConfig.kt:38:16 None of the following candidates is applicable:
+constructor(vararg trustedPackages: String): Jackson2JsonMessageConverter
+constructor(jsonObjectMapper: ObjectMapper): Jackson2JsonMessageConverter
+constructor(jsonObjectMapper: ObjectMapper, vararg trustedPackages: String): Jackson2JsonMessageConverter</code></pre></div><p>Лечится это миграцией на новый класс <code>JacksonJsonMessageConverter</code> и передачей в него <code>JsonMapper</code> вместо <code>ObjectMapper</code>:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=nd>@Configuration</span>
+<span class=kd>class</span> <span class=nc>RabbitMqConfig</span> <span class=p>{</span>
+
+    <span class=nd>@Bean</span>
+    <span class=k>fun</span> <span class=nf>producerJacksonJsonMessageConverter</span><span class=p>(</span>
+        <span class=n>jsonMapper</span><span class=p>:</span> <span class=nc>JsonMapper</span>
+    <span class=p>):</span> <span class=nc>JacksonJsonMessageConverter</span> <span class=p>{</span>
+        <span class=k>return</span> <span class=nc>JacksonJsonMessageConverter</span><span class=p>(</span><span class=n>jsonMapper</span><span class=p>)</span>
+    <span class=p>}</span>
+
+<span class=p>}</span></code></pre></div></section><section class="doc-section level-2"><h3 id=_и_есть_работа_с_jsonnode><a class=link href=#_и_есть_работа_с_jsonnode>…​ и есть работа с JsonNode</a></h3><p>Если вы в проекте где-то работаете с <code>JsonNode</code>, например так:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=c1>// --- JsonNode DSL</span>
+
+<span class=k>fun</span> <span class=nf>obj</span><span class=p>(</span><span class=n>builder</span><span class=p>:</span> <span class=nc>ObjectBuilder</span><span class=p>.()</span> <span class=p>-&gt;</span> <span class=nc>Unit</span><span class=p>):</span> <span class=nc>ObjectNode</span> <span class=p>{</span>
+    <span class=kd>val</span> <span class=py>objectBuilder</span> <span class=p>=</span> <span class=nc>ObjectBuilder</span><span class=p>(</span><span class=n>jnf</span><span class=p>)</span>
+    <span class=n>objectBuilder</span><span class=p>.</span><span class=nf>builder</span><span class=p>()</span>
+    <span class=k>return</span> <span class=n>objectBuilder</span><span class=p>.</span><span class=n>objectNode</span>
+<span class=p>}</span>
+
+<span class=k>infix</span> <span class=k>fun</span> <span class=nc>String</span><span class=p>.</span><span class=nf>eq</span><span class=p>(</span><span class=n>value</span><span class=p>:</span> <span class=nc>JsonNode</span><span class=p>?)</span> <span class=p>{</span>
+    <span class=k>if</span> <span class=p>(</span><span class=n>value</span> <span class=p>!=</span> <span class=k>null</span><span class=p>)</span> <span class=p>{</span>
+        <span class=n>objectNode</span><span class=p>.</span><span class=k>set</span><span class=p>&lt;</span><span class=nc>JsonNode</span><span class=p>&gt;(</span><span class=k>this</span><span class=p>,</span> <span class=n>value</span><span class=p>)</span>
+    <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+        <span class=n>objectNode</span><span class=p>.</span><span class=nf>putNull</span><span class=p>(</span><span class=k>this</span><span class=p>)</span>
+    <span class=p>}</span>
+<span class=p>}</span>
+
+<span class=k>fun</span> <span class=nc>JsonNode</span><span class=p>.</span><span class=nf>asUUID</span><span class=p>():</span> <span class=nc>UUID</span><span class=p>?</span> <span class=p>{</span>
+    <span class=k>return</span> <span class=k>if</span> <span class=p>(</span><span class=n>isNull</span><span class=p>)</span> <span class=p>{</span>
+        <span class=k>null</span>
+    <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+        <span class=nc>UUID</span><span class=p>.</span><span class=nf>fromString</span><span class=p>(</span><span class=nf>asText</span><span class=p>())</span>
+    <span class=p>}</span>
+<span class=p>}</span>
+
+<span class=k>private</span> <span class=kd>val</span> <span class=py>jnf</span> <span class=p>=</span> <span class=nc>JsonNodeFactory</span><span class=p>(</span><span class=k>true</span><span class=p>)</span>
+
+<span class=c1>// --- DSL usage</span>
+
+<span class=kd>val</span> <span class=py>mapper</span> <span class=p>=</span> <span class=nc>ObjectMapper</span><span class=p>()</span>
+
+<span class=kd>val</span> <span class=py>obj</span> <span class=p>=</span> <span class=nf>obj</span> <span class=p>{</span>
+    <span class=s>&#34;field1&#34;</span> <span class=n>eq</span> <span class=s>&#34;value&#34;</span>
+<span class=p>}</span>
+
+<span class=n>mapper</span><span class=p>.</span><span class=nf>writeValueAsString</span><span class=p>(</span><span class=n>obj</span><span class=p>)</span></code></pre></div><p>, то после миграции на Jackson 3 у вас может вывалиться пара ошибок компиляции:</p><div class=listing-block><pre class="rouge highlight"><code>No type arguments expected for fun set(propertyName: String!, value: JsonNode!): ObjectNode!.
+Too many arguments for &#39;constructor(): JsonNodeFactory&#39;</code></pre></div><p>и рассыпуха предупреждений:</p><div class=listing-block><pre class="rouge highlight"><code>&#39;val text: String!&#39; is deprecated. Deprecated in Java.`/`warning: [deprecation] getText() in JsonParser has been deprecated</code></pre></div><p>Первая ошибка лечится удалением параметра типа.</p><p>Со второй сложнее.
+В Jackson 2 <code>JsonNodeFactory(true)</code> означал exact-режим для <code>BigDecimal</code>: фабрика не удаляла trailing zeroes.
+В Jackson 3 параметр из <code>JsonNodeFactory</code> убрали, а сама фабрика больше не управляет такой нормализацией.</p><p>Поэтому <code>JsonNodeFactory(true)</code> можно заменить на <code>JsonNodeFactory()</code>.</p><p>Если у вас был <code>JsonNodeFactory(false)</code> и вы рассчитывали на удаление trailing zeroes, прямого аналога на фабрике больше нет.
+Для нод, которые Jackson создаёт при чтении JSON через <code>readTree()</code>/<code>readValue&lt;JsonNode>()</code>, это поведение включается на маппере через <code>JsonNodeFeature.STRIP_TRAILING_BIGDECIMAL_ZEROES</code>.
+Для нод, которые вы создаёте руками через <code>JsonNodeFactory.numberNode(BigDecimal)</code>, нормализовать значение теперь нужно явно: <code>value.stripTrailingZeros()</code>.</p><p>И, наконец, предупреждения лечатся просто заменой вызова <code>text</code>/<code>getText()</code>/<code>asText()</code> на <code>string</code>/<code>getString()</code>/<code>asString()</code>.</p><p>После миграции код выше начинает выглядеть так:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=c1>// --- JsonNode DSL</span>
+
+<span class=k>fun</span> <span class=nf>obj</span><span class=p>(</span><span class=n>builder</span><span class=p>:</span> <span class=nc>ObjectBuilder</span><span class=p>.()</span> <span class=p>-&gt;</span> <span class=nc>Unit</span><span class=p>):</span> <span class=nc>ObjectNode</span> <span class=p>{</span>
+    <span class=kd>val</span> <span class=py>objectBuilder</span> <span class=p>=</span> <span class=nc>ObjectBuilder</span><span class=p>(</span><span class=n>jnf</span><span class=p>)</span>
+    <span class=n>objectBuilder</span><span class=p>.</span><span class=nf>builder</span><span class=p>()</span>
+    <span class=k>return</span> <span class=n>objectBuilder</span><span class=p>.</span><span class=n>objectNode</span>
+<span class=p>}</span>
+
+<span class=k>infix</span> <span class=k>fun</span> <span class=nc>String</span><span class=p>.</span><span class=nf>eq</span><span class=p>(</span><span class=n>value</span><span class=p>:</span> <span class=nc>JsonNode</span><span class=p>?)</span> <span class=p>{</span>
+    <span class=k>if</span> <span class=p>(</span><span class=n>value</span> <span class=p>!=</span> <span class=k>null</span><span class=p>)</span> <span class=p>{</span>
+<span class=hll>        <span class=n>objectNode</span><span class=p>.</span><span class=k>set</span><span class=p>(</span><span class=k>this</span><span class=p>,</span> <span class=n>value</span><span class=p>)</span>
+</span>    <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+        <span class=n>objectNode</span><span class=p>.</span><span class=nf>putNull</span><span class=p>(</span><span class=k>this</span><span class=p>)</span>
+    <span class=p>}</span>
+<span class=p>}</span>
+
+<span class=k>fun</span> <span class=nc>JsonNode</span><span class=p>.</span><span class=nf>asUUID</span><span class=p>():</span> <span class=nc>UUID</span><span class=p>?</span> <span class=p>{</span>
+    <span class=k>return</span> <span class=k>if</span> <span class=p>(</span><span class=n>isNull</span><span class=p>)</span> <span class=p>{</span>
+        <span class=k>null</span>
+    <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+<span class=hll>        <span class=nc>UUID</span><span class=p>.</span><span class=nf>fromString</span><span class=p>(</span><span class=nf>asString</span><span class=p>())</span>
+</span>    <span class=p>}</span>
+<span class=p>}</span>
+
+<span class=hll><span class=k>private</span> <span class=kd>val</span> <span class=py>jnf</span> <span class=p>=</span> <span class=nc>JsonNodeFactory</span><span class=p>()</span>
+</span>
+<span class=c1>// --- DSL usage</span>
+
+<span class=hll><span class=kd>val</span> <span class=py>mapper</span> <span class=p>=</span> <span class=nc>JsonMapper</span><span class=p>.</span><span class=nf>builder</span><span class=p>()</span>
+</span><span class=hll>                <span class=p>.</span><span class=nf>build</span><span class=p>()</span>
+</span>
+<span class=kd>val</span> <span class=py>obj</span> <span class=p>=</span> <span class=nf>obj</span> <span class=p>{</span>
+    <span class=s>&#34;field1&#34;</span> <span class=n>eq</span> <span class=s>&#34;value&#34;</span>
+<span class=p>}</span>
+
+<span class=n>mapper</span><span class=p>.</span><span class=nf>writeValueAsString</span><span class=p>(</span><span class=n>obj</span><span class=p>)</span></code></pre></div></section><section class="doc-section level-2"><h3 id=_и_есть_наследники_stddeserializer_или_jsondeserializer><a class=link href=#_и_есть_наследники_stddeserializer_или_jsondeserializer>…​ и есть наследники StdDeserializer или JsonDeserializer</a></h3><p>Если у вас в проекте есть кастомные десериализаторы:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>HhMmSsDurationDeserializer</span> <span class=p>:</span> <span class=nc>StdDeserializer</span><span class=p>&lt;</span><span class=nc>Duration</span><span class=p>&gt;(</span><span class=nc>Duration</span><span class=o>::</span><span class=k>class</span><span class=p>.</span><span class=n>java</span><span class=p>)</span> <span class=p>{</span>
+
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>deserialize</span><span class=p>(</span><span class=n>p0</span><span class=p>:</span> <span class=nc>JsonParser</span><span class=p>,</span> <span class=n>p1</span><span class=p>:</span> <span class=nc>DeserializationContext</span><span class=p>?):</span> <span class=nc>Duration</span><span class=p>?</span> <span class=p>{</span>
+        <span class=k>return</span> <span class=nc>Duration</span><span class=p>.</span><span class=nf>between</span><span class=p>(</span><span class=nc>LocalTime</span><span class=p>.</span><span class=nc>MIN</span><span class=p>,</span> <span class=nc>LocalTime</span><span class=p>.</span><span class=nf>parse</span><span class=p>(</span><span class=n>p0</span><span class=p>.</span><span class=n>text</span><span class=p>))</span>
+    <span class=p>}</span>
+
+<span class=p>}</span></code></pre></div><p>, то вы снова можете столкнуться с предупреждениями о депрекации <code>text</code>/<code>getText()</code>, но уже на <code>JsonParser</code>:</p><div class=listing-block><pre class="rouge highlight"><code>w: file:///home/my-project/src/main/kotlin/jackson/HhMmSsDurationDeserializer.kt:12:67 &#39;val text: String!&#39; is deprecated. Deprecated in Java.</code></pre></div><p>Лечится аналогично переходом на <code>string</code>/<code>getString()</code>:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>HhMmSsDurationDeserializer</span> <span class=p>:</span> <span class=nc>StdDeserializer</span><span class=p>&lt;</span><span class=nc>Duration</span><span class=p>&gt;(</span><span class=nc>Duration</span><span class=o>::</span><span class=k>class</span><span class=p>.</span><span class=n>java</span><span class=p>)</span> <span class=p>{</span>
+
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>deserialize</span><span class=p>(</span><span class=n>p0</span><span class=p>:</span> <span class=nc>JsonParser</span><span class=p>,</span> <span class=n>p1</span><span class=p>:</span> <span class=nc>DeserializationContext</span><span class=p>?):</span> <span class=nc>Duration</span><span class=p>?</span> <span class=p>{</span>
+<span class=hll>        <span class=k>return</span> <span class=nc>Duration</span><span class=p>.</span><span class=nf>between</span><span class=p>(</span><span class=nc>LocalTime</span><span class=p>.</span><span class=nc>MIN</span><span class=p>,</span> <span class=nc>LocalTime</span><span class=p>.</span><span class=nf>parse</span><span class=p>(</span><span class=n>p0</span><span class=p>.</span><span class=n>string</span><span class=p>))</span>
+</span>    <span class=p>}</span>
+
+<span class=p>}</span></code></pre></div><p>А если вы где-то используете напрямую <code>JsonDeserializer</code>:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>MimeTypeJsonDeserializer</span> <span class=p>:</span> <span class=nc>JsonDeserializer</span><span class=p>&lt;</span><span class=nc>MimeType</span><span class=p>&gt;()</span> <span class=p>{</span>
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>deserialize</span><span class=p>(</span><span class=n>p</span><span class=p>:</span> <span class=nc>JsonParser</span><span class=p>,</span> <span class=n>ctxt</span><span class=p>:</span> <span class=nc>DeserializationContext</span><span class=p>):</span> <span class=nc>MimeType</span> <span class=p>=</span>
+        <span class=nc>MimeType</span><span class=p>.</span><span class=nf>valueOf</span><span class=p>(</span><span class=n>p</span><span class=p>.</span><span class=n>valueAsString</span><span class=p>)</span>
+<span class=p>}</span></code></pre></div><p>, то будет уже пара ошибок компиляции из-за очередного переименования:</p><div class=listing-block><pre class="rouge highlight"><code>e: file:///home/my-project/src/main/kotlin//jackson/MimeTypeJsonDeserializer.kt:17:34 Unresolved reference &#39;JsonDeserializer&#39;.
+e: file:///home/my-project/src/main/kotlin//jackson/MimeTypeJsonDeserializer.kt:18:5 &#39;deserialize&#39; overrides nothing.</code></pre></div><p>Лечится переходом на <code>ValueDeserializer</code>:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=hll><span class=kd>class</span> <span class=nc>MimeTypeJsonDeserializer</span> <span class=p>:</span> <span class=nc>ValueDeserializer</span><span class=p>&lt;</span><span class=nc>MimeType</span><span class=p>&gt;()</span> <span class=p>{</span>
+</span>    <span class=k>override</span> <span class=k>fun</span> <span class=nf>deserialize</span><span class=p>(</span><span class=n>p</span><span class=p>:</span> <span class=nc>JsonParser</span><span class=p>,</span> <span class=n>ctxt</span><span class=p>:</span> <span class=nc>DeserializationContext</span><span class=p>):</span> <span class=nc>MimeType</span> <span class=p>=</span>
+        <span class=nc>MimeType</span><span class=p>.</span><span class=nf>valueOf</span><span class=p>(</span><span class=n>p</span><span class=p>.</span><span class=n>valueAsString</span><span class=p>)</span>
+<span class=p>}</span></code></pre></div></section><section class="doc-section level-2"><h3 id=_и_наследники_stdserializer_или_jsonserializer><a class=link href=#_и_наследники_stdserializer_или_jsonserializer>…​ и наследники StdSerializer или JsonSerializer</a></h3><p>Если у вас в проекте есть кастомные сериализаторы:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>HhMmSsDurationSerializer</span> <span class=p>:</span> <span class=nc>StdSerializer</span><span class=p>&lt;</span><span class=nc>Duration</span><span class=p>&gt;(</span><span class=nc>Duration</span><span class=o>::</span><span class=k>class</span><span class=p>.</span><span class=n>java</span><span class=p>)</span> <span class=p>{</span>
+
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>serialize</span><span class=p>(</span><span class=n>p0</span><span class=p>:</span> <span class=nc>Duration</span><span class=p>,</span> <span class=n>p1</span><span class=p>:</span> <span class=nc>JsonGenerator</span><span class=p>,</span> <span class=n>p2</span><span class=p>:</span> <span class=nc>SerializerProvider</span><span class=p>)</span> <span class=p>{</span>
+        <span class=n>p1</span><span class=p>.</span><span class=nf>writeString</span><span class=p>(</span><span class=nf>convertToHhMmSs</span><span class=p>(</span><span class=n>p0</span><span class=p>))</span>
+    <span class=p>}</span>
+
+<span class=p>}</span></code></pre></div><p>, то вас ждёт по три ошибки компиляции на каждый:</p><div class=listing-block><pre class="rouge highlight"><code>e: file:///home/my-project/src/main/kotlin/jackson/HhMmSsDurationSerializer.kt:7:1 Class &#39;HhMmSsDurationSerializer&#39; is not abstract and does not implement abstract base class member &#39;serialize&#39;.
+e: file:///home/my-project/src/main/kotlin/jackson/HhMmSsDurationSerializer.kt:9:5 &#39;serialize&#39; overrides nothing. Potential signatures for overriding:
+fun serialize(value: Duration!, gen: JsonGenerator!, provider: SerializationContext!): Unit
+e: file:///home/my-project/src/main/kotlin/jackson/HhMmSsDurationSerializer.kt:9:65 Unresolved reference &#39;SerializerProvider&#39;.</code></pre></div><p>А если вы ещё и используете напрямую <code>JsonSerializer</code>:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>MimeTypeJsonSerializer</span> <span class=p>:</span> <span class=nc>JsonSerializer</span><span class=p>&lt;</span><span class=nc>MimeType</span><span class=p>&gt;()</span> <span class=p>{</span>
+
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>serialize</span><span class=p>(</span><span class=n>value</span><span class=p>:</span> <span class=nc>MimeType</span><span class=p>,</span> <span class=n>gen</span><span class=p>:</span> <span class=nc>JsonGenerator</span><span class=p>,</span> <span class=n>serializers</span><span class=p>:</span> <span class=nc>SerializerProvider</span><span class=p>)</span> <span class=p>{</span>
+        <span class=n>gen</span><span class=p>.</span><span class=nf>writeString</span><span class=p>(</span><span class=n>value</span><span class=p>.</span><span class=nf>toString</span><span class=p>())</span>
+    <span class=p>}</span>
+
+<span class=p>}</span></code></pre></div><p>, то добавится ещё и</p><div class=listing-block><pre class="rouge highlight"><code>e: file:///home/my-project/jackson/MimeTypeJson.kt:11:32 Unresolved reference &#39;JsonSerializer&#39;.`</code></pre></div><p>У первых трёх ошибок одна причина — <code>SerializerProvider</code> в Jackson 3 переименовали в <code>SerializationContext</code>.</p><p>А у четвёртой — аналогично десериализаторам — <code>JsonSerializer</code> в Jackson 3 переименовали в <code>ValueSerializer</code>.</p><p>В простых сериализаторах, как в примерах выше, и то и другое обычно лечится заменой типов в сигнатуре:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>HhMmSsDurationSerializer</span> <span class=p>:</span> <span class=nc>StdSerializer</span><span class=p>&lt;</span><span class=nc>Duration</span><span class=p>&gt;(</span><span class=nc>Duration</span><span class=o>::</span><span class=k>class</span><span class=p>.</span><span class=n>java</span><span class=p>)</span> <span class=p>{</span>
+
+<span class=hll>    <span class=k>override</span> <span class=k>fun</span> <span class=nf>serialize</span><span class=p>(</span><span class=n>p0</span><span class=p>:</span> <span class=nc>Duration</span><span class=p>,</span> <span class=n>p1</span><span class=p>:</span> <span class=nc>JsonGenerator</span><span class=p>,</span> <span class=n>p2</span><span class=p>:</span> <span class=nc>SerializationContext</span><span class=p>)</span> <span class=p>{</span>
+</span>        <span class=n>p1</span><span class=p>.</span><span class=nf>writeString</span><span class=p>(</span><span class=nf>convertToHhMmSs</span><span class=p>(</span><span class=n>p0</span><span class=p>))</span>
+    <span class=p>}</span>
+
+<span class=p>}</span>
+
+<span class=hll><span class=kd>class</span> <span class=nc>MimeTypeJsonSerializer</span> <span class=p>:</span> <span class=nc>ValueSerializer</span><span class=p>&lt;</span><span class=nc>MimeType</span><span class=p>&gt;()</span> <span class=p>{</span>
+</span>
+<span class=hll>    <span class=k>override</span> <span class=k>fun</span> <span class=nf>serialize</span><span class=p>(</span><span class=n>value</span><span class=p>:</span> <span class=nc>MimeType</span><span class=p>,</span> <span class=n>gen</span><span class=p>:</span> <span class=nc>JsonGenerator</span><span class=p>,</span> <span class=n>context</span><span class=p>:</span> <span class=nc>SerializationContext</span><span class=p>)</span> <span class=p>{</span>
+</span>        <span class=n>gen</span><span class=p>.</span><span class=nf>writeString</span><span class=p>(</span><span class=n>value</span><span class=p>.</span><span class=nf>toString</span><span class=p>())</span>
+    <span class=p>}</span>
+
+<span class=p>}</span></code></pre></div></section><section class="doc-section level-2"><h3 id=_и_есть_реализации_интерфейса_contextualdeserializer><a class=link href=#_и_есть_реализации_интерфейса_contextualdeserializer>…​ и есть реализации интерфейса ContextualDeserializer</a></h3><p>Если у вас в проекте есть реализации <code>ContextualDeserializer</code>-а:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>RefDeserializer</span><span class=p>(</span>
+    <span class=k>private</span> <span class=kd>var</span> <span class=py>type</span><span class=p>:</span> <span class=nc>JavaType</span> <span class=p>=</span> <span class=nc>TypeFactory</span><span class=p>.</span><span class=nf>unknownType</span><span class=p>()</span>
+<span class=p>)</span> <span class=p>:</span> <span class=nc>JsonDeserializer</span><span class=p>&lt;</span><span class=nc>Ref</span><span class=p>&lt;</span><span class=err>*</span><span class=p>,</span> <span class=err>*</span><span class=p>&gt;&gt;(),</span> <span class=nc>ContextualDeserializer</span> <span class=p>{</span>
+
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>deserialize</span><span class=p>(</span><span class=n>parser</span><span class=p>:</span> <span class=nc>JsonParser</span><span class=p>,</span> <span class=n>context</span><span class=p>:</span> <span class=nc>DeserializationContext</span><span class=p>):</span> <span class=nc>Ref</span><span class=p>&lt;</span><span class=err>*</span><span class=p>,</span> <span class=err>*</span><span class=p>&gt;?</span> <span class=p>{</span>
+        <span class=kd>val</span> <span class=py>node</span> <span class=p>=</span> <span class=n>parser</span><span class=p>.</span><span class=n>codec</span><span class=p>.</span><span class=n>readTree</span><span class=p>&lt;</span><span class=nc>JsonNode</span><span class=p>&gt;(</span><span class=n>parser</span><span class=p>)</span>
+
+        <span class=o>..</span><span class=p>.</span>
+    <span class=p>}</span>
+
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>createContextual</span><span class=p>(</span><span class=n>ctx</span><span class=p>:</span> <span class=nc>DeserializationContext</span><span class=p>,</span> <span class=n>property</span><span class=p>:</span> <span class=nc>BeanProperty</span><span class=p>?):</span> <span class=nc>JsonDeserializer</span><span class=p>&lt;</span><span class=err>*</span><span class=p>&gt;</span> <span class=p>{</span>
+        <span class=o>..</span><span class=p>.</span>
+    <span class=p>}</span></code></pre></div><p>, то при переходе вы получите несколько ошибок компиляции:</p><div class=listing-block><pre class="rouge highlight"><code>e: file:///home/my-project/src/main/kotlin/jackson/RefDeserializer.kt:14:36 Unresolved reference &#39;ContextualDeserializer&#39;.
+e: file:///home/my-project/src/main/kotlin/jackson/RefDeserializer.kt:17:27 Unresolved reference &#39;codec&#39;.
+e: file:///home/my-project/src/main/kotlin/jackson/RefDeserializer.kt:33:5 &#39;createContextual&#39; overrides nothing.
+
+// плюс ещё ошибки, связанные с `JsonDeserializer` в моём случае
+// плюс ещё, наведённые ошибки</code></pre></div><p>В Jackson 3 <code>ContextualDeserializer</code> вмёржили в <code>ValueDeserializer</code> (бывший <code>JsonDeserializer</code>), а у <code>JsonParser</code> хоть убрали поле <code>codec</code>, но ещё в версии 2.17 добавили аналогичный метод <code>readValueAsTree</code>.
+Поэтому фиксятся эти проблемы без проблем, прошу прощения за каламбур:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>RefDeserializer</span><span class=p>(</span>
+    <span class=k>private</span> <span class=kd>var</span> <span class=py>type</span><span class=p>:</span> <span class=nc>JavaType</span> <span class=p>=</span> <span class=nc>TypeFactory</span><span class=p>.</span><span class=nf>unknownType</span><span class=p>()</span>
+<span class=hll><span class=p>)</span> <span class=p>:</span> <span class=nc>ValueDeserializer</span><span class=p>&lt;</span><span class=nc>Ref</span><span class=p>&lt;</span><span class=err>*</span><span class=p>,</span> <span class=err>*</span><span class=p>&gt;&gt;()</span> <span class=p>{</span>
+</span>
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>deserialize</span><span class=p>(</span><span class=n>parser</span><span class=p>:</span> <span class=nc>JsonParser</span><span class=p>,</span> <span class=n>context</span><span class=p>:</span> <span class=nc>DeserializationContext</span><span class=p>):</span> <span class=nc>Ref</span><span class=p>&lt;</span><span class=err>*</span><span class=p>,</span> <span class=err>*</span><span class=p>&gt;?</span> <span class=p>{</span>
+<span class=hll>        <span class=kd>val</span> <span class=py>node</span> <span class=p>=</span> <span class=n>parser</span><span class=p>.</span><span class=n>readValueAsTree</span><span class=p>&lt;</span><span class=nc>JsonNode</span><span class=p>&gt;()</span>
+</span>
+        <span class=o>..</span><span class=p>.</span>
+    <span class=p>}</span>
+
+<span class=hll>    <span class=k>override</span> <span class=k>fun</span> <span class=nf>createContextual</span><span class=p>(</span><span class=n>ctx</span><span class=p>:</span> <span class=nc>DeserializationContext</span><span class=p>,</span> <span class=n>property</span><span class=p>:</span> <span class=nc>BeanProperty</span><span class=p>?):</span> <span class=nc>ValueDeserializer</span><span class=p>&lt;</span><span class=err>*</span><span class=p>&gt;</span> <span class=p>{</span>
+</span>        <span class=o>..</span><span class=p>.</span>
+    <span class=p>}</span></code></pre></div></section><section class="doc-section level-2"><h3 id=_и_есть_наследники_typeidresolverbase><a class=link href=#_и_есть_наследники_typeidresolverbase>…​ и есть наследники TypeIdResolverBase</a></h3><p>Если у вас в проекте есть кастомная полиморфная сериализация или десериализация через <code>TypeIdResolverBase</code>:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>DomainEventTypeResolver</span> <span class=p>:</span> <span class=nc>TypeIdResolverBase</span><span class=p>()</span> <span class=p>{</span>
+
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>idFromValue</span><span class=p>(</span><span class=n>value</span><span class=p>:</span> <span class=nc>Any</span><span class=p>):</span> <span class=nc>String</span> <span class=p>=</span>
+        <span class=nf>idFromValueAndType</span><span class=p>(</span><span class=n>value</span><span class=p>,</span> <span class=n>value</span><span class=o>::</span><span class=k>class</span><span class=p>.</span><span class=n>java</span><span class=p>)</span>
+
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>idFromValueAndType</span><span class=p>(</span>
+        <span class=n>value</span><span class=p>:</span> <span class=nc>Any</span><span class=p>,</span>
+        <span class=n>suggestedType</span><span class=p>:</span> <span class=nc>Class</span><span class=p>&lt;</span><span class=err>*</span><span class=p>&gt;</span>
+    <span class=p>):</span> <span class=nc>String</span> <span class=p>=</span>
+        <span class=n>value</span><span class=o>::</span><span class=k>class</span><span class=p>.</span><span class=n>java</span><span class=p>.</span><span class=n>name</span>
+
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>typeFromId</span><span class=p>(</span><span class=n>context</span><span class=p>:</span> <span class=nc>DatabindContext</span><span class=p>,</span> <span class=n>id</span><span class=p>:</span> <span class=nc>String</span><span class=p>):</span> <span class=nc>JavaType</span> <span class=p>{</span>
+        <span class=o>..</span><span class=p>.</span>
+    <span class=p>}</span>
+
+<span class=p>}</span></code></pre></div><p>, то при переходе на Jackson 3 код перестанет компилироваться с парой ошибок:</p><div class=listing-block><pre class="rouge highlight"><code>e: file:///home/my-project/src/main/kotlin/jackson/DomainEventTypeResolver.kt:12:5 &#39;idFromValue&#39; overrides nothing.
+e: file:///home/my-project/src/main/kotlin/jackson/DomainEventTypeResolver.kt:15:5 &#39;idFromValueAndType&#39; overrides nothing.</code></pre></div><p>Причина в том, что в Jackson 3 в методы получения id добавили <code>DatabindContext</code>.</p><p>В моём случае реализация была тривиальной, и контекст в логике сериализации был не нужен, поэтому миграция свелась к:</p><div class=ulist><ul><li>добавлению нового параметра;</li><li>прокидыванию его дальше из <code>idFromValue</code> в <code>idFromValueAndType</code>.</li></ul></div><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>DomainEventTypeResolver</span> <span class=p>:</span> <span class=nc>TypeIdResolverBase</span><span class=p>()</span> <span class=p>{</span>
+
+<span class=hll>    <span class=k>override</span> <span class=k>fun</span> <span class=nf>idFromValue</span><span class=p>(</span><span class=n>ctxt</span><span class=p>:</span> <span class=nc>DatabindContext</span><span class=p>?,</span> <span class=n>value</span><span class=p>:</span> <span class=nc>Any</span><span class=p>):</span> <span class=nc>String</span> <span class=p>=</span>
+</span><span class=hll>        <span class=nf>idFromValueAndType</span><span class=p>(</span><span class=n>ctxt</span><span class=p>,</span> <span class=n>value</span><span class=p>,</span> <span class=n>value</span><span class=o>::</span><span class=k>class</span><span class=p>.</span><span class=n>java</span><span class=p>)</span>
+</span>
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>idFromValueAndType</span><span class=p>(</span>
+<span class=hll>        <span class=n>ctxt</span><span class=p>:</span> <span class=nc>DatabindContext</span><span class=p>,</span>
+</span>        <span class=n>value</span><span class=p>:</span> <span class=nc>Any</span><span class=p>,</span>
+        <span class=n>suggestedType</span><span class=p>:</span> <span class=nc>Class</span><span class=p>&lt;</span><span class=err>*</span><span class=p>&gt;</span>
+    <span class=p>):</span> <span class=nc>String</span> <span class=p>=</span>
+        <span class=n>value</span><span class=o>::</span><span class=k>class</span><span class=p>.</span><span class=n>java</span><span class=p>.</span><span class=n>name</span>
+
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>typeFromId</span><span class=p>(</span><span class=n>context</span><span class=p>:</span> <span class=nc>DatabindContext</span><span class=p>,</span> <span class=n>id</span><span class=p>:</span> <span class=nc>String</span><span class=p>):</span> <span class=nc>JavaType</span> <span class=p>{</span>
+        <span class=o>..</span><span class=p>.</span>
+    <span class=p>}</span>
+
+<span class=p>}</span></code></pre></div></section><section class="doc-section level-2"><h3 id=_и_есть_конфигурация_кодеков_webclientwebtestclient><a class=link href=#_и_есть_конфигурация_кодеков_webclientwebtestclient>…​ и есть конфигурация кодеков WebClient/WebTestClient</a></h3><p>Если у вас в проекте есть конфигурация кодеков WebClient/WebTestClient:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=k>fun</span> <span class=nc>WebTestClient</span><span class=p>.</span><span class=nc>Builder</span><span class=p>.</span><span class=nf>configureForApi</span><span class=p>(</span><span class=n>objectMapper</span><span class=p>:</span> <span class=nc>ObjectMapper</span><span class=p>):</span> <span class=nc>WebTestClient</span><span class=p>.</span><span class=nc>Builder</span> <span class=p>=</span>
+    <span class=nf>defaultHeader</span><span class=p>(</span><span class=s>&#34;Content-Type&#34;</span><span class=p>,</span> <span class=s>&#34;application/json; charset=UTF-8;&#34;</span><span class=p>)</span>
+        <span class=p>.</span><span class=nf>exchangeStrategies</span><span class=p>(</span><span class=nf>createExchangeStrategiesWithCustomMapper</span><span class=p>(</span><span class=n>objectMapper</span><span class=p>))</span>
+
+<span class=k>fun</span> <span class=nf>createExchangeStrategiesWithCustomMapper</span><span class=p>(</span><span class=n>objectMapper</span><span class=p>:</span> <span class=nc>ObjectMapper</span><span class=p>):</span> <span class=nc>ExchangeStrategies</span> <span class=p>{</span>
+    <span class=k>return</span> <span class=nc>ExchangeStrategies</span><span class=p>.</span><span class=nf>builder</span><span class=p>()</span>
+        <span class=p>.</span><span class=nf>codecs</span> <span class=p>{</span> <span class=n>configurer</span><span class=p>:</span> <span class=nc>ClientCodecConfigurer</span> <span class=p>-&gt;</span>
+            <span class=n>configurer</span><span class=p>.</span><span class=nf>defaultCodecs</span><span class=p>().</span><span class=nf>maxInMemorySize</span><span class=p>(</span><span class=mi>16</span> <span class=p>*</span> <span class=mi>1024</span> <span class=p>*</span> <span class=mi>1024</span><span class=p>)</span>
+            <span class=n>configurer</span><span class=p>.</span><span class=nf>defaultCodecs</span><span class=p>().</span><span class=nf>jackson2JsonEncoder</span><span class=p>(</span><span class=nc>Jackson2JsonEncoder</span><span class=p>(</span><span class=n>objectMapper</span><span class=p>))</span>
+            <span class=n>configurer</span><span class=p>.</span><span class=nf>defaultCodecs</span><span class=p>().</span><span class=nf>jackson2JsonDecoder</span><span class=p>(</span><span class=nc>Jackson2JsonDecoder</span><span class=p>(</span><span class=n>objectMapper</span><span class=p>))</span>
+        <span class=p>}.</span><span class=nf>build</span><span class=p>()</span>
+<span class=p>}</span></code></pre></div><p>, то после перехода на Spring Boot вы получите пачку предупреждений о депрекации:</p><div class=listing-block><pre class="rouge highlight"><code>w: file:///home/my-project/src/testFixtures/kotlin/clients/WebTestClientExt.kt:6:8 &#39;class Jackson2JsonDecoder : AbstractJackson2Decoder&#39; is deprecated. Deprecated in Java.
+w: file:///home/my-project/src/testFixtures/kotlin/clients/WebTestClientExt.kt:7:8 &#39;class Jackson2JsonEncoder : AbstractJackson2Encoder&#39; is deprecated. Deprecated in Java.
+w: file:///home/my-project/src/testFixtures/kotlin/clients/WebTestClientExt.kt:43:40 &#39;fun jackson2JsonEncoder(encoder: Encoder&lt;*&gt;): Unit&#39; is deprecated. Deprecated in Java.
+w: file:///home/my-project/src/testFixtures/kotlin/clients/WebTestClientExt.kt:43:60 &#39;constructor(mapper: ObjectMapper, vararg mimeTypes: MimeType): Jackson2JsonEncoder&#39; is deprecated. Deprecated in Java.
+w: file:///home/my-project/src/testFixtures/kotlin/clients/WebTestClientExt.kt:44:40 &#39;fun jackson2JsonDecoder(decoder: Decoder&lt;*&gt;): Unit&#39; is deprecated. Deprecated in Java.
+w: file:///home/my-project/src/testFixtures/kotlin/clients/WebTestClientExt.kt:44:60 &#39;constructor(mapper: ObjectMapper, vararg mimeTypes: MimeType): Jackson2JsonDecoder&#39; is deprecated. Deprecated in Java.</code></pre></div><p>А если уже убрали Jackson 2 из classpath-а, то они превратятся в ошибки компиляции:</p><div class=listing-block><pre class="rouge highlight"><code>e: file:///home/my-project/src/testFixtures/kotlin/clients/WebTestClientExt.kt:43:80 Argument type mismatch: actual type is &#39;tools.jackson.databind.ObjectMapper&#39;, but &#39;com.fasterxml.jackson.databind.ObjectMapper&#39; was expected.</code></pre></div><p>Фиксится это удалением "2" из имён и переходом <code>ObjectMapper</code> → <code>JsonMapper</code>, при необходимости:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=k>fun</span> <span class=nc>WebTestClient</span><span class=p>.</span><span class=nc>Builder</span><span class=p>.</span><span class=nf>configureForApi</span><span class=p>(</span><span class=n>jsonMapper</span><span class=p>:</span> <span class=nc>JsonMapper</span><span class=p>):</span> <span class=nc>WebTestClient</span><span class=p>.</span><span class=nc>Builder</span> <span class=p>=</span>
+    <span class=nf>defaultHeader</span><span class=p>(</span><span class=s>&#34;Content-Type&#34;</span><span class=p>,</span> <span class=s>&#34;application/json; charset=UTF-8;&#34;</span><span class=p>)</span>
+        <span class=p>.</span><span class=nf>exchangeStrategies</span><span class=p>(</span><span class=nf>createExchangeStrategiesWithCustomMapper</span><span class=p>(</span><span class=n>jsonMapper</span><span class=p>))</span>
+
+<span class=hll><span class=k>fun</span> <span class=nf>createExchangeStrategiesWithCustomMapper</span><span class=p>(</span><span class=n>jsonMapper</span><span class=p>:</span> <span class=nc>JsonMapper</span><span class=p>):</span> <span class=nc>ExchangeStrategies</span> <span class=p>{</span>
+</span>    <span class=k>return</span> <span class=nc>ExchangeStrategies</span><span class=p>.</span><span class=nf>builder</span><span class=p>()</span>
+        <span class=p>.</span><span class=nf>codecs</span> <span class=p>{</span> <span class=n>configurer</span><span class=p>:</span> <span class=nc>ClientCodecConfigurer</span> <span class=p>-&gt;</span>
+            <span class=n>configurer</span><span class=p>.</span><span class=nf>defaultCodecs</span><span class=p>().</span><span class=nf>maxInMemorySize</span><span class=p>(</span><span class=mi>16</span> <span class=p>*</span> <span class=mi>1024</span> <span class=p>*</span> <span class=mi>1024</span><span class=p>)</span>
+<span class=hll>            <span class=n>configurer</span><span class=p>.</span><span class=nf>defaultCodecs</span><span class=p>().</span><span class=nf>jacksonJsonEncoder</span><span class=p>(</span><span class=nc>JacksonJsonEncoder</span><span class=p>(</span><span class=n>jsonMapper</span><span class=p>))</span>
+</span><span class=hll>            <span class=n>configurer</span><span class=p>.</span><span class=nf>defaultCodecs</span><span class=p>().</span><span class=nf>jacksonJsonDecoder</span><span class=p>(</span><span class=nc>JacksonJsonDecoder</span><span class=p>(</span><span class=n>jsonMapper</span><span class=p>))</span>
+</span>        <span class=p>}.</span><span class=nf>build</span><span class=p>()</span>
+<span class=p>}</span></code></pre></div></section><section class="doc-section level-2"><h3 id=_и_есть_net_logstash_logbacklogstash_logback_encoder8_1_с_кастомными_декораторами><a class=link href=#_и_есть_net_logstash_logbacklogstash_logback_encoder8_1_с_кастомными_декораторами>…​ и есть net.logstash.logback:logstash-logback-encoder:8.1 с кастомными декораторами</a></h3><p>Если у вас в проекте есть Jackson и подключен Logstash Encoder от Logback-а с кастомным декоратором:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=kd>class</span> <span class=nc>LoggingDateDecorator</span> <span class=p>:</span> <span class=nc>JsonFactoryDecorator</span> <span class=p>{</span>
+
+    <span class=k>override</span> <span class=k>fun</span> <span class=nf>decorate</span><span class=p>(</span><span class=n>factory</span><span class=p>:</span> <span class=nc>JsonFactory</span><span class=p>):</span> <span class=nc>JsonFactory</span> <span class=p>{</span>
+        <span class=kd>val</span> <span class=py>codec</span> <span class=p>=</span> <span class=n>factory</span><span class=p>.</span><span class=n>codec</span> <span class=k>as</span> <span class=nc>ObjectMapper</span>
+        <span class=n>codec</span><span class=p>.</span><span class=nf>setDateFormat</span><span class=p>(</span><span class=nc>StdDateFormat</span><span class=p>())</span>
+        <span class=k>return</span> <span class=n>factory</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></div><p>, то…​ после простого перехода на Spring Boot 4, <code>LoggingDateDecorator</code> продолжит работать.</p><p>Но если вы исключите Jackson 2 из classpath-а, то тут уже <code>LoggingDateDecorator</code> сломается с очередной горкой <code>Unresolved reference</code>:</p><div class=listing-block><pre class="rouge highlight"><code>e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:3:30 Unresolved reference &#39;core&#39;.
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:4:30 Unresolved reference &#39;databind&#39;.
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:5:30 Unresolved reference &#39;databind&#39;.
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:10:5 &#39;decorate&#39; overrides nothing. Potential signatures for overriding:
+fun decorate(p0: JsonFactory!): JsonFactory!
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:10:36 Unresolved reference &#39;JsonFactory&#39;.
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:10:50 Unresolved reference &#39;JsonFactory&#39;.
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:11:29 Unresolved reference &#39;codec&#39;.
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:11:38 Unresolved reference &#39;ObjectMapper&#39;.
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:12:15 Unresolved reference &#39;setDateFormat&#39;.
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:12:29 Unresolved reference &#39;StdDateFormat&#39;.</code></pre></div><p>Чтобы это починить, надо переехать на 9-ю версию и <code>MapperBuilderDecorator</code> из неё:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><span class=hll><span class=kd>class</span> <span class=nc>LoggingDateDecorator</span> <span class=p>:</span> <span class=nc>MapperBuilderDecorator</span><span class=p>&lt;</span><span class=nc>JsonMapper</span><span class=p>,</span> <span class=nc>JsonMapper</span><span class=p>.</span><span class=nc>Builder</span><span class=p>&gt;</span> <span class=p>{</span>
+</span><span class=hll>
+</span><span class=hll>    <span class=k>override</span> <span class=k>fun</span> <span class=nf>decorate</span><span class=p>(</span><span class=n>decoratable</span><span class=p>:</span> <span class=nc>JsonMapper</span><span class=p>.</span><span class=nc>Builder</span><span class=p>):</span> <span class=nc>JsonMapper</span><span class=p>.</span><span class=nc>Builder</span> <span class=p>{</span>
+</span><span class=hll>        <span class=n>decoratable</span><span class=p>.</span><span class=nf>defaultDateFormat</span><span class=p>(</span><span class=nc>StdDateFormat</span><span class=p>())</span>
+</span><span class=hll>        <span class=k>return</span> <span class=n>decoratable</span>
+</span><span class=hll>    <span class=p>}</span>
+</span><span class=hll>
+</span><span class=hll><span class=p>}</span>
+</span></code></pre></div><p>Также надо не забыть в <code>logback.xml</code> заменить старый <code>&lt;jsonFactoryDecorator class="…​"/></code> на <code>&lt;decorator class="…​"/></code>.</p></section><section class="doc-section level-2"><h3 id=_бонус_полное_удаление_jackson_2_из_classpath_а_компилияции_в_gradle><a class=link href=#_бонус_полное_удаление_jackson_2_из_classpath_а_компилияции_в_gradle>Бонус: полное удаление Jackson 2 из classpath-а компилияции в Gradle</a></h3><p>С миграцией на Jackson 3 есть отдельная проблема, заключающаяся в том, что многие библиотеки (на момент написания статьи как минимум minio и wiremock) ещё не перешли на Jackson 3.
+Поэтому в <strong>рантайме</strong> Jackson 2 должен быть.
+Однако если его оставить в classpath-е компиляции, то будут постоянные затыки с тем, что на автомате импортировали <code>com.fasterxml.jackson.databind.JsonMapper</code> вместо <code>tools.jackson.databind.JsonMapper</code>.
+И словили проблему компиляции, что нельзя передать <code>JsonMapper</code> в <code>JsonMapper</code>:</p><div class=listing-block><pre class="rouge highlight"><code data-lang=kotlin><table class=linenotable><tbody><tr><td class="linenos gl"><pre class=lineno> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+</pre></td><td class=code><pre><span class=hll><span class=k>import</span> <span class=nn>com.fasterxml.jackson.databind.json.JsonMapper</span>
+</span>
+<span class=nd>@Configuration</span>
+<span class=nd>@ComponentScan</span>
+<span class=nd>@Import</span><span class=p>(</span><span class=nc>SecurityConfig</span><span class=o>::</span><span class=k>class</span><span class=p>,</span> <span class=nc>BaseJsonMapperConf</span><span class=o>::</span><span class=k>class</span><span class=p>)</span>
+<span class=kd>class</span> <span class=nc>WebConfig</span> <span class=p>:</span> <span class=nc>WebMvcConfigurer</span> <span class=p>{</span>
+
+    <span class=nd>@Bean</span>
+    <span class=k>fun</span> <span class=nf>genericWebExceptionHandler</span><span class=p>()</span> <span class=p>=</span>
+        <span class=nc>GenericWebExceptionHandler</span><span class=p>()</span>
+
+    <span class=nd>@Bean</span>
+    <span class=k>fun</span> <span class=nf>jacksonJsonHttpMessageConverter</span><span class=p>(</span>
+        <span class=n>jsonMapper</span><span class=p>:</span> <span class=nc>JsonMapper</span>
+    <span class=p>):</span> <span class=nc>JacksonJsonHttpMessageConverter</span> <span class=p>=</span>
+<span class=hll>        <span class=nc>JacksonJsonHttpMessageConverter</span><span class=p>(</span><span class=n>jsonMapper</span><span class=p>)</span>
+</span>
+<span class=p>}</span>
+</pre></td></tr></tbody></table></code></pre></div><div class=listing-block><pre class="rouge highlight"><code>e: file:///home/my-project/src/main/kotlin/elta/app/web/WebConfig.kt:16:9 None of the following candidates is applicable:
+constructor(builder: JsonMapper.Builder): JacksonJsonHttpMessageConverter
+constructor(mapper: JsonMapper): JacksonJsonHttpMessageConverter</code></pre></div><p>И я на таких WTF-ах легко могу затупить минут на пятнадцать, а то и час.
+Поэтому у себя в проектах я нашёл способ исключить модули <code>core</code> и <code>databind</code> из Jackson 2 в конфигурациях компиляции всех модулей:</p><figure class=listing-block><figcaption>build.gradle.kts</figcaption><pre class="rouge highlight"><code data-lang=kotlin><span class=c1>// Удалить после переезда зависимостей (как минимум — flyway, minio, wiremock, json-schema-validator) на Jackson 3</span>
+<span class=n>configurations</span><span class=p>.</span><span class=nf>matching</span> <span class=p>{</span> <span class=n>it</span><span class=p>.</span><span class=n>name</span> <span class=p>==</span> <span class=s>&#34;compileClasspath&#34;</span> <span class=p>}.</span><span class=nf>all</span> <span class=p>{</span>
+    <span class=nf>exclude</span><span class=p>(</span><span class=n>group</span> <span class=p>=</span> <span class=s>&#34;com.fasterxml.jackson.core&#34;</span><span class=p>,</span> <span class=n>module</span> <span class=p>=</span> <span class=s>&#34;jackson-core&#34;</span><span class=p>)</span>
+    <span class=nf>exclude</span><span class=p>(</span><span class=n>group</span> <span class=p>=</span> <span class=s>&#34;com.fasterxml.jackson.core&#34;</span><span class=p>,</span> <span class=n>module</span> <span class=p>=</span> <span class=s>&#34;jackson-databind&#34;</span><span class=p>)</span>
+<span class=p>}</span></code></pre></figure><p>Главное, не забыть это удалить, когда все зависимости мигрируют.</p></section></section><section class="doc-section level-1"><h2 id=_заключение><a class=link href=#_заключение>Заключение</a></h2><p>Миграция на Spring Boot 4 оказалась значительно более трудозатратной, чем я рассчитывал, на основе опыта миграции со Spring Boot 2 на Spring Boot 3, которую я сделал часа за 4.
+Поэтому готовьтесь попотеть, когда будете мигрировать.
+Особенно с Jackson-ом.
+Он во всех моих проектах породил наибольшее количество проблем, и у вас он сделает это почти наверняка.</p><p>Надо ли мигрировать — вопрос открытый.
+Между Spring Boot 3 и Spring Boot 4 разница с точки зрения скорости и удобства разработки не так уж и велика.
+Но если сейчас не мигрировать, то для миграции на Spring Boot 5 потребуются уже двойные усилия, на Spring Boot 6 — тройные.
+И потом нагнать этот паравоз и мигировать на Spring Boot X, который уже даст заметную разницу с точки зрения скорости и удбоства разрботки, будет практически невозможно.</p><p>Поэтому мой совет напоследок — позаботьтесь сегодня о себе через 5-10 лет — дайте себе возможность разрабатывать на современном стеке, а не стеке мезозойского периода:)</p></section></article><br></section></div></main><script src=/js/app.js></script></body></html>

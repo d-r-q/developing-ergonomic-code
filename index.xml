@@ -1,4 +1,12 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Алексей Жидков</title><link>https://azhidkov.pro/</link><description>Recent content on Алексей Жидков</description><generator>Hugo</generator><language>ru-ru</language><lastBuildDate>Wed, 04 Feb 2026 05:25:37 +0700</lastBuildDate><atom:link href="https://azhidkov.pro/index.xml" rel="self" type="application/rss+xml"/><item><title>Глобальное состояние и тестирование через внешнее API</title><link>https://azhidkov.pro/posts/26/02/global-state-and-api-testing/</link><pubDate>Wed, 04 Feb 2026 05:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/26/02/global-state-and-api-testing/</guid><description>&lt;nav id="toc" class="toc" role="doc-toc">&lt;h2 id="toc-title">Содержание&lt;/h2>&lt;ol class="toc-list level-1">&lt;li>&lt;a href="#_введение">Введение&lt;/a>&lt;/li>&lt;li>&lt;a href="#_история">История&lt;/a>&lt;/li>&lt;li>&lt;a href="#_выводы">Выводы&lt;/a>&lt;ol class="toc-list level-2">&lt;li>&lt;a href="#_глобальное_изменяемое_состояние_усложняет_поддержку">Глобальное изменяемое состояние усложняет поддержку&lt;/a>&lt;/li>&lt;li>&lt;a href="#_зелёные_тесты_на_внешнее_api_не_гарантирует_отсутствие_тупых_багов_внутри">Зелёные тесты на внешнее API не гарантирует отсутствие тупых багов внутри&lt;/a>&lt;/li>&lt;/ol>&lt;/li>&lt;/ol>&lt;/nav>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является «микропостом» — текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Алексей Жидков</title><link>https://azhidkov.pro/</link><description>Recent content on Алексей Жидков</description><generator>Hugo</generator><language>ru-ru</language><lastBuildDate>Wed, 08 Apr 2026 12:00:00 +0700</lastBuildDate><atom:link href="https://azhidkov.pro/index.xml" rel="self" type="application/rss+xml"/><item><title>Мигрируем на Spring Boot 4. Что может пойти не так</title><link>https://azhidkov.pro/posts/26/04/migrating-to-sb-4-p1/</link><pubDate>Wed, 08 Apr 2026 12:00:00 +0700</pubDate><guid>https://azhidkov.pro/posts/26/04/migrating-to-sb-4-p1/</guid><description>&lt;nav id="toc" class="toc" role="doc-toc">&lt;h2 id="toc-title">Содержание&lt;/h2>&lt;ol class="toc-list level-1">&lt;li>&lt;a href="#_если_есть_spring_boot">Если есть Spring Boot …​&lt;/a>&lt;ol class="toc-list level-2">&lt;li>&lt;a href="#_и_автоконфигурируемые_зависимости_без_стартеров">…​ и автоконфигурируемые зависимости без стартеров&lt;/a>&lt;/li>&lt;li>&lt;a href="#_и_есть_явный_импорт_или_отключение_автоконфигураций">…​ и есть явный импорт или отключение автоконфигураций&lt;/a>&lt;/li>&lt;li>&lt;a href="#_и_есть_упоминания_webserverapplicationcontext">…​ и есть упоминания WebServerApplicationContext&lt;/a>&lt;/li>&lt;li>&lt;a href="#_и_есть_упоминания_servletwebserverfactory">…​ и есть упоминания ServletWebServerFactory&lt;/a>&lt;/li>&lt;/ol>&lt;/li>&lt;li>&lt;a href="#_если_есть_jackson">Если есть Jackson&lt;/a>&lt;ol class="toc-list level-2">&lt;li>&lt;a href="#_и_есть_примитивные_типы_в_классах_для_десериализации">…​ и есть примитивные типы в классах для десериализации&lt;/a>&lt;/li>&lt;li>&lt;a href="#_и_есть_использование_классов_и_интерфейсов_jackson_помимо_аннотаций">…​ и есть использование классов и интерфейсов Jackson (помимо аннотаций)&lt;/a>&lt;/li>&lt;li>&lt;a href="#_и_есть_конфигурация_objectmapper">…​ и есть конфигурация ObjectMapper&lt;/a>&lt;/li>&lt;li>&lt;a href="#_и_есть_модуль_jackson_datatype_jsr310">…​ и есть модуль jackson-datatype-jsr310&lt;/a>&lt;/li>&lt;li>&lt;a href="#_и_есть_конфигурация_mappingjackson2httpmessageconverter">…​ и есть конфигурация MappingJackson2HttpMessageConverter&lt;/a>&lt;/li>&lt;li>&lt;a href="#_и_есть_конфигурация_jackson2jsonmessageconverter">…​ и есть конфигурация Jackson2JsonMessageConverter&lt;/a>&lt;/li>&lt;li>&lt;a href="#_и_есть_работа_с_jsonnode">…​ и есть работа с JsonNode&lt;/a>&lt;/li>&lt;li>&lt;a href="#_и_есть_наследники_stddeserializer_или_jsondeserializer">…​ и есть наследники StdDeserializer или JsonDeserializer&lt;/a>&lt;/li>&lt;li>&lt;a href="#_и_наследники_stdserializer_или_jsonserializer">…​ и наследники StdSerializer или JsonSerializer&lt;/a>&lt;/li>&lt;li>&lt;a href="#_и_есть_реализации_интерфейса_contextualdeserializer">…​ и есть реализации интерфейса ContextualDeserializer&lt;/a>&lt;/li>&lt;li>&lt;a href="#_и_есть_наследники_typeidresolverbase">…​ и есть наследники TypeIdResolverBase&lt;/a>&lt;/li>&lt;li>&lt;a href="#_и_есть_конфигурация_кодеков_webclientwebtestclient">…​ и есть конфигурация кодеков WebClient/WebTestClient&lt;/a>&lt;/li>&lt;li>&lt;a href="#_и_есть_net_logstash_logbacklogstash_logback_encoder8_1_с_кастомными_декораторами">…​ и есть net.logstash.logback:logstash-logback-encoder:8.1 с кастомными декораторами&lt;/a>&lt;/li>&lt;li>&lt;a href="#_бонус_полное_удаление_jackson_2_из_classpath_а_компилияции_в_gradle">Бонус: полное удаление Jackson 2 из classpath-а компилияции в Gradle&lt;/a>&lt;/li>&lt;/ol>&lt;/li>&lt;li>&lt;a href="#_заключение">Заключение&lt;/a>&lt;/li>&lt;/ol>&lt;/nav>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Следить за обновлениями блога можно в канале &amp;#34;Эргономичный код&amp;#34; в &lt;a href="https://t.me/ergonomic_code">Telegram&lt;/a> и &lt;a href="https://max.ru/join/W_YaWzkZX7uonLpy0cyMUUC1yL0qB-Um3lvSfACiWWY">Max&lt;/a>.&lt;/p>&lt;/aside>
+&lt;p>Я недавно перевёл на Spring Boot 4 и выпустил в прод все свои основные проекты - три коммерческих и два опенсорсных.
+Общий объём этих проектов составляет ~80 тысяч строк Kotlin кода.
+И они используют 20 различных библиотек (включая модули Spring), версии которых управляются Spring Boot Dependency Management-ом.&lt;/p>
+&lt;p>В процессе этой миграции я собрал и решил порядка 50 проблем — существенно больше, чем я рассчитывал, исходя из опыта миграции на Spring Boot 3.&lt;/p>
+&lt;p>И так как описать все проблемы, с которыми я столкнулся, займёт у меня несуразный календарный код, я решил ограничиться только проблемами в технологиях, которые в Spring-проектах используются повсеместно — автоконфигурации и Jackson.&lt;/p>
+&lt;p>Я постарался структурировать текст так, чтобы полный набор заголовков разделов описывал условия — «что может пойти не так, если у вас есть Spring Boot и нет стартеров».
+А внутри каждого раздела я постарался привести:&lt;/p>
+&lt;div class="olist arabic">&lt;ol class="arabic">&lt;li>симптомы, по которым вы можете распознать, что проблема есть;&lt;/li>&lt;li>код для Spring Boot 3, на котором проблема проявляется;&lt;/li>&lt;li>объяснение причин проблемы и способа её исправления;&lt;/li>&lt;li>код для Spring Boot 4, который уже работает корректно.&lt;/li>&lt;/ol>&lt;/div></description></item><item><title>Глобальное состояние и тестирование через внешнее API</title><link>https://azhidkov.pro/posts/26/02/global-state-and-api-testing/</link><pubDate>Wed, 04 Feb 2026 05:25:37 +0700</pubDate><guid>https://azhidkov.pro/posts/26/02/global-state-and-api-testing/</guid><description>&lt;nav id="toc" class="toc" role="doc-toc">&lt;h2 id="toc-title">Содержание&lt;/h2>&lt;ol class="toc-list level-1">&lt;li>&lt;a href="#_введение">Введение&lt;/a>&lt;/li>&lt;li>&lt;a href="#_история">История&lt;/a>&lt;/li>&lt;li>&lt;a href="#_выводы">Выводы&lt;/a>&lt;ol class="toc-list level-2">&lt;li>&lt;a href="#_глобальное_изменяемое_состояние_усложняет_поддержку">Глобальное изменяемое состояние усложняет поддержку&lt;/a>&lt;/li>&lt;li>&lt;a href="#_зелёные_тесты_на_внешнее_api_не_гарантирует_отсутствие_тупых_багов_внутри">Зелёные тесты на внешнее API не гарантирует отсутствие тупых багов внутри&lt;/a>&lt;/li>&lt;/ol>&lt;/li>&lt;/ol>&lt;/nav>&lt;aside class="admonition-block note" role="note">&lt;h6 class="block-title label-only">&lt;span class="title-label">Note: &lt;/span>&lt;/h6>&lt;p>Этот материал является «микропостом» — текстом, написанным в режиме потока сознания без особой редактуры.&lt;/p>
 &lt;p>Следить за обновлениями блога можно в Telegram-канале: &lt;a href="https://t.me/ergonomic_code">Эргономичный код&lt;/a>.&lt;/p>&lt;/aside>
 &lt;section class="doc-section level-1">&lt;h2 id="_введение">&lt;a class="link" href="#_введение">Введение&lt;/a>&lt;/h2>&lt;p>У меня недавно в Проекте Э случилась поучительная и многогранная история.
 Эта история одновременно:&lt;/p>
@@ -1583,4 +1591,181 @@ save - 20 штук&lt;/p>
 &lt;p>Диаграмма эффектов полезна на всех этапах разработки ПО — от первичного анализа до планирования работ и поддержки.
 Она позволяет с минимальными затратами:&lt;/p>
 &lt;div class="ulist">&lt;ul>&lt;li>получить целостную картину реализации будущей системы;&lt;/li>&lt;li>оценить трудоёмкость разработки;&lt;/li>&lt;li>декомпозировать систему на модули;&lt;/li>&lt;li>определить порядок выполнения работ;&lt;/li>&lt;li>уменьшить количество регрессий при внесении изменений в систему.&lt;/li>&lt;/ul>&lt;/div></description></item><item><title/><link>https://azhidkov.pro/ergo-approach/guideline/error-handling/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://azhidkov.pro/ergo-approach/guideline/error-handling/</guid><description>&lt;section class="doc-section level-1">&lt;h2 id="_именование_классов_исключений">Именование классов исключений&lt;/h2>&lt;/section></description></item><item><title/><link>https://azhidkov.pro/ergo-approach/invite-post/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://azhidkov.pro/ergo-approach/invite-post/</guid><description>&lt;p>Эргономичный код (&lt;a class="bare" href="https://t.me/ergonomic_code">https://t.me/ergonomic_code&lt;/a>) - это канал для тех кто уже достаточно поработал с обычным кодом и провёл свою 1001 ночь в IDE, распутывая спагетти код, в дебаггере, отлаживая непонятные баги, и ночном офисе, исправляя блокеры на проде.&lt;/p>
-&lt;p>На канале вы узнаете о том, что такое промышленная функциональная архитектура, data-oriented programming и классическая школа test-driven development и как с их помощью вернуть себе кайф в работу днём, и спокойствие в сон ночью.&lt;/p></description></item></channel></rss>
+&lt;p>На канале вы узнаете о том, что такое промышленная функциональная архитектура, data-oriented programming и классическая школа test-driven development и как с их помощью вернуть себе кайф в работу днём, и спокойствие в сон ночью.&lt;/p></description></item><item><title/><link>https://azhidkov.pro/posts/26/04/new-plan/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://azhidkov.pro/posts/26/04/new-plan/</guid><description>&lt;h1 id="план-новой-структуры-поста">План новой структуры поста&lt;/h1>
+&lt;p>Принцип структуры:&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>##&lt;/code> — конкретная зависимость или стек зависимостей проекта.&lt;/li>
+&lt;li>&lt;code>###&lt;/code> — условие в формате «что может пойти не так, если у вас есть эта зависимость».&lt;/li>
+&lt;li>Внутри каждого &lt;code>###&lt;/code>-раздела держать один и тот же шаблон:
+&lt;ul>
+&lt;li>симптомы;&lt;/li>
+&lt;li>почему проблема возникает и как её исправить;&lt;/li>
+&lt;li>код для Spring Boot 3, на котором проблема проявляется;&lt;/li>
+&lt;li>код для Spring Boot 4, который уже работает корректно.&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="kotlin-orgjetbrainskotlin">Kotlin (&lt;code>org.jetbrains.kotlin:*&lt;/code>)&lt;/h2>
+&lt;h3 id="если-у-вас-есть-kotlin-код-поверх-spring-api-но-нет-явных-nullability-ограничений-в-generic-обёртках">Если у вас есть Kotlin-код поверх Spring API, но нет явных nullability-ограничений в generic-обёртках&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>WebTestClient.ResponseSpec.responseBody()&lt;/code>&lt;/li>
+&lt;li>&lt;code>JsonbToObjectReader&amp;lt;T&amp;gt;&lt;/code>&lt;/li>
+&lt;li>фабрики DTO и generic utility-функции с &lt;code>T : Any&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;h3 id="если-у-вас-есть-kotlin-но-код-раньше-неявно-полагался-на-platform-types-spring-framework">Если у вас есть Kotlin, но код раньше неявно полагался на platform types Spring Framework&lt;/h3>
+&lt;ul>
+&lt;li>неоднозначные перегрузки &lt;code>ResponseEntity(...)&lt;/code>&lt;/li>
+&lt;li>неоднозначные перегрузки &lt;code>queryParam(...)&lt;/code>&lt;/li>
+&lt;li>&lt;code>URI?&lt;/code> vs &lt;code>URI&lt;/code>&lt;/li>
+&lt;li>места с вынужденным &lt;code>!!&lt;/code>, которые после JSpecify приходится расставлять осознанно&lt;/li>
+&lt;/ul>
+&lt;h2 id="spring-data-jdbc-orgspringframeworkdataspring-data-jdbc-orgspringframeworkbootspring-boot-starter-data-jdbc">Spring Data JDBC (&lt;code>org.springframework.data:spring-data-jdbc&lt;/code>, &lt;code>org.springframework.boot:spring-boot-starter-data-jdbc&lt;/code>)&lt;/h2>
+&lt;h3 id="если-у-вас-есть-spring-data-jdbc-но-ваши-кастомные-конфигурации-всё-ещё-живут-на-старом-dialect">Если у вас есть Spring Data JDBC, но ваши кастомные конфигурации всё ещё живут на старом &lt;code>Dialect&lt;/code>&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>Dialect -&amp;gt; JdbcDialect&lt;/code>&lt;/li>
+&lt;li>&lt;code>JdbcPostgresDialect.INSTANCE&lt;/code>&lt;/li>
+&lt;li>сигнатуры &lt;code>DataAccessStrategy&lt;/code> и смежных бинов&lt;/li>
+&lt;/ul>
+&lt;h3 id="если-у-вас-есть-spring-data-jdbc-но-вы-вручную-собираете-defaultdataaccessstrategy-по-старому-конструктору">Если у вас есть Spring Data JDBC, но вы вручную собираете &lt;code>DefaultDataAccessStrategy&lt;/code> по старому конструктору&lt;/h3>
+&lt;ul>
+&lt;li>новый аргумент &lt;code>DefaultQueryMappingConfiguration&lt;/code>&lt;/li>
+&lt;li>ручная инфраструктура вокруг &lt;code>SqlGeneratorSource&lt;/code>, &lt;code>InsertStrategyFactory&lt;/code>, &lt;code>SqlParametersFactory&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;h3 id="если-у-вас-есть-spring-data-jdbc-но-вы-опирались-на-старые-исключения-и-встроенные-конвертеры">Если у вас есть Spring Data JDBC, но вы опирались на старые исключения и встроенные конвертеры&lt;/h3>
+&lt;ul>
+&lt;li>исчезновение &lt;code>DbActionExecutionException&lt;/code>&lt;/li>
+&lt;li>возврат собственного конвертера &lt;code>Timestamp -&amp;gt; Temporal&lt;/code>&lt;/li>
+&lt;li>регистрация конвертера в &lt;code>JdbcCustomConversions&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;h3 id="если-у-вас-есть-spring-data-jdbc-но-вы-ожидаете-что-аудитинг-и-callback-и-будут-вести-себя-как-раньше">Если у вас есть Spring Data JDBC, но вы ожидаете, что аудитинг и callback-и будут вести себя как раньше&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>@CreatedDate&lt;/code>&lt;/li>
+&lt;li>&lt;code>@LastModifiedDate&lt;/code>&lt;/li>
+&lt;li>&lt;code>modifyOnCreate = false&lt;/code>&lt;/li>
+&lt;li>ручная сборка &lt;code>JdbcAggregateOperations&lt;/code>&lt;/li>
+&lt;li>переход на &lt;code>JdbcAggregateTemplate&lt;/code>&lt;/li>
+&lt;li>фикстуры с историческими датами&lt;/li>
+&lt;/ul>
+&lt;h2 id="spring-security-orgspringframeworksecurityspring-security-config-orgspringframeworkbootspring-boot-starter-security">Spring Security (&lt;code>org.springframework.security:spring-security-config&lt;/code>, &lt;code>org.springframework.boot:spring-boot-starter-security&lt;/code>)&lt;/h2>
+&lt;h3 id="если-у-вас-есть-тестовая-security-конфигурация-но-daoauthenticationprovider-всё-ещё-собирается-по-старому-api">Если у вас есть тестовая security-конфигурация, но &lt;code>DaoAuthenticationProvider&lt;/code> всё ещё собирается по старому API&lt;/h3>
+&lt;ul>
+&lt;li>конструктор теперь принимает &lt;code>UserDetailsService&lt;/code>&lt;/li>
+&lt;li>&lt;code>PasswordEncoder&lt;/code> задаётся через &lt;code>setPasswordEncoder(...)&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;h2 id="jackson-toolsjackson-orgspringframeworkbootspring-boot-starter-json">Jackson (&lt;code>tools.jackson:*&lt;/code>, &lt;code>org.springframework.boot:spring-boot-starter-json&lt;/code>)&lt;/h2>
+&lt;h3 id="если-у-вас-есть-jackson-но-код-и-зависимости-всё-ещё-живут-в-namespace-comfasterxmljackson">Если у вас есть Jackson, но код и зависимости всё ещё живут в namespace &lt;code>com.fasterxml.jackson.*&lt;/code>&lt;/h3>
+&lt;ul>
+&lt;li>переход на &lt;code>tools.jackson.*&lt;/code>&lt;/li>
+&lt;li>чистка &lt;code>compileClasspath&lt;/code> и &lt;code>testCompileClasspath&lt;/code>&lt;/li>
+&lt;li>временный карантин с &lt;code>runtimeOnly&lt;/code> для Jackson 2&lt;/li>
+&lt;/ul>
+&lt;h3 id="если-у-вас-есть-jackson-но-ваши-кастомные-десериализаторы-и-модули-написаны-под-jackson-2-spi">Если у вас есть Jackson, но ваши кастомные десериализаторы и модули написаны под Jackson 2 SPI&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>JsonDeserializer -&amp;gt; ValueDeserializer&lt;/code>&lt;/li>
+&lt;li>&lt;code>parser.codec.readTree(...) -&amp;gt; parser.readValueAsTree&amp;lt;JsonNode&amp;gt;()&lt;/code>&lt;/li>
+&lt;li>ручная регистрация &lt;code>SimpleModule&lt;/code>&lt;/li>
+&lt;li>удаление лишней ручной регистрации &lt;code>JavaTimeModule&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;h3 id="если-у-вас-есть-jackson-но-ваши-dto-держатся-на-legacy-json-контрактах-и-неявной-десериализации">Если у вас есть Jackson, но ваши DTO держатся на legacy JSON-контрактах и неявной десериализации&lt;/h3>
+&lt;ul>
+&lt;li>пропавшие дефолты примитивов&lt;/li>
+&lt;li>дубли имён свойств&lt;/li>
+&lt;li>более жёсткий приоритет &lt;code>@JsonFormat&lt;/code>&lt;/li>
+&lt;li>сериализация boolean-полей с префиксом &lt;code>is&lt;/code>&lt;/li>
+&lt;li>&lt;code>@JsonProperty(&amp;quot;isDeleted&amp;quot;)&lt;/code>&lt;/li>
+&lt;li>secondary constructor для обратной совместимости&lt;/li>
+&lt;li>&lt;code>@JsonCreator&lt;/code>-фабрики для старых форматов JSON&lt;/li>
+&lt;/ul>
+&lt;h2 id="logback-encoder-netlogstashlogbacklogstash-logback-encoder">Logback Encoder (&lt;code>net.logstash.logback:logstash-logback-encoder&lt;/code>)&lt;/h2>
+&lt;h3 id="если-у-вас-есть-logstash-logback-encoder-но-версия-encoder-а-осталась-на-линии-jackson-2">Если у вас есть logstash-logback-encoder, но версия encoder-а осталась на линии Jackson 2&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>8.x -&amp;gt; 9.0&lt;/code>&lt;/li>
+&lt;li>несовместимость со стеком Jackson 3&lt;/li>
+&lt;/ul>
+&lt;h2 id="spring-test-orgspringframeworkspring-test-orgspringframeworkbootspring-boot-starter-test">Spring Test (&lt;code>org.springframework:spring-test&lt;/code>, &lt;code>org.springframework.boot:spring-boot-starter-test&lt;/code>)&lt;/h2>
+&lt;h3 id="если-у-вас-есть-spring-test-bean-overrides-но-тесты-всё-ещё-используют-старый-spybean">Если у вас есть Spring Test bean overrides, но тесты всё ещё используют старый &lt;code>@SpyBean&lt;/code>&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>@SpyBean -&amp;gt; @MockitoSpyBean&lt;/code>&lt;/li>
+&lt;li>перенос spy прямо в тест вместо отдельного &lt;code>@TestConfiguration&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;h2 id="tomcat-orgspringframeworkbootspring-boot-starter-tomcat">Tomcat (&lt;code>org.springframework.boot:spring-boot-starter-tomcat&lt;/code>)&lt;/h2>
+&lt;h3 id="если-у-вас-есть-кастомизация-embedded-tomcat-но-код-завязан-на-старый-пакет-configurabletomcatwebserverfactory">Если у вас есть кастомизация embedded Tomcat, но код завязан на старый пакет &lt;code>ConfigurableTomcatWebServerFactory&lt;/code>&lt;/h3>
+&lt;ul>
+&lt;li>переезд класса в &lt;code>org.springframework.boot.tomcat.*&lt;/code>&lt;/li>
+&lt;li>случаи, где одного изменения импорта недостаточно&lt;/li>
+&lt;/ul>
+&lt;h2 id="logback-access-chqoslogbackaccess">Logback Access (&lt;code>ch.qos.logback.access:*&lt;/code>)&lt;/h2>
+&lt;h3 id="если-у-вас-есть-logback-access-интеграция-но-кастомизация-tomcat-завязана-на-старый-tomcat-specific-api">Если у вас есть logback-access-интеграция, но кастомизация Tomcat завязана на старый Tomcat-specific API&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>WebServerFactoryCustomizer&amp;lt;ConfigurableTomcatWebServerFactory&amp;gt;&lt;/code>&lt;/li>
+&lt;li>fallback на &lt;code>WebServerFactoryCustomizer&amp;lt;WebServerFactory&amp;gt;&lt;/code>&lt;/li>
+&lt;li>вызов &lt;code>addEngineValves(...)&lt;/code> через reflection&lt;/li>
+&lt;/ul>
+&lt;h2 id="spring-web-mvc-orgspringframeworkspring-web-orgspringframeworkbootspring-boot-starter-web">Spring Web MVC (&lt;code>org.springframework:spring-web&lt;/code>, &lt;code>org.springframework.boot:spring-boot-starter-web&lt;/code>)&lt;/h2>
+&lt;h3 id="если-у-вас-есть-spring-web-mvc-но-код-опирается-на-старые-удобные-перегрузки-web-api">Если у вас есть Spring Web MVC, но код опирается на старые удобные перегрузки Web API&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>ResponseEntity(...)&lt;/code>&lt;/li>
+&lt;li>&lt;code>UriBuilder.queryParam(...)&lt;/code>&lt;/li>
+&lt;li>compile-time неоднозначности после уточнения nullability&lt;/li>
+&lt;/ul>
+&lt;h3 id="если-у-вас-есть-spring-web-mvc-но-resttemplatehttp-клиент-на-apache-httpclient-5-настроен-по-старому-api">Если у вас есть Spring Web MVC, но &lt;code>RestTemplate&lt;/code>/HTTP-клиент на Apache HttpClient 5 настроен по старому API&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>HttpComponentsClientHttpRequestFactory&lt;/code>&lt;/li>
+&lt;li>&lt;code>setConnectTimeout(...) -&amp;gt; setConnectionRequestTimeout(...)&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;h2 id="spring-oauth2-client-orgspringframeworkbootspring-boot-starter-oauth2-client">Spring OAuth2 Client (&lt;code>org.springframework.boot:spring-boot-starter-oauth2-client&lt;/code>)&lt;/h2>
+&lt;h3 id="если-у-вас-есть-spring-oauth2-client-но-вы-рассчитываете-что-oversized-multipart-по-прежнему-вернётся-как-аккуратный-413">Если у вас есть Spring OAuth2 Client, но вы рассчитываете, что oversized multipart по-прежнему вернётся как аккуратный &lt;code>413&lt;/code>&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>OAuth2AuthorizationCodeGrantFilter&lt;/code>&lt;/li>
+&lt;li>&lt;code>MaxUploadSizeExceededException&lt;/code>&lt;/li>
+&lt;li>&lt;code>SizeLimitExceededException&lt;/code>&lt;/li>
+&lt;li>ранний фильтр, который вручную возвращает &lt;code>413 Payload Too Large&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;h2 id="spring-retry-orgspringframeworkretryspring-retry-orgspringframeworkspring-resilience">Spring Retry (&lt;code>org.springframework.retry:spring-retry&lt;/code>, &lt;code>org.springframework:spring-resilience&lt;/code>)&lt;/h2>
+&lt;h3 id="если-у-вас-есть-аннотационные-ретраи-но-код-всё-ещё-собран-вокруг-spring-retry">Если у вас есть аннотационные ретраи, но код всё ещё собран вокруг &lt;code>spring-retry&lt;/code>&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>@EnableRetry -&amp;gt; @EnableResilientMethods&lt;/code>&lt;/li>
+&lt;li>&lt;code>org.springframework.retry.annotation.* -&amp;gt; org.springframework.resilience.annotation.*&lt;/code>&lt;/li>
+&lt;li>&lt;code>maxAttemptsExpression -&amp;gt; maxRetriesString&lt;/code>&lt;/li>
+&lt;li>&lt;code>backoff(...) -&amp;gt; delayString&lt;/code>&lt;/li>
+&lt;li>&lt;code>retryFor = [...] -&amp;gt; @Retryable(Exception::class)&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;h2 id="bucket4j-comgiffingbucket4jspringbootstarterbucket4j-spring-boot-starter">Bucket4j (&lt;code>com.giffing.bucket4j.spring.boot.starter:bucket4j-spring-boot-starter&lt;/code>)&lt;/h2>
+&lt;h3 id="если-у-вас-есть-bucket4j-starter-но-его-версия-не-совместима-со-spring-boot-4">Если у вас есть Bucket4j starter, но его версия не совместима со Spring Boot 4&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>0.12.8 -&amp;gt; 0.14.0&lt;/code>&lt;/li>
+&lt;li>падение автоконфигурации фильтров при &lt;code>bucket4j.enabled=true&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;h2 id="testcontainers-orgtestcontainers-orgspringframeworkbootspring-boot-testcontainers">Testcontainers (&lt;code>org.testcontainers:*&lt;/code>, &lt;code>org.springframework.boot:spring-boot-testcontainers&lt;/code>)&lt;/h2>
+&lt;h3 id="если-у-вас-есть-testcontainers-но-зависимости-всё-ещё-подключены-по-старым-артефактам">Если у вас есть Testcontainers, но зависимости всё ещё подключены по старым артефактам&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>junit-jupiter -&amp;gt; testcontainers-junit-jupiter&lt;/code>&lt;/li>
+&lt;li>&lt;code>postgresql -&amp;gt; testcontainers-postgresql&lt;/code>&lt;/li>
+&lt;li>обновление импортов и точек подключения контейнеров&lt;/li>
+&lt;/ul>
+&lt;h2 id="selenium-orgtestcontainerstestcontainers-selenium">Selenium (&lt;code>org.testcontainers:testcontainers-selenium&lt;/code>)&lt;/h2>
+&lt;h3 id="если-у-вас-есть-seleniume2e-тесты-на-testcontainers-но-модуль-браузерного-контейнера-остался-на-старой-линии-артефактов">Если у вас есть Selenium/e2e-тесты на Testcontainers, но модуль браузерного контейнера остался на старой линии артефактов&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>selenium -&amp;gt; testcontainers-selenium&lt;/code>&lt;/li>
+&lt;li>&lt;code>org.testcontainers.containers.BrowserWebDriverContainer -&amp;gt; org.testcontainers.selenium.BrowserWebDriverContainer&lt;/code>&lt;/li>
+&lt;li>&lt;code>NoClassDefFoundError&lt;/code> на shaded-классах&lt;/li>
+&lt;/ul>
+&lt;h2 id="restassured-iorest-assuredrest-assured">RestAssured (&lt;code>io.rest-assured:rest-assured&lt;/code>)&lt;/h2>
+&lt;h3 id="если-у-вас-есть-restassured-но-версия-всё-ещё-тащит-проблемный-groovy-слой">Если у вас есть RestAssured, но версия всё ещё тащит проблемный Groovy-слой&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>5.x -&amp;gt; 6.0.0&lt;/code>&lt;/li>
+&lt;li>&lt;code>NullPointerException&lt;/code> внутри Groovy meta-class при выполнении запроса&lt;/li>
+&lt;/ul>
+&lt;h2 id="wiremock-orgwiremockwiremock-jetty12">WireMock (&lt;code>org.wiremock:wiremock-jetty12&lt;/code>)&lt;/h2>
+&lt;h3 id="если-у-вас-есть-wiremock-но-версии-jetty-в-тестовом-classpath-расходятся-с-теми-что-притаскивает-spring-boot-4">Если у вас есть WireMock, но версии Jetty в тестовом classpath расходятся с теми, что притаскивает Spring Boot 4&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>NoSuchMethodError&lt;/code> на Jetty API&lt;/li>
+&lt;li>явная фиксация &lt;code>jetty-bom&lt;/code> и &lt;code>jetty-ee10-bom&lt;/code> на совместимую ветку&lt;/li>
+&lt;/ul>
+&lt;h2 id="spring-rest-docs-orgspringframeworkrestdocsspring-restdocs-">Spring Rest Docs (&lt;code>org.springframework.restdocs:spring-restdocs-*&lt;/code>)&lt;/h2>
+&lt;h3 id="если-у-вас-есть-spring-rest-docs-но-рядом-со-spring-boot-4-всё-ещё-остаётся-линия-3x">Если у вас есть Spring Rest Docs, но рядом со Spring Boot 4 всё ещё остаётся линия 3.x&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>IncompatibleClassChangeError&lt;/code> на HTTP-типах&lt;/li>
+&lt;li>&lt;code>4.0.0&lt;/code>&lt;/li>
+&lt;li>затем отказ от ручного version pinning в пользу Boot BOM&lt;/li>
+&lt;/ul></description></item></channel></rss>

@@ -23,25 +23,46 @@ body {
 
 code {
     font-family: JetBrains Mono;
-    padding: 0px 0.5em;
+    padding: 0px 0.5em 0px 1em;
     font-size: 1.3rem;
     color: #364950;
-    background-color: #eeeeee!important;
+    background-color: #FAFAFA!important;
+    width: 100%;
+    margin: 1em 0px;
 }
 
 p code {
-    padding: 0px;
-    line-height: 1em;
+    padding: .5rem .3rem;
+    background-color: white!important;
+    font-size: 1.45rem;
+    color: #364950;
+    display: inline;
+}
+
+div.text-center {
+    text-align: center;
 }
 
 figure.portfolio table td {
     border-width: 0px;
 }
 
-pre code {
-    padding: .2rem .4rem;
-    background-color: white!important;
+pre {
+    padding: 0px;
+}
+pre.rouge { 
+    margin-top: 0px;
+    background-color: #FAFAFA!important;
+    width: 100%;
+}
+
+div.listingblock div.content {
+    margin-top: 0px;
+    padding: 0px;
+    background-color: #FAFAFA!important;
     line-height: 1.5em;
+    border-left: 2px solid #41BEDB;
+    width: 100%;
 }
 
 html, body
@@ -186,25 +207,6 @@ only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-wi
 }
 
 
-table caption {
-    text-align: left;
-}
-.stretch {
-    width: 100% !important;
-}
-
-td.halign-right p {
-    text-align: right;
-}
-
-td.halign-center {
-    text-align: center;
-}
-
-td.valign-top {
-    vertical-align: top;
-}
-
 .hdlist1 {
     font-weight: bold;
 }
@@ -277,8 +279,47 @@ div.epigraph blockquote {
     border-left-width: 0px
 }
 
-table.layout th, table.layout td, div.layout table tbody tr td {
+table.layout th, table.layout td, div.layout table tbody tr td, div.content table tbody tr td {
     border: 0px;
+}
+
+/* Migration map: compact code-to-code mapping table */
+table.tableblock.migration-map {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-top: 1px solid #d6dde2 !important;
+    border-bottom: 1px solid #d6dde2 !important;
+}
+
+table.tableblock.migration-map th.tableblock,
+table.tableblock.migration-map td.tableblock {
+    border: 0 !important;
+    padding: 0.5rem 0.85rem;
+    vertical-align: middle;
+    line-height: 1.25;
+}
+
+table.tableblock.migration-map thead th.tableblock {
+    background: #f4f7f9;
+    font-weight: 700;
+    color: #1b242b;
+    border-bottom: 1px solid #d6dde2 !important;
+}
+
+table.tableblock.migration-map tbody tr + tr td.tableblock {
+    border-top: 1px solid #e6ebef !important;
+}
+
+table.tableblock.migration-map td.tableblock + td.tableblock,
+table.tableblock.migration-map th.tableblock + th.tableblock {
+    border-left: 1px solid #e2e8ec !important;
+}
+
+table.tableblock.migration-map .content,
+table.tableblock.migration-map .content .paragraph,
+table.tableblock.migration-map .content .paragraph p {
+    margin: 0;
 }
 
 /* Asciidoctor: ensure frame/grid-none tables are truly borderless */
