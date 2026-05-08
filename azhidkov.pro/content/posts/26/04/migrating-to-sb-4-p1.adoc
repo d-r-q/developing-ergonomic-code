@@ -1,0 +1,1057 @@
+---
+title: "Мигрируем на Spring Boot 4. Что может пойти не так"
+date: 2026-05-08T12:00:00+07:00
+draft: false
+tags:
+- spring-boot
+- java
+- kotlin
+- jackson
+- spring-data-jdbc
+---
+:source-highlighter: rouge
+:rouge-theme: github
+:icons: font
+:sectlinks:
+:toc:
+:toclevels: 4
+:toc-title: Содержание
+
+[NOTE]
+====
+Следить за обновлениями блога можно в канале "Эргономичный код" в https://t.me/ergonomic_code[Telegram] и https://max.ru/join/W_YaWzkZX7uonLpy0cyMUUC1yL0qB-Um3lvSfACiWWY[Max].
+====
+
+Я недавно перевёл на Spring Boot 4 и выпустил в прод все свои основные проекты - три коммерческих и два опенсорсных.
+Общий объём этих проектов составляет ~80 тысяч строк Kotlin кода.
+И они используют 20 различных библиотек (включая модули Spring), версии которых управляются Spring Boot Dependency Management-ом.
+
+В процессе этой миграции я собрал и решил порядка 50 проблем — существенно больше, чем я рассчитывал, исходя из опыта миграции на Spring Boot 3.
+
+И так как описать все проблемы, с которыми я столкнулся, займёт у меня несуразный календарный код, я решил ограничиться только проблемами в технологиях, которые в Spring-проектах используются повсеместно — автоконфигурации и Jackson.
+
+Я постарался структурировать текст так, чтобы полный набор заголовков разделов описывал условия — «что может пойти не так, если у вас есть Spring Boot и нет стартеров».
+А внутри каждого раздела я постарался привести:
+
+. симптомы, по которым вы можете распознать, что проблема есть;
+. код для Spring Boot 3, на котором проблема проявляется;
+. объяснение причин проблемы и способа её исправления;
+. код для Spring Boot 4, который уже работает корректно.
+
+== Если есть Spring Boot ...
+
+=== ... и автоконфигурируемые зависимости без стартеров
+
+[NOTE]
+====
+Смотрите также:
+
+* https://spring.io/blog/2025/10/28/modularizing-spring-boot#how-to-migrate-to-spring-boot-4[Официальный гайд по миграции на Spring Boot 4 от Spring];
+* https://www.danvega.dev/blog/spring-boot-4-modularization[Гайд по исправлению проблем от Dan Vega — Spring developer advocate];
+====
+
+Если у вас в проекте есть подключение зависимостей Flyway или Liquibase:
+
+[source,kotlin]
+----
+dependencies {
+    implementation("org.flywaydb:flyway-core")
+}
+----
+
+, то после миграции на Spring Boot 4 вы можете столкнуться с проблемой, что эти модули больше не конфигурируются автоматически и миграции не запускаются при старте приложения.
+
+Это обусловлено тем, что одной из главных фич Spring Boot 4 стала https://spring.io/blog/2025/10/28/modularizing-spring-boot[модуляризация] — вынесение классов автоконфигураций из `spring-boot-autoconfigure.jar` в jar-ники стартеров соответствующих модулей.
+
+Решается эта проблема тривиально — заменой зависимости на нужный стартер:
+
+[source,kotlin,highlight=2]
+----
+dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-flyway")
+}
+----
+
+Помимо Flyway и Liquibase также проблемы могут быть с:
+
+* `com.google.code.gson:gson`
+* `jakarta.json.bind:jakarta.json.bind-api`
+* `com.hazelcast:hazelcast`
+* `com.sendgrid:sendgrid-java`
+
+=== ... и есть явный импорт или отключение автоконфигураций
+
+Кейс редкий, но если вы где-то явно отключали или, наоборот, импортировали автоконфигурации примерно так:
+
+[source,kotlin]
+----
+import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+// ...
+
+@SpringBootApplication(
+    exclude = [
+        FlywayAutoConfiguration::class, // Отключаем Flyway для дефолтного датасорса
+    ]
+)
+class MyApp
+----
+
+, то эти места перестанут компилироваться с "Unresolved reference":
+
+```
+e: file:///home/my-project/src/main/kotlin/MyApp.kt:4:47 Unresolved reference 'flyway'.
+```
+
+Лечится это тоже просто — исправлением импорта.
+В большинстве случаев достаточно поменять `autoconfigure.<module>`, на `<module>.autoconfigure`:
+
+[source,kotlin,highlight=1]
+----
+import org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration
+// ...
+
+@SpringBootApplication(
+    exclude = [
+        FlywayAutoConfiguration::class, // Отключаем Flyway для дефолтного датасорса
+    ]
+)
+class MyApp
+----
+
+Но с частью автоконфигураций могут быть небольшие сложности:
+
+. <module> может быть составным — например, для Spring Data Jdbc надо поменять `autoconfigure.data.jdbc` на `data.jdbc.autoconfigure`;
+. ненужные вам автоконфигурации (например, `GsonAutoConfiguration`, `ErrorMvcAutoConfiguration`, `WebSocketServletAutoConfiguration`) пропадут из classpath-а вообще и их надо будет просто удалить;
+. для `WebMvcAutoConfiguration`, `DataJdbcRepositoriesAutoConfiguration`, `ServletWebServerFactoryAutoConfiguration` миграция нетиповая:
+.. `org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration` -> `org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration` — `web.servlet` меняется на `webmvc`;
+.. `org.springframework.boot.autoconfigure.data.jdbc.JdbcRepositoriesAutoConfiguration` -> `org.springframework.boot.data.jdbc.autoconfigure.DataJdbcRepositoriesAutoConfiguration` — меняется ещё и имя класса;
+.. `org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration` -> `org.springframework.boot.tomcat.autoconfigure.servlet.TomcatServletWebServerAutoConfiguration` и `org.springframework.boot.web.server.autoconfigure.servlet.ServletWebServerConfiguration` — класс разбили на два.
+
+Также ссылка на класс автоконфигурации может быть нетипизированной.
+Например, в случае отключения через свойства:
+
+[source,kotlin]
+----
+@SpringBootTest(
+    properties = [
+        "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration"],
+)
+----
+
+В этом случае компилятор вам не поможет, и у вас просто втихую начнёт запускаться соответствующий модуль с последствиями, которые могут оказаться сложно диагностируемыми.
+Поэтому перед завершением миграции, лучше явно поискать по проекту подстроку "org.springframework.boot.autoconfigure".
+
+=== ... и есть упоминания WebServerApplicationContext
+
+Если у вас в проекте есть Spring Boot и где-то упоминается `org.springframework.boot.web.context.WebServerApplicationContext`, например так:
+
+[source,kotlin]
+----
+import org.springframework.boot.web.context.WebServerApplicationContext
+
+val context = SpringApplicationBuilder(...)
+                  .web(WebApplicationType.SERVLET)
+                  .build()
+                  .run() as WebServerApplicationContext
+
+// ...
+abstract class MyBaseE2ETest {
+
+    protected val apiBaseUri = "http://localhost:${mainContext.webServer!!.port}/api"
+
+    // ...
+
+}
+----
+
+, то этот код перестанет компилироваться с очередным `Unresolved reference 'WebServerApplicationContext'.`, потому что класс переехал в `org.springframework.boot.web.server.context`.
+Чинится заменой импорта:
+
+[source,kotlin,highlight=1]
+----
+import org.springframework.boot.web.server.context.WebServerApplicationContext
+
+val context = SpringApplicationBuilder(...)
+                  .web(WebApplicationType.SERVLET)
+                  .build()
+                  .run() as WebServerApplicationContext
+
+// ...
+abstract class MyBaseE2ETest {
+
+    protected val apiBaseUri = "http://localhost:${mainContext.context.port}/api"
+
+    // ...
+
+}
+----
+
+=== ... и есть упоминания ServletWebServerFactory
+
+Наконец, проблема редкостных гурманов — если у вас в проекте есть упоминания `org.springframework.boot.web.servlet.server.ServletWebServerFactory`:
+
+[source,kotlin]
+----
+import org.springframework.boot.web.servlet.server.ServletWebServerFactory
+// ...
+
+@TestConfiguration
+class FakeWebServerConf {
+
+    @Bean
+    fun servletWebServerFactory(): ServletWebServerFactory =
+        ServletWebServerFactory {
+            object : WebServer {
+                override fun start() {}
+
+                override fun stop() {}
+
+                override fun getPort(): Int {
+                    return 0
+                }
+
+            }
+        }
+
+}
+----
+
+, то компиляция этого кода сломается с... ну, вы догадались — `Unresolved reference 'server'.`.
+Потому что и этот интерфейс в Spring Boot 4 тоже переехал — в `org.springframework.boot.web.server.servlet.ServletWebServerFactory`.
+Чинится заменой импорта:
+
+[source,kotlin,highlight=1]
+----
+import org.springframework.boot.web.server.servlet.ServletWebServerFactory
+// ...
+----
+
+== Если есть Jackson
+
+[NOTE]
+====
+https://spring.io/blog/2025/10/07/introducing-jackson-3-support-in-spring[Смотрите также официальный гайд по миграции на Jackson 3 от Spring].
+====
+
+Spring Boot 4 мигрировал на Jackson 3.
+Но так как практически все используют Jackson, а в новой версии API Jackson-а довольно сильно поменялось, то ребята из Spring заморочились и обеспечили поддержку Jaсkson 2 в Spring Boot 4 окружении.
+Поэтому в принципе вы можете пока отложить миграцию на Jackson 3 и все дальнейшие разделы (и в целом бо́льшая часть проблем миграции на Spring Boot 4, по моему опыту) для вас будут неактуальны.
+
+Однако многие старые Spring API для Jackson 2 помечены как deprecated, и если у вас включён флаг компилятора `-Werror` (а он должен быть включён, на мой взгляд), то проект у вас перестанет компилироваться.
+Да и в любом случае копить предупреждения — это копить техдолг, который рано или поздно придётся отдавать.
+А отдавать его, имхо, лучше сразу по чуть-чуть, чем когда-то потом удваивать работу по очередному обновлению.
+Поэтому миграцию на Jackson 3 я бы порекомендовал всё-таки провести.
+
+И если вы решите последовать моему совету, то у вас очень многое сможет пойти не так.
+
+=== ... и есть примитивные типы в классах для десериализации
+
+Если у вас во входящих DTO есть поля примитивных типов (int, double, boolean и т. д.), и в конфигурации `JsonMapper`/`ObjectMapper` **явно** не была выставлена фича `mapper.enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);`, то у вас могут начать падать тесты (или ещё хуже — сервис в проде) с
+```
+tools.jackson.databind.exc.MismatchedInputException: Cannot map `null` into type `int` (set DeserializationConfig.DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES to 'false' to allow)
+```
+
+, если клиенты вообще не присылают какие-то из этих полей, либо присылают в них `null`.
+
+Быстрый способ вернуть прежнее поведение указан прямо в исключении — выставить `mapperBuilder.disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);`.
+
+Но у такого решения могут быть неприятные последствия: если клиент опечатался в имени примитивного поля, то узнает он об этом не сразу, а спустя какое-то время, когда при чтении этого значения получит `0`, вместо того, значения, которое он записывал.
+Удачи в отладке, что называется.
+
+Другой вариант решения этой проблемы — доработать клиентов, чтобы они всегда присылали значения в примитивные поля.
+Но он не всегда возможен: например, если среди клиентов есть мобильные приложения или сторонние интеграции, которые не так просто обновлять.
+
+Поэтому я в своих проектах провёл тщательный аудит API на предмет примитивных полей, а потом ещё и тщательный аудит клиентов на предмет того, для каких полей они гарантированно присылают значения, а для каких — нет.
+
+И для тех полей, где может не прийти значение, сделал локальные правки примерно такого вида:
+
+[source,kotlin]
+----
+data class MyDto(
+    val field: Int
+)
+
+class MyMapper {
+
+    fun toDomain(dto: MyDto): MyDomain {
+        return MyDomain(field = dto.field)
+    }
+
+}
+----
+
+[.text-center]
+->
+
+[source,kotlin,highlight=2;8]
+----
+data class MyDto(
+    val field: Int?
+)
+мезазойского
+class MyMapper {
+
+    fun toDomain(dto: MyDto): MyDomain {
+        return MyDomain(field = dto.field ?: 0)
+    }
+
+}
+----
+
+* в DTO поле пометил как nullable — `val field: Int?` (для Java — использовать тип-обёртку `Integer` вместо `int`);
+* проставил дефолтные 0/false при маппинге в доменную модель.
+
+=== ... и есть использование классов и интерфейсов Jackson (помимо аннотаций)
+
+Если вы в коде где-то используете классы или интерфейсы Jackson (но не аннотации), то после миграции он у вас перестанет компилироваться с `Unresolved reference`.
+Потому что они переехали из `com.fasterxml.jackson.\*` в `tools.jackson.*`.
+
+Многие (не все) из этих проблем решаются простой заменой `com.fasterxml.jackson.\*` на `tools.jackson.*`.
+
+Также сто́ит отметить, что из https://github.com/FasterXML/jackson-future-ideas/wiki/JSTEP-1[соображений совместимости]  пакет аннотации вроде `@JsonProperty` не изменился.
+
+=== ... и есть конфигурация ObjectMapper
+
+Если в вашем проекте есть Jackson и программная конфигурация `ObjectMapper`-ов, то при миграции потребуется несколько изменений.
+
+Для начала сразу после миграции на Spring Boot 4 вы увидите предупреждения о депрекации метода:
+
+```
+fun enable(vararg p0: MapperFeature!): ObjectMapper!' is deprecated. Deprecated in Java
+```
+
+И вместо этого предлагают использовать `JsonMapper.builder().enable(...)` — то есть перейти от изменения состояния готового `ObjectMapper` к конфигурированию builder-а, из которого потом строится `ObjectMapper`.
+Для того чтобы перейти от `ObjectMapper` к `JsonMapper.Builder` с такой же конфигурацией, нужно использовать метод `jsonMapper.rebuild()`.
+
+После этого вам потребуется заменить несколько методов, а также несколько констант, которые были перемещены в другой класс.
+Вот список изменений в конфигурировании маппера, которые потребовались мне:
+
+[.migration-map%autowidth,cols="1,1",options="header",frame=none,grid=none]
+|===
+|Jackson 2 |Jackson 3
+
+a|`objectMapper.registerModule(module)`
+a|`builder.addModule(module)`
+
+a|`mapper.configure(DeserializationFeature.xxx, false)`
+a|`builder.disable(DateTimeFeature.xxx)`
+
+a|`mapper.enable(MapperFeature.xxx);`
+a|`builder.enable(MapperFeature.xxx)`
+
+a|`SerializationFeature.WRITE_DATES_AS_TIMESTAMPS`
+a|`DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS`
+
+a|`SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS`
+a|`DateTimeFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS`
+
+a|`SerializationFeature.WRITE_DATES_WITH_CONTEXT_TIME_ZONE`
+a|`DateTimeFeature.WRITE_DATES_WITH_CONTEXT_TIME_ZONE`
+
+a|`DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE`
+a|`DateTimeFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE`
+
+a|`JsonParser.Feature.STRICT_DUPLICATE_DETECTION`
+a|`StreamReadFeature.STRICT_DUPLICATE_DETECTION`
+
+a|`JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION`
+a|`StreamWriteFeature.STRICT_DUPLICATE_DETECTION`
+
+|===
+
+
+[source,java]
+----
+public class ObjectMapperJackson2Example {
+    public static ObjectMapper createMapper() {
+        SimpleModule module = new SimpleModule("example");
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(module);
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS);
+        mapper.disable(SerializationFeature.WRITE_DATES_WITH_CONTEXT_TIME_ZONE);
+        mapper.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        mapper.disable(SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS);
+        mapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
+        mapper.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
+        mapper.enable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
+        return mapper;
+    }
+}
+----
+
+[.text-center]
+->
+
+[source,java]
+----
+public class JsonMapperJackson3Example {
+    public static JsonMapper createMapper() {
+        SimpleModule module = new SimpleModule("example");
+
+        return JsonMapper.builder()
+                .addModule(module)
+                .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DateTimeFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .disable(DateTimeFeature.WRITE_DATES_WITH_CONTEXT_TIME_ZONE)
+                .disable(DateTimeFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .disable(SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS)
+                .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+                .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)
+                .enable(StreamWriteFeature.STRICT_DUPLICATE_DETECTION)
+                .build();
+    }
+}
+----
+
+[NOTE]
+====
+Напомню, это не исчерпывающий список изменений в API Jackson, а только те изменения в API, об которые я споткнулся в своих проектах.
+====
+
+=== ... и есть модуль jackson-datatype-jsr310
+
+Если у вас в проекте вручную подключался модуль `JavaTimeModule`:
+
+[source,kotlin]
+----
+@Configuration
+class MyObjectMapperConf {
+
+    @Bean
+    fun objectMapper(): ObjectMapper =
+        ObjectMapper()
+            .registerModule(JavaTimeModule())
+            // ...
+
+}
+----
+
+, то после переезда на классы из `tools.jackson.*` компиляция у вас сломается с очередным Unresolved reference: `Unresolved reference 'JavaTimeModule'`.
+
+Потому что поддержку Java Time API теперь встроили в `jackson-databind`, и отдельного модуля для этого больше не нужно.
+
+Соответственно, зависимость `com.fasterxml.jackson.datatype:jackson-datatype-jsr310` и подключение этого модуля теперь надо удалить.
+
+=== ... и есть конфигурация MappingJackson2HttpMessageConverter
+
+Если у вас в проекте есть конфигурация или создание `MappingJackson2HttpMessageConverter`:
+
+[source,kotlin]
+----
+@Configuration
+class WebConfig : WebMvcConfigurer {
+
+    override fun extendMessageConverters(messageConverters: MutableList<HttpMessageConverter<*>>) {
+        messageConverters.filterIsInstance<MappingJackson2HttpMessageConverter>().forEach { conv ->
+            conv.objectMapper.apply {
+                applyDefaultApiConfiguration()
+            }
+        }
+    }
+
+}
+----
+
+, то после миграции на Spring Boot 4 при компиляции начнут сыпаться предупреждения:
+
+```
+w: file:///home/my-project//src/main/kotlin/app/web/WebConfig.kt:11:8 'class MappingJackson2HttpMessageConverter : AbstractJackson2HttpMessageConverter' is deprecated. Deprecated in Java.
+w: file:///home/my-project//src/main/kotlin/app/web/WebConfig.kt:26:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Please add the '@Deprecated' annotation or suppress the diagnostic.
+```
+
+Исправляется это переводом конфигурации JsonMapper-а для Spring MVC на бин нового типа `ServerHttpMessageConvertersCustomizer`:
+
+[source,kotlin]
+----
+@Configuration
+@Import(BaseJsonMapperConf::class)
+class WebConfig : WebMvcConfigurer {
+
+    @Bean
+    fun jacksonConverterCustomizer(jsonMapper: JsonMapper): ServerHttpMessageConvertersCustomizer =
+        ServerHttpMessageConvertersCustomizer { builder ->
+            builder.withJsonConverter(JacksonJsonHttpMessageConverter(jsonMapper))
+        }
+
+
+}
+----
+
+=== ... и есть конфигурация Jackson2JsonMessageConverter
+
+Если у вас в проекте есть RabbitMQ и конфигурация его `Jackson2JsonMessageConverter`:
+
+[source,kotlin]
+----
+@Configuration
+class RabbitMqConfig {
+
+    @Bean
+    fun producerJackson2MessageConverter(
+        objectMapper: ObjectMapper,
+    ): Jackson2JsonMessageConverter {
+        return Jackson2JsonMessageConverter(objectMapper)
+    }
+
+}
+----
+
+, то после миграции у вас посыпятся предупреждения компилятора:
+
+```
+w: file:///home/my-project/src/main/kotlin/rabbitmq/RabbitMQConfig.kt:12:8 'class Jackson2JsonMessageConverter : AbstractJackson2MessageConverter' is deprecated. Deprecated in Java.
+```
+
+или ошибки компилятора, если вы уже убрали Jackson 2 из classpath-а:
+
+[source]
+----
+e: file:///home/my-project/src/main/kotlin/rabbitmq/RabbitMQConfig.kt:38:16 None of the following candidates is applicable:
+constructor(vararg trustedPackages: String): Jackson2JsonMessageConverter
+constructor(jsonObjectMapper: ObjectMapper): Jackson2JsonMessageConverter
+constructor(jsonObjectMapper: ObjectMapper, vararg trustedPackages: String): Jackson2JsonMessageConverter
+----
+
+Лечится это миграцией на новый класс `JacksonJsonMessageConverter` и передачей в него `JsonMapper` вместо `ObjectMapper`:
+
+[source,kotlin]
+----
+@Configuration
+class RabbitMqConfig {
+
+    @Bean
+    fun producerJacksonJsonMessageConverter(
+        jsonMapper: JsonMapper
+    ): JacksonJsonMessageConverter {
+        return JacksonJsonMessageConverter(jsonMapper)
+    }
+
+}
+----
+
+=== ... и есть работа с JsonNode
+
+Если вы в проекте где-то работаете с `JsonNode`, например так:
+
+
+[source,kotlin]
+----
+// --- JsonNode DSL
+
+fun obj(builder: ObjectBuilder.() -> Unit): ObjectNode {
+    val objectBuilder = ObjectBuilder(jnf)
+    objectBuilder.builder()
+    return objectBuilder.objectNode
+}
+
+infix fun String.eq(value: JsonNode?) {
+    if (value != null) {
+        objectNode.set<JsonNode>(this, value)
+    } else {
+        objectNode.putNull(this)
+    }
+}
+
+fun JsonNode.asUUID(): UUID? {
+    return if (isNull) {
+        null
+    } else {
+        UUID.fromString(asText())
+    }
+}
+
+private val jnf = JsonNodeFactory(true)
+
+// --- DSL usage
+
+val mapper = ObjectMapper()
+
+val obj = obj {
+    "field1" eq "value"
+}
+
+mapper.writeValueAsString(obj)
+----
+
+, то после миграции на Jackson 3 у вас может вывалиться пара ошибок компиляции:
+
+```
+No type arguments expected for fun set(propertyName: String!, value: JsonNode!): ObjectNode!.
+Too many arguments for 'constructor(): JsonNodeFactory'
+```
+
+и рассыпуха предупреждений:
+
+```
+'val text: String!' is deprecated. Deprecated in Java.`/`warning: [deprecation] getText() in JsonParser has been deprecated
+```
+
+Первая ошибка лечится удалением параметра типа.
+
+Со второй сложнее.
+В Jackson 2 `JsonNodeFactory(true)` означал exact-режим для `BigDecimal`: фабрика не удаляла trailing zeroes.
+В Jackson 3 параметр из `JsonNodeFactory` убрали, а сама фабрика больше не управляет такой нормализацией.
+
+Поэтому `JsonNodeFactory(true)` можно заменить на `JsonNodeFactory()`.
+
+Если у вас был `JsonNodeFactory(false)` и вы рассчитывали на удаление trailing zeroes, прямого аналога на фабрике больше нет.
+Для нод, которые Jackson создаёт при чтении JSON через `readTree()`/`readValue<JsonNode>()`, это поведение включается на маппере через `JsonNodeFeature.STRIP_TRAILING_BIGDECIMAL_ZEROES`.
+Для нод, которые вы создаёте руками через `JsonNodeFactory.numberNode(BigDecimal)`, нормализовать значение теперь нужно явно: `value.stripTrailingZeros()`.
+
+И, наконец, предупреждения лечатся просто заменой вызова `text`/`getText()`/`asText()` на `string`/`getString()`/`asString()`.
+
+После миграции код выше начинает выглядеть так:
+
+[source,kotlin,highlight=11;21;25;29;30]
+----
+// --- JsonNode DSL
+
+fun obj(builder: ObjectBuilder.() -> Unit): ObjectNode {
+    val objectBuilder = ObjectBuilder(jnf)
+    objectBuilder.builder()
+    return objectBuilder.objectNode
+}
+
+infix fun String.eq(value: JsonNode?) {
+    if (value != null) {
+        objectNode.set(this, value)
+    } else {
+        objectNode.putNull(this)
+    }
+}
+
+fun JsonNode.asUUID(): UUID? {
+    return if (isNull) {
+        null
+    } else {
+        UUID.fromString(asString())
+    }
+}
+
+private val jnf = JsonNodeFactory()
+
+// --- DSL usage
+
+val mapper = JsonMapper.builder()
+                .build()
+
+val obj = obj {
+    "field1" eq "value"
+}
+
+mapper.writeValueAsString(obj)
+----
+
+=== ... и есть наследники StdDeserializer или JsonDeserializer
+
+Если у вас в проекте есть кастомные десериализаторы:
+
+[source,kotlin]
+----
+class HhMmSsDurationDeserializer : StdDeserializer<Duration>(Duration::class.java) {
+
+    override fun deserialize(p0: JsonParser, p1: DeserializationContext?): Duration? {
+        return Duration.between(LocalTime.MIN, LocalTime.parse(p0.text))
+    }
+
+}
+----
+
+, то вы снова можете столкнуться с предупреждениями о депрекации `text`/`getText()`, но уже на `JsonParser`:
+
+```
+w: file:///home/my-project/src/main/kotlin/jackson/HhMmSsDurationDeserializer.kt:12:67 'val text: String!' is deprecated. Deprecated in Java.
+```
+
+Лечится аналогично переходом на `string`/`getString()`:
+
+[source,kotlin,highlight=4]
+----
+class HhMmSsDurationDeserializer : StdDeserializer<Duration>(Duration::class.java) {
+
+    override fun deserialize(p0: JsonParser, p1: DeserializationContext?): Duration? {
+        return Duration.between(LocalTime.MIN, LocalTime.parse(p0.string))
+    }
+
+}
+----
+
+А если вы где-то используете напрямую `JsonDeserializer`:
+
+[source,kotlin]
+----
+class MimeTypeJsonDeserializer : JsonDeserializer<MimeType>() {
+    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): MimeType =
+        MimeType.valueOf(p.valueAsString)
+}
+----
+
+, то будет уже пара ошибок компиляции из-за очередного переименования:
+
+```
+e: file:///home/my-project/src/main/kotlin//jackson/MimeTypeJsonDeserializer.kt:17:34 Unresolved reference 'JsonDeserializer'.
+e: file:///home/my-project/src/main/kotlin//jackson/MimeTypeJsonDeserializer.kt:18:5 'deserialize' overrides nothing.
+```
+
+Лечится переходом на `ValueDeserializer`:
+
+[source,kotlin,highlight=1]
+----
+class MimeTypeJsonDeserializer : ValueDeserializer<MimeType>() {
+    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): MimeType =
+        MimeType.valueOf(p.valueAsString)
+}
+----
+
+=== ... и наследники StdSerializer или JsonSerializer
+
+Если у вас в проекте есть кастомные сериализаторы:
+
+[source,kotlin]
+----
+class HhMmSsDurationSerializer : StdSerializer<Duration>(Duration::class.java) {
+
+    override fun serialize(p0: Duration, p1: JsonGenerator, p2: SerializerProvider) {
+        p1.writeString(convertToHhMmSs(p0))
+    }
+
+}
+----
+
+, то вас ждёт по три ошибки компиляции на каждый:
+
+```
+e: file:///home/my-project/src/main/kotlin/jackson/HhMmSsDurationSerializer.kt:7:1 Class 'HhMmSsDurationSerializer' is not abstract and does not implement abstract base class member 'serialize'.
+e: file:///home/my-project/src/main/kotlin/jackson/HhMmSsDurationSerializer.kt:9:5 'serialize' overrides nothing. Potential signatures for overriding:
+fun serialize(value: Duration!, gen: JsonGenerator!, provider: SerializationContext!): Unit
+e: file:///home/my-project/src/main/kotlin/jackson/HhMmSsDurationSerializer.kt:9:65 Unresolved reference 'SerializerProvider'.
+```
+
+А если вы ещё и используете напрямую `JsonSerializer`:
+
+[source,kotlin]
+----
+class MimeTypeJsonSerializer : JsonSerializer<MimeType>() {
+
+    override fun serialize(value: MimeType, gen: JsonGenerator, serializers: SerializerProvider) {
+        gen.writeString(value.toString())
+    }
+
+}
+----
+
+, то добавится ещё и
+
+```
+e: file:///home/my-project/jackson/MimeTypeJson.kt:11:32 Unresolved reference 'JsonSerializer'.`
+```
+
+У первых трёх ошибок одна причина — `SerializerProvider` в Jackson 3 переименовали в `SerializationContext`.
+
+А у четвёртой — аналогично десериализаторам — `JsonSerializer` в Jackson 3 переименовали в `ValueSerializer`.
+
+В простых сериализаторах, как в примерах выше, и то и другое обычно лечится заменой типов в сигнатуре:
+
+[source,kotlin,highlight=3;9;11]
+----
+class HhMmSsDurationSerializer : StdSerializer<Duration>(Duration::class.java) {
+
+    override fun serialize(p0: Duration, p1: JsonGenerator, p2: SerializationContext) {
+        p1.writeString(convertToHhMmSs(p0))
+    }
+
+}
+
+class MimeTypeJsonSerializer : ValueSerializer<MimeType>() {
+
+    override fun serialize(value: MimeType, gen: JsonGenerator, context: SerializationContext) {
+        gen.writeString(value.toString())
+    }
+
+}
+----
+
+=== ... и есть реализации интерфейса ContextualDeserializer
+
+Если у вас в проекте есть реализации `ContextualDeserializer`-а:
+
+[source,kotlin]
+----
+class RefDeserializer(
+    private var type: JavaType = TypeFactory.unknownType()
+) : JsonDeserializer<Ref<*, *>>(), ContextualDeserializer {
+
+    override fun deserialize(parser: JsonParser, context: DeserializationContext): Ref<*, *>? {
+        val node = parser.codec.readTree<JsonNode>(parser)
+
+        ...
+    }
+
+    override fun createContextual(ctx: DeserializationContext, property: BeanProperty?): JsonDeserializer<*> {
+        ...
+    }
+----
+
+, то при переходе вы получите несколько ошибок компиляции:
+
+```
+e: file:///home/my-project/src/main/kotlin/jackson/RefDeserializer.kt:14:36 Unresolved reference 'ContextualDeserializer'.
+e: file:///home/my-project/src/main/kotlin/jackson/RefDeserializer.kt:17:27 Unresolved reference 'codec'.
+e: file:///home/my-project/src/main/kotlin/jackson/RefDeserializer.kt:33:5 'createContextual' overrides nothing.
+
+// плюс ещё ошибки, связанные с `JsonDeserializer` в моём случае
+// плюс ещё, наведённые ошибки
+```
+
+В Jackson 3 `ContextualDeserializer` вмёржили в `ValueDeserializer` (бывший `JsonDeserializer`), а у `JsonParser` хоть убрали поле `codec`, но ещё в версии 2.17 добавили аналогичный метод `readValueAsTree`.
+Поэтому фиксятся эти проблемы без проблем, прошу прощения за каламбур:
+
+[source,kotlin,highlight=3;6;11]
+----
+class RefDeserializer(
+    private var type: JavaType = TypeFactory.unknownType()
+) : ValueDeserializer<Ref<*, *>>() {
+
+    override fun deserialize(parser: JsonParser, context: DeserializationContext): Ref<*, *>? {
+        val node = parser.readValueAsTree<JsonNode>()
+
+        ...
+    }
+
+    override fun createContextual(ctx: DeserializationContext, property: BeanProperty?): ValueDeserializer<*> {
+        ...
+    }
+----
+
+=== ... и есть наследники TypeIdResolverBase
+
+Если у вас в проекте есть кастомная полиморфная сериализация или десериализация через `TypeIdResolverBase`:
+
+[source,kotlin]
+----
+class DomainEventTypeResolver : TypeIdResolverBase() {
+
+    override fun idFromValue(value: Any): String =
+        idFromValueAndType(value, value::class.java)
+
+    override fun idFromValueAndType(
+        value: Any,
+        suggestedType: Class<*>
+    ): String =
+        value::class.java.name
+
+    override fun typeFromId(context: DatabindContext, id: String): JavaType {
+        ...
+    }
+
+}
+----
+
+, то при переходе на Jackson 3 код перестанет компилироваться с парой ошибок:
+
+```
+e: file:///home/my-project/src/main/kotlin/jackson/DomainEventTypeResolver.kt:12:5 'idFromValue' overrides nothing.
+e: file:///home/my-project/src/main/kotlin/jackson/DomainEventTypeResolver.kt:15:5 'idFromValueAndType' overrides nothing.
+```
+
+Причина в том, что в Jackson 3 в методы получения id добавили `DatabindContext`.
+
+В моём случае реализация была тривиальной, и контекст в логике сериализации был не нужен, поэтому миграция свелась к:
+
+* добавлению нового параметра;
+* прокидыванию его дальше из `idFromValue` в `idFromValueAndType`.
+
+[source,kotlin,highlight=3;4;7]
+----
+class DomainEventTypeResolver : TypeIdResolverBase() {
+
+    override fun idFromValue(ctxt: DatabindContext?, value: Any): String =
+        idFromValueAndType(ctxt, value, value::class.java)
+
+    override fun idFromValueAndType(
+        ctxt: DatabindContext,
+        value: Any,
+        suggestedType: Class<*>
+    ): String =
+        value::class.java.name
+
+    override fun typeFromId(context: DatabindContext, id: String): JavaType {
+        ...
+    }
+
+}
+----
+
+
+=== ... и есть конфигурация кодеков WebClient/WebTestClient
+
+Если у вас в проекте есть конфигурация кодеков WebClient/WebTestClient:
+
+[source,kotlin]
+----
+fun WebTestClient.Builder.configureForApi(objectMapper: ObjectMapper): WebTestClient.Builder =
+    defaultHeader("Content-Type", "application/json; charset=UTF-8;")
+        .exchangeStrategies(createExchangeStrategiesWithCustomMapper(objectMapper))
+
+fun createExchangeStrategiesWithCustomMapper(objectMapper: ObjectMapper): ExchangeStrategies {
+    return ExchangeStrategies.builder()
+        .codecs { configurer: ClientCodecConfigurer ->
+            configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024)
+            configurer.defaultCodecs().jackson2JsonEncoder(Jackson2JsonEncoder(objectMapper))
+            configurer.defaultCodecs().jackson2JsonDecoder(Jackson2JsonDecoder(objectMapper))
+        }.build()
+}
+----
+
+, то после перехода на Spring Boot вы получите пачку предупреждений о депрекации:
+
+```
+w: file:///home/my-project/src/testFixtures/kotlin/clients/WebTestClientExt.kt:6:8 'class Jackson2JsonDecoder : AbstractJackson2Decoder' is deprecated. Deprecated in Java.
+w: file:///home/my-project/src/testFixtures/kotlin/clients/WebTestClientExt.kt:7:8 'class Jackson2JsonEncoder : AbstractJackson2Encoder' is deprecated. Deprecated in Java.
+w: file:///home/my-project/src/testFixtures/kotlin/clients/WebTestClientExt.kt:43:40 'fun jackson2JsonEncoder(encoder: Encoder<*>): Unit' is deprecated. Deprecated in Java.
+w: file:///home/my-project/src/testFixtures/kotlin/clients/WebTestClientExt.kt:43:60 'constructor(mapper: ObjectMapper, vararg mimeTypes: MimeType): Jackson2JsonEncoder' is deprecated. Deprecated in Java.
+w: file:///home/my-project/src/testFixtures/kotlin/clients/WebTestClientExt.kt:44:40 'fun jackson2JsonDecoder(decoder: Decoder<*>): Unit' is deprecated. Deprecated in Java.
+w: file:///home/my-project/src/testFixtures/kotlin/clients/WebTestClientExt.kt:44:60 'constructor(mapper: ObjectMapper, vararg mimeTypes: MimeType): Jackson2JsonDecoder' is deprecated. Deprecated in Java.
+```
+
+А если уже убрали Jackson 2 из classpath-а, то они превратятся в ошибки компиляции:
+
+```
+e: file:///home/my-project/src/testFixtures/kotlin/clients/WebTestClientExt.kt:43:80 Argument type mismatch: actual type is 'tools.jackson.databind.ObjectMapper', but 'com.fasterxml.jackson.databind.ObjectMapper' was expected.
+```
+
+Фиксится это удалением "2" из имён и переходом `ObjectMapper` -> `JsonMapper`, при необходимости:
+
+[source,kotlin,highlight=5;9;10]
+----
+fun WebTestClient.Builder.configureForApi(jsonMapper: JsonMapper): WebTestClient.Builder =
+    defaultHeader("Content-Type", "application/json; charset=UTF-8;")
+        .exchangeStrategies(createExchangeStrategiesWithCustomMapper(jsonMapper))
+
+fun createExchangeStrategiesWithCustomMapper(jsonMapper: JsonMapper): ExchangeStrategies {
+    return ExchangeStrategies.builder()
+        .codecs { configurer: ClientCodecConfigurer ->
+            configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024)
+            configurer.defaultCodecs().jacksonJsonEncoder(JacksonJsonEncoder(jsonMapper))
+            configurer.defaultCodecs().jacksonJsonDecoder(JacksonJsonDecoder(jsonMapper))
+        }.build()
+}
+----
+
+=== ... и есть net.logstash.logback:logstash-logback-encoder:8.1 с кастомными декораторами
+
+Если у вас в проекте есть Jackson и подключен Logstash Encoder от Logback-а с кастомным декоратором:
+
+[source,kotlin]
+----
+class LoggingDateDecorator : JsonFactoryDecorator {
+
+    override fun decorate(factory: JsonFactory): JsonFactory {
+        val codec = factory.codec as ObjectMapper
+        codec.setDateFormat(StdDateFormat())
+        return factory
+    }
+}
+----
+
+, то... после простого перехода на Spring Boot 4, `LoggingDateDecorator` продолжит работать.
+
+Но если вы исключите Jackson 2 из classpath-а, то тут уже `LoggingDateDecorator` сломается с очередной горкой `Unresolved reference`:
+
+```
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:3:30 Unresolved reference 'core'.
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:4:30 Unresolved reference 'databind'.
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:5:30 Unresolved reference 'databind'.
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:10:5 'decorate' overrides nothing. Potential signatures for overriding:
+fun decorate(p0: JsonFactory!): JsonFactory!
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:10:36 Unresolved reference 'JsonFactory'.
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:10:50 Unresolved reference 'JsonFactory'.
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:11:29 Unresolved reference 'codec'.
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:11:38 Unresolved reference 'ObjectMapper'.
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:12:15 Unresolved reference 'setDateFormat'.
+e: file:///home/my-project/src/main/kotlin/app/logging/LoggingDateDecorator.kt:12:29 Unresolved reference 'StdDateFormat'.
+```
+
+Чтобы это починить, надо переехать на 9-ю версию и `MapperBuilderDecorator` из неё:
+
+[source,kotlin,highlight=1-8]
+----
+class LoggingDateDecorator : MapperBuilderDecorator<JsonMapper, JsonMapper.Builder> {
+
+    override fun decorate(decoratable: JsonMapper.Builder): JsonMapper.Builder {
+        decoratable.defaultDateFormat(StdDateFormat())
+        return decoratable
+    }
+
+}
+----
+
+Также надо не забыть в `logback.xml` заменить старый `<jsonFactoryDecorator class="..."/>` на `<decorator class="..."/>`.
+
+=== Бонус: полное удаление Jackson 2 из classpath-а компилияции в Gradle
+
+С миграцией на Jackson 3 есть отдельная проблема, заключающаяся в том, что многие библиотеки (на момент написания статьи как минимум minio и wiremock) ещё не перешли на Jackson 3.
+Поэтому в **рантайме** Jackson 2 должен быть.
+Однако если его оставить в classpath-е компиляции, то будут постоянные затыки с тем, что на автомате импортировали `com.fasterxml.jackson.databind.JsonMapper` вместо `tools.jackson.databind.JsonMapper`.
+И словили проблему компиляции, что нельзя передать `JsonMapper` в `JsonMapper`:
+
+[source,kotlin,linenumbers,highlight=1;16]
+----
+import com.fasterxml.jackson.databind.json.JsonMapper
+
+@Configuration
+@ComponentScan
+@Import(SecurityConfig::class, BaseJsonMapperConf::class)
+class WebConfig : WebMvcConfigurer {
+
+    @Bean
+    fun genericWebExceptionHandler() =
+        GenericWebExceptionHandler()
+
+    @Bean
+    fun jacksonJsonHttpMessageConverter(
+        jsonMapper: JsonMapper
+    ): JacksonJsonHttpMessageConverter =
+        JacksonJsonHttpMessageConverter(jsonMapper)
+
+}
+----
+
+```
+e: file:///home/my-project/src/main/kotlin/elta/app/web/WebConfig.kt:16:9 None of the following candidates is applicable:
+constructor(builder: JsonMapper.Builder): JacksonJsonHttpMessageConverter
+constructor(mapper: JsonMapper): JacksonJsonHttpMessageConverter
+```
+
+И я на таких WTF-ах легко могу затупить минут на пятнадцать, а то и час.
+Поэтому у себя в проектах я нашёл способ исключить модули `core` и `databind` из Jackson 2 в конфигурациях компиляции всех модулей:
+
+.build.gradle.kts
+[source,kotlin]
+----
+// Удалить после переезда зависимостей (как минимум — flyway, minio, wiremock, json-schema-validator) на Jackson 3
+configurations.matching { it.name == "compileClasspath" }.all {
+    exclude(group = "com.fasterxml.jackson.core", module = "jackson-core")
+    exclude(group = "com.fasterxml.jackson.core", module = "jackson-databind")
+}
+----
+
+Главное, не забыть это удалить, когда все зависимости мигрируют.
+
+== Заключение
+
+Миграция на Spring Boot 4 оказалась значительно более трудозатратной, чем я рассчитывал, на основе опыта миграции со Spring Boot 2 на Spring Boot 3, которую я сделал часа за 4.
+Поэтому готовьтесь попотеть, когда будете мигрировать.
+Особенно с Jackson-ом.
+Он во всех моих проектах породил наибольшее количество проблем, и у вас он сделает это почти наверняка.
+
+Надо ли мигрировать — вопрос открытый.
+Между Spring Boot 3 и Spring Boot 4 разница с точки зрения скорости и удобства разработки не так уж и велика.
+Но если сейчас не мигрировать, то для миграции на Spring Boot 5 потребуются уже двойные усилия, на Spring Boot 6 — тройные.
+И потом нагнать этот паравоз и мигировать на Spring Boot X, который уже даст заметную разницу с точки зрения скорости и удбоства разрботки, будет практически невозможно.
+
+Поэтому мой совет напоследок — позаботьтесь сегодня о себе через 5-10 лет — дайте себе возможность разрабатывать на современном стеке, а не стеке мезозойского периода:)
