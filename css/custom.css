@@ -31,7 +31,8 @@ code {
     margin: 1em 0px;
 }
 
-p code {
+p code,
+li > code {
     padding: .5rem .3rem;
     background-color: white!important;
     font-size: 1.45rem;
@@ -56,7 +57,8 @@ pre.rouge {
     width: 100%;
 }
 
-div.listingblock div.content {
+div.listingblock div.content,
+.listing-block > pre {
     margin-top: 0px;
     padding: 0px;
     background-color: #FAFAFA!important;
@@ -284,7 +286,8 @@ table.layout th, table.layout td, div.layout table tbody tr td, div.content tabl
 }
 
 /* Migration map: compact code-to-code mapping table */
-table.tableblock.migration-map {
+table.tableblock.migration-map,
+.table-block.migration-map > table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
@@ -293,32 +296,39 @@ table.tableblock.migration-map {
 }
 
 table.tableblock.migration-map th.tableblock,
-table.tableblock.migration-map td.tableblock {
+table.tableblock.migration-map td.tableblock,
+.table-block.migration-map > table th,
+.table-block.migration-map > table td {
     border: 0 !important;
     padding: 0.5rem 0.85rem;
     vertical-align: middle;
     line-height: 1.25;
 }
 
-table.tableblock.migration-map thead th.tableblock {
+table.tableblock.migration-map thead th.tableblock,
+.table-block.migration-map > table thead th {
     background: #f4f7f9;
     font-weight: 700;
     color: #1b242b;
     border-bottom: 1px solid #d6dde2 !important;
 }
 
-table.tableblock.migration-map tbody tr + tr td.tableblock {
+table.tableblock.migration-map tbody tr + tr td.tableblock,
+.table-block.migration-map > table tbody tr + tr td {
     border-top: 1px solid #e6ebef !important;
 }
 
 table.tableblock.migration-map td.tableblock + td.tableblock,
-table.tableblock.migration-map th.tableblock + th.tableblock {
+table.tableblock.migration-map th.tableblock + th.tableblock,
+.table-block.migration-map > table td + td,
+.table-block.migration-map > table th + th {
     border-left: 1px solid #e2e8ec !important;
 }
 
 table.tableblock.migration-map .content,
 table.tableblock.migration-map .content .paragraph,
-table.tableblock.migration-map .content .paragraph p {
+table.tableblock.migration-map .content .paragraph p,
+.table-block.migration-map p {
     margin: 0;
 }
 
