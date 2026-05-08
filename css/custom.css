@@ -13,6 +13,48 @@ table{border-collapse:collapse;border-spacing:0}
 .admonitionblock td.icon .icon-caution::before{content:"\f06d";color:#bf3400}
 .admonitionblock td.icon .icon-important::before{content:"\f06a";color:#bf0000}
 
+aside.admonition-block {
+    position: relative;
+    min-height: 2.5em;
+    padding-left: calc(80px + 1.125em);
+    padding-right: 1.25em;
+    margin-left: 0;
+    border-left: 0;
+    background: none;
+    color: rgba(0,0,0,.6);
+    font-style: normal;
+}
+
+aside.admonition-block::before {
+    position: absolute;
+    left: 0;
+    top: 0.1em;
+    width: 80px;
+    text-align: center;
+    font-family: "Font Awesome 5 Free";
+    font-size: 2.5em;
+    font-weight: 900;
+    line-height: 1;
+    text-shadow: 1px 1px 2px rgba(0,0,0,.5);
+    cursor: default;
+}
+
+aside.admonition-block::after {
+    content: "";
+    position: absolute;
+    left: 80px;
+    top: 0;
+    bottom: 0;
+    border-left: 1px solid #ddddd8;
+}
+
+aside.admonition-block.note::before{content:"\f05a";color:#19407c}
+aside.admonition-block.tip::before{content:"\f0eb";text-shadow:1px 1px 2px rgba(155,155,0,.8);color:#111}
+aside.admonition-block.warning::before{content:"\f071";color:#bf6900}
+aside.admonition-block.caution::before{content:"\f06d";color:#bf3400}
+aside.admonition-block.important::before{content:"\f06a";color:#bf0000}
+aside.admonition-block>:last-child{margin-bottom:0}
+
 body {
     color: #212121;
     font-family: Roboto, sans-serif;
@@ -40,7 +82,7 @@ li > code {
     display: inline;
 }
 
-div.text-center {
+.text-center {
     text-align: center;
 }
 
