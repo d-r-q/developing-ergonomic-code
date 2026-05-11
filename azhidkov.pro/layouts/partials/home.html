@@ -33,10 +33,17 @@
           </a>
       </li>
       <li class="social-item">
-          <a style="font-size: 30px; vertical-align: bottom" href="https://rutube.ru/channel/46917639/" aria-label="Habr">
+          <a style="font-size: 30px; vertical-align: bottom" href="https://rutube.ru/channel/46917639/" aria-label="Rutube">
               <img height="30px" src="/images/rutube_logo_icon.svg"/>
           </a>
       </li>
+      {{ with $.Site.Params.max_link }}
+      <li class="social-item">
+          <a style="font-size: 30px; vertical-align: bottom" href="{{ . }}" aria-label="Max">
+              <img height="30px" src="/images/max_logo_icon.svg"/>
+          </a>
+      </li>
+      {{ end }}
     </ul>
     {{ end }}
   </div>
