@@ -17,11 +17,6 @@ tags:
 :toclevels: 4
 :toc-title: Содержание
 
-[NOTE]
-====
-Следить за обновлениями блога можно в канале "Эргономичный код" в https://t.me/ergonomic_code[Telegram] и https://max.ru/join/W_YaWzkZX7uonLpy0cyMUUC1yL0qB-Um3lvSfACiWWY[Max].
-====
-
 Я недавно перевёл на Spring Boot 4 и выпустил в прод все свои основные проекты - три коммерческих и два опенсорсных.
 Общий объём этих проектов составляет ~80 тысяч строк Kotlin кода.
 И они используют 20 различных библиотек (включая модули Spring), версии которых управляются Spring Boot Dependency Management-ом.

@@ -12,11 +12,6 @@ tags:
 :rouge-theme: github
 :icons: font
 
-[NOTE]
---
-Следить за обновлениями блога можно в моём канале: https://t.me/ergonomic_code[Эргономичный код]
---
-
 Начало темы
 link:++{{<ref "posts/21/01/210105-pure-functions-and-effects-intro">}}++[здесь]
 и

@@ -18,8 +18,6 @@ tags:
 [NOTE]
 --
 Этот материал является "микропостом" - текстом, написанным в режиме потока сознания без особой редактуры.
-
-Следить за обновлениями блога можно в Telegram-канале: https://t.me/ergonomic_code[Эргономичный код].
 --
 
 Дочитав SICP, я пошёл делать второй подход к xUnit Test Patterns, т.к. мне надо расписать стратегию тестирования проекта, который я переписываю на Котлин, а она в полной мере ещё не улеглась у меня в голове. Прочитал первый раздел (A Brief Tour) и офигел - там мужики за меня практически полностью расписали эргономичный подход к тестированию.
@@ -29,13 +27,15 @@ tags:
 ____
 There is a simple test automation strategy that will work for many, many projects.
 
-When doing new software development, we strive to do storytest-driven development by first automating a suite of customer tests that verify the functionality provided by the application. To ensure that all of our software is tested, we augment these tests with a suite of unit tests that verify all code paths or, at a minimum, all the code paths that are not covered by the customer tests.
+When doing new software development, we strive to do storytest-driven development by first automating a suite of customer tests that verify the functionality provided by the application.
+To ensure that all of our software is tested, we augment these tests with a suite of unit tests that verify all code paths or, at a minimum, all the code paths that are not covered by the customer tests.
 
 ---
 
 Существует простая стратегия (прим. пер. - описанная в этом разделе) автоматизации тестирования, которая подойдёт многим и многим проектам
 
-При разработке нового софта мы стремимся делать storytest-driven development - сначала автоматизируем набор пользовательских тестов, которые верифицируют функциональность приложения. Для того чтобы убедиться, что весь софт покрыт тестами, мы дополняем эти тесты набором юнит тестов, которые верифицирую все пути в коде или, как минимум все пути, не покрытые пользовательскими тестами.
+При разработке нового софта мы стремимся делать storytest-driven development - сначала автоматизируем набор пользовательских тестов, которые верифицируют функциональность приложения.
+Для того чтобы убедиться, что весь софт покрыт тестами, мы дополняем эти тесты набором юнит тестов, которые верифицирую все пути в коде или, как минимум все пути, не покрытые пользовательскими тестами.
 ____
 
 То есть сначала пишутся тесты, которые проверяют ПО на соответствие требованиям и взаимодействуют с системой через публичный интерфейс.

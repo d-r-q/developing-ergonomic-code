@@ -16,11 +16,6 @@ tags:
 :icons: font
 :sectlinks:
 
-[NOTE]
---
-Следить за обновлениями блога можно в моём канале: https://t.me/ergonomic_code[Эргономичный код]
---
-
 == Введение
 [NOTE]
 ====
