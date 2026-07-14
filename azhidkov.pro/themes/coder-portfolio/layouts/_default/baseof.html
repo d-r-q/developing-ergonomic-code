@@ -63,6 +63,15 @@
 
     {{ template "_internal/google_analytics.html" . }}
 
+  {{ block "goatcounter-config" . }}
+  <script>
+    window.goatcounter = {
+      path: function (path) {
+        return location.host + path;
+      }
+    };
+  </script>
+  {{ end }}
   <script data-goatcounter="https://azhidkov.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
   <script src="{{ "js/app.js" | relURL }}"></script>
