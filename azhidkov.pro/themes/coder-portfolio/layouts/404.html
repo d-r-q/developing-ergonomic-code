@@ -1,3 +1,18 @@
+{{ define "goatcounter-config" }}
+  <script>
+    window.goatcounter = {
+      path: function () {
+        return location.host
+          + "/404"
+          + location.pathname
+          + location.search;
+      },
+      title: function () {
+        return "404: " + location.pathname;
+      }
+    };
+  </script>
+{{ end }}
 {{ define "content" }}
   {{ partial "404.html" . }}
 {{ end }}
