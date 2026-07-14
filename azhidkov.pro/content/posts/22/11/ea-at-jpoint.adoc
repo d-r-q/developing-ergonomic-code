@@ -7,7 +7,7 @@ tags:
 - ergo-approach
 - code
 aliases:
-- /posts/22/11/ea-at-jpoint
+- /microposts/22/11/ea-at-jpoint
 ---
 :source-highlighter: rouge
 :rouge-theme: github

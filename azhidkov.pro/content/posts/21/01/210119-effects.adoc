@@ -142,8 +142,6 @@ buffer.deleteCharAt(0)
 пользователи.
 
 Чистая же версия этого кода такая:
-image:channel/ergo/drafts/210119-effects/img-2-immutable-buffer.png[чистый
-код]
 
 [source,kotlin]
 ----

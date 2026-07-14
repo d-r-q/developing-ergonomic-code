@@ -175,11 +175,11 @@ _*Симметричный эффект чтения поступающих HTTP
 
 Диаграмма эффектов с использованием краткой нотации:
 
-image::short-notation-example.svg[link={imagesdir}/short-notation-example.svg]
+image::/effects-diagram/images/spec/short-notation-example.svg[link=/effects-diagram/images/spec/short-notation-example.svg]
 
 Диаграмма эффектов с использованием полной нотации:
 
-image::full-notation-example.svg[link={imagesdir}/full-notation-example.svg]
+image::/effects-diagram/images/spec/full-notation-example.svg[link=/effects-diagram/images/spec/full-notation-example.svg]
 
 === Элементы диаграммы эффектов
 

@@ -2,7 +2,7 @@
 title: "Как поднимать свежую фикстуру БД на 300+ таблиц за 1.5 секунды"
 date: 2024-07-03T08:25:37+07:00
 draft: false
-tags: 
+tags:
 - tdd
 - integration-tests
 - testcontainers
@@ -10,7 +10,7 @@ tags:
 - project-r
 - code
 aliases:
-- /posts/24/09/what-is-fp
+- /microposts/24/07/project-r-test-setup
 ---
 :source-highlighter: rouge
 :rouge-theme: github

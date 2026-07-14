@@ -10,7 +10,7 @@ tags:
 - make-invalid-states-unrepresentable
 - code
 aliases:
-- /posts/24/06
+- /microposts/24/06/http-api-and-design
 ---
 :source-highlighter: rouge
 :rouge-theme: github
